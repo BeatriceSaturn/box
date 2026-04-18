@@ -1,327 +1,485 @@
-
-                <!DOCTYPE html>
-                <html lang="zh">
-                <head>
-                  <meta charset="UTF-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <meta name="color-scheme" content="light">
-                  <meta name="supported-color-schemes" content="light">
-                  <title>打卡详情页</title>
-                  <style>
-                    *,
-                    *::before,
-                    *::after {
-                      box-sizing: border-box;
-                      margin: 0;
-                    }
-                    .iframe-outer {
-                      position: fixed;
-                      top: 0;
-                      left: 0;
-                      bottom: 0;
-                      right: 0;
-                      display: flex;
-                      justify-content: center;
-                      background-color: #E0E0E0;
-                    }
-                    .iframe-wrapper {
-                      width: 100%;
-                      height: 100%;
-                      margin: 0 auto;
-                      transform-origin: center top;
-                      flex-shrink: 0;
-                    }
-                    #dynamicIframe {
-                      border: none;
-                      width: 100%;
-                      height: 100%;
-                    }
-                  </style>
-                  <script>
-                const width = 402
-                const height = 874
-                const resolutionRatio = width && height ? width / height : 1
-                const pageNameMap = {
-                  'login_screen': '登录注册页',
-    'user_profile_setup': '基础信息采集页',
-    'goal_setting': '核心目标设定页',
-    'plan_selection': '饮食计划选择页',
-    'plan_details': '计划详情页',
-    'plan_tracking': '我的计划进度页',
-    'home_dashboard': '饮食管理首页',
-    'diet_logging_detail': '打卡详情页',
-    'logging_success_feedback': '打卡反馈页',
-    'social_circles_main': '亲友共享空间主页',
-    'invite_connection': '邀请关注页',
-    'interaction_hub': '关怀互动页',
-    'diet_encyclopedia': '饮食百科',
-    'health_metrics_test': '健康指标测试',
-    'ai_diet_recommendation': 'AI个性化膳食建议',
-    'dietary_statistics_report': '饮食趋势报表',
-    'habit_milestone_badges': '习惯里程碑成就'
-                }
-                const allPageIds = ["login_screen","user_profile_setup","goal_setting","plan_selection","plan_details","plan_tracking","home_dashboard","diet_logging_detail","logging_success_feedback","social_circles_main","invite_connection","interaction_hub","diet_encyclopedia","health_metrics_test","ai_diet_recommendation","dietary_statistics_report","habit_milestone_badges"]
-                const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-                const IFRAME_MESSAGE_TYPE = {
-                  iframeNavigation: 'iframeNavigation',
-                }
-                const safeAddEventListener = function Tc(e,t,r,n=!1){e.removeEventListener(t,r,n),e.addEventListener(t,r,n)}
-                const processOnclick = (e,t,r)=>{if(r){const n=zw(t);if(n.methodName&&Rp(n.methodName,r))return;e.preventDefault(),e.stopPropagation();const s=n.args||[],i=(s==null?void 0:s.find(u=>u))||"";i&&jp(i)}}
-                const checkIframeMethod = (e,t)=>{try{return typeof t[e]=="function"||typeof t[e]=="function"}catch(r){return!1}}
-                const postIframeMessage = (targetPageId) => {
-                  window.parent.postMessage({
-                    type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                    targetPageId,
-                  })
-                }
-                const handleIframeLinkClick = (event) => {
-                  const dynamicIframe = document.querySelector('#dynamicIframe')
-                  if (!dynamicIframe?.contentWindow) {
-                    return
-                  }
-                  const link = event.target.closest('a')
-                  const target = event.target
-                  if (link) {
-                    const href = link.getAttribute('href')
-                    const onclick = link.getAttribute('onclick')
-                    if (href && href !== '#' && !href.startsWith('javascript:')) {
-                      event.preventDefault()
-                      event.stopPropagation()
-                      const targetPageId = getKeyByValueObj(allFormatPageIdsMap, href)
-                      if (targetPageId) {
-                        postIframeMessage(targetPageId)
-                      }
-                      return
-                    }
-                    if (onclick) {
-                      processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                    } else {
-                      event.preventDefault()
-                      event.stopPropagation()
-                    }
-                    return
-                  }
-                  const onclick = target.getAttribute('onclick')
-                  if (onclick) {
-                    processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                  }
-                }
-                function stringExt(link) {
-                  let s = String(link || '')
-                  s = (s.split('#')[0] || '')
-                  s = (s.split('?')[0] || '')
-                  s = s.trim()
-                  s = s.split('/').filter(Boolean).pop() || ''
-                  const lower = s.toLowerCase()
-                  if (lower.endsWith('.html') || lower.endsWith('.php') || lower.endsWith('.aspx')) {
-                    s = s.slice(0, s.lastIndexOf('.'))
-                  }
-                  return s
-                }
-                function formatHref(href) {
-                  if (!href) {
-                    return ''
-                  }
-                  try {
-                    const url = new URL(href, window.location.href)
-                    const pathname = url.pathname || ''
-                    return stringExt(pathname)
-                  } catch {
-                    return stringExt(href)
-                  }
-                }
-                function getKeyByValueObj(obj, value) {
-                  const newValue = formatHref(value)
-                  const keyFind = Object.keys(obj).find(k => k === newValue)
-                  if (keyFind) {
-                    return keyFind
-                  }
-                  return Object.keys(obj).find(k => obj[k] === newValue)
-                }
-                function setIframeSize(w, h) {
-                  const currentContainerRadio = w / h
-                  let widthValue = w
-                  let heightValue = h
-                  let zoom = 1
-                  if (currentContainerRadio > resolutionRatio) {
-                    widthValue = h * resolutionRatio
-                    heightValue = h
-                  } else {
-                    widthValue = w
-                    heightValue = w / resolutionRatio
-                  }
-                  zoom = width ? widthValue / width : 1
-                  return {
-                    width: widthValue / zoom + 'px',
-                    height: heightValue / zoom + 'px',
-                    zoom,
-                  }
-                }
-                function adjustIframeSize() {
-                  const iframeWrapper = document.querySelector(".iframe-wrapper")
-                  const { width, height, zoom } = setIframeSize(window.innerWidth, window.innerHeight)
-                  iframeWrapper.style.height = height
-                  iframeWrapper.style.width = width
-                  iframeWrapper.style.transform = 'scale(' + zoom + ')'
-                }
-                function sanitizeFilename(name) {
-                  return name.replace(/[\/:*?"<>|]/g, '_')
-                }
-                function handlePostMessage(event) {
-                  if (!event.data) {
-                    return
-                  }
-                  const { type, targetPageId } = event.data
-                  const targetPageName = pageNameMap[targetPageId]
-                  if (type === "iframeNavigation" && targetPageId && targetPageName) {
-                    window.location.href = targetPageName + '.html'
-                  }
-                }
-                function setupIframeEvents() {
-                  const iframe = document.getElementById('dynamicIframe')
-                  if (iframe && iframe.contentWindow && iframe.contentWindow.document) {
-                    safeAddEventListener(iframe.contentWindow.document, 'click', handleIframeLinkClick, true)
-                  } else {
-                    setTimeout(setupIframeEvents, 100)
-                  }
-                }
-                window.addEventListener('message', handlePostMessage)
-                window.onload = function() {
-                  adjustIframeSize()
-                  setupIframeEvents()
-                }
-                window.onresize = adjustIframeSize
-                window.onunload = () => {
-                  window.removeEventListener('message', handlePostMessage)
-                }
-              </script>
-                </head>
-                <body>
-                  <div class="iframe-outer">
-                    <div class="iframe-wrapper">
-                      <iframe id="dynamicIframe" srcdoc='<html data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="14" data-source-line-end="25" lang="en"><head data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="15" data-source-line-end="20"><script>(function(){
-      function stringExt(link) {
-        let s = String(link || &#39;&#39;)
-        s = (s.split(&#39;#&#39;)[0] || &#39;&#39;)
-        s = (s.split(&#39;?&#39;)[0] || &#39;&#39;)
-        s = s.trim()
-        s = s.split(&#39;/&#39;).filter(Boolean).pop() || &#39;&#39;
-        const lower = s.toLowerCase()
-        if (lower.endsWith(&#39;.html&#39;) || lower.endsWith(&#39;.php&#39;) || lower.endsWith(&#39;.aspx&#39;)) {
-          s = s.slice(0, s.lastIndexOf(&#39;.&#39;))
-        }
-        return s
-      }
-      function formatHref(href) {
-        if (!href) {
-          return &#39;&#39;
-        }
-        try {
-          const url = new URL(href, window.location.href)
-          const pathname = url.pathname || &#39;&#39;
-          return stringExt(pathname)
-        } catch {
-          return stringExt(href)
-        }
-      }
-      function getKeyByValueObj(obj, value) {
-        const newValue = formatHref(value)
-        const keyFind = Object.keys(obj).find(k => k === newValue)
-        if (keyFind) {
-          return keyFind
-        }
-        return Object.keys(obj).find(k => obj[k] === newValue)
-      }
-      function emit(to, source){
-        try {
-          if (window.parent) {
-            const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-            const IFRAME_MESSAGE_TYPE = {
-              iframeNavigation: &#39;iframeNavigation&#39;,
-            }
-            const targetPageId = getKeyByValueObj(allFormatPageIdsMap, String(to || &#39;&#39;))
-            if (targetPageId) {
-              window.parent.postMessage({
-                type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                targetPageId,
-              }, &#39;*&#39;)
-            }
-          }
-        } catch(e) {}
-      }
-      try{
-        if (&#39;navigation&#39; in window &amp;&amp; window.navigation &amp;&amp; typeof window.navigation.addEventListener===&#39;function&#39;){
-          window.navigation.addEventListener(&#39;navigate&#39;, function(e){
-            try{
-              var url = (e.destination &amp;&amp; e.destination.url) || &#39;&#39;;
-              if (e.canIntercept &amp;&amp; typeof e.intercept===&#39;function&#39;){ e.intercept({ handler:function(){} }) }
-              else if (e.preventDefault){ e.preventDefault() }
-              emit(url)
-            }catch(_){}
-          })
-        }
-      }catch(_){}
-    })();</script><meta name="supported-color-schemes" content="light"><meta name="color-scheme" content="light"><style>
-      :root, html, body { color-scheme: light; }
-      html { forced-color-adjust: none; }
-    </style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="打卡今日饮食">
-    <title data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="19" data-source-line-end="19">记录饮食</title>
-  <link rel="stylesheet" href="./assets/html/113216/ai-diet-recommendation.CyT-fR9B.css">
-<style>header[data-v-0b81bb01]{height:56px;backdrop-filter:blur(8px);background-color:hsl(var(--card) / .95)}.truncate[data-v-0b81bb01]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-button[data-v-5078a0c7],button[data-v-977938fa]{display:flex;min-height:44px;min-width:44px;align-items:center;justify-content:center}input[type=number][data-v-bf445b25]{background-color:hsl(var(--background));color:hsl(var(--foreground))}input[type=number][data-v-bf445b25]::-webkit-outer-spin-button,input[type=number][data-v-bf445b25]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}input[type=number][data-v-bf445b25]{-moz-appearance:textfield}main[data-v-22f0037b]{display:flex;flex-direction:column}
-</style><script src="./assets/static/uxbot/25_6/holder.js"></script></head>
-  <body data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="21" data-source-line-end="24">
-    
-  <div data-source-file="src/layouts/MobileFlowLayout.astro" data-source-line-start="15" data-source-line-end="23" class="h-screen overflow-hidden flex flex-col bg-background">
-    <!-- Header with back button -->
-    <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&amp;&amp;s.isSameNode(this)&amp;&amp;(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&amp;&amp;s.isSameNode(this)&amp;&amp;(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&amp;&amp;(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&amp;&amp;this.lastChild.nodeValue==="astro:end"&amp;&amp;(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&amp;&amp;await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="p3VX0" prefix="s1" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/MobileHeader.DIYhopFc.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{&amp;quot;title&amp;quot;:[0,&amp;quot;记录饮食&amp;quot;],&amp;quot;showBack&amp;quot;:[0,true]}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;MobileHeader&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><header class="sticky top-0 z-50 w-full bg-card border-b border-border shadow-sm px-4 flex items-center justify-between" style="height:var(--header-height);" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="30" data-source-line-end="67" data-v-0b81bb01=""><div class="flex items-center min-w-[56px]" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="35" data-source-line-end="45" data-v-0b81bb01=""><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 hover:bg-accent h-10 w-10 tap-target -ml-2 text-foreground/80 hover:text-primary transition-colors" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-0b81bb01=""><!--[--><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-0b81bb01="" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg><!--]--></button></div><h1 class="flex-1 text-center truncate px-2 text-base font-semibold tracking-tight text-foreground" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="48" data-source-line-end="50" data-v-0b81bb01="">记录饮食</h1><div class="flex items-center justify-end min-w-[56px] space-x-1" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="53" data-source-line-end="66" data-v-0b81bb01=""><!--[--><!----><!--]--></div></header><!--astro:end--></astro-island>
-    
-    <!-- Main content area - scrollable -->
-    <main data-source-file="src/layouts/MobileFlowLayout.astro" data-source-line-start="20" data-source-line-end="22" class="flex-1 overflow-y-auto min-h-0 mobile-content-scroll">
-      
-  <astro-island uid="1cyq0l" prefix="s0" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/DietLoggingDetailContent.BXubYTSe.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;DietLoggingDetailContent&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><main class="page-body pb-8" data-source-file="src/components/diet_logging_detail/DietLoggingDetailContent.vue" data-source-line-start="182" data-source-line-end="269" data-v-22f0037b=""><div class="space-y-6" data-source-file="src/components/diet_logging_detail/DietLoggingDetailContent.vue" data-source-line-start="183" data-source-line-end="268" data-v-22f0037b=""><section data-source-file="src/components/diet_logging_detail/DietLoggingDetailContent.vue" data-source-line-start="185" data-source-line-end="191" data-v-22f0037b=""><label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-label mb-3 block" data-source-file="src/components/ui/label/Label.vue" data-source-line-start="14" data-source-line-end="24" data-v-22f0037b=""><!--[--><!--[-->选择餐次<!--]--><!--]--></label><div class="grid grid-cols-4 gap-2" data-source-file="src/components/diet_logging_detail/MealTypeSelector.vue" data-source-line-start="31" data-source-line-end="50" data-v-22f0037b="" data-v-5078a0c7=""><!--[--><button class="flex flex-col items-center justify-center gap-2 p-3 rounded-lg transition-all duration-200 bg-primary text-primary-foreground shadow-md scale-105" data-source-file="src/components/diet_logging_detail/MealTypeSelector.vue" data-source-line-start="32" data-source-line-end="49" data-v-5078a0c7=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-5078a0c7="" class="lucide lucide-coffee-icon lucide-coffee"><path d="M10 2v2"></path><path d="M14 2v2"></path><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"></path><path d="M6 2v2"></path></svg><span class="text-xs font-medium leading-tight" data-source-file="src/components/diet_logging_detail/MealTypeSelector.vue" data-source-line-start="48" data-source-line-end="48" data-v-5078a0c7="">早餐</span></button><button class="flex flex-col items-center justify-center gap-2 p-3 rounded-lg transition-all duration-200 bg-muted text-muted-foreground hover:bg-muted/80 active:scale-95" data-source-file="src/components/diet_logging_detail/MealTypeSelector.vue" data-source-line-start="32" data-source-line-end="49" data-v-5078a0c7=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-5078a0c7="" class="lucide lucide-utensils-icon lucide-utensils"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg><span class="text-xs font-medium leading-tight" data-source-file="src/components/diet_logging_detail/MealTypeSelector.vue" data-source-line-start="48" data-source-line-end="48" data-v-5078a0c7="">午餐</span></button><button class="flex flex-col items-center justify-center gap-2 p-3 rounded-lg transition-all duration-200 bg-muted text-muted-foreground hover:bg-muted/80 active:scale-95" data-source-file="src/components/diet_logging_detail/MealTypeSelector.vue" data-source-line-start="32" data-source-line-end="49" data-v-5078a0c7=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-5078a0c7="" class="lucide lucide-soup-icon lucide-soup"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"></path><path d="M7 21h10"></path><path d="M19.5 12 22 6"></path><path d="M16.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62"></path><path d="M11.25 3c.27.1.8.53.74 1.36-.05.83-.93 1.2-.98 2.02-.06.78.33 1.24.72 1.62"></path><path d="M6.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.74 1.62"></path></svg><span class="text-xs font-medium leading-tight" data-source-file="src/components/diet_logging_detail/MealTypeSelector.vue" data-source-line-start="48" data-source-line-end="48" data-v-5078a0c7="">晚餐</span></button><button class="flex flex-col items-center justify-center gap-2 p-3 rounded-lg transition-all duration-200 bg-muted text-muted-foreground hover:bg-muted/80 active:scale-95" data-source-file="src/components/diet_logging_detail/MealTypeSelector.vue" data-source-line-start="32" data-source-line-end="49" data-v-5078a0c7=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-5078a0c7="" class="lucide lucide-apple-icon lucide-apple"><path d="M12 6.528V3a1 1 0 0 1 1-1h0"></path><path d="M18.237 21A15 15 0 0 0 22 11a6 6 0 0 0-10-4.472A6 6 0 0 0 2 11a15.1 15.1 0 0 0 3.763 10 3 3 0 0 0 3.648.648 5.5 5.5 0 0 1 5.178 0A3 3 0 0 0 18.237 21"></path></svg><span class="text-xs font-medium leading-tight" data-source-file="src/components/diet_logging_detail/MealTypeSelector.vue" data-source-line-start="48" data-source-line-end="48" data-v-5078a0c7="">加餐</span></button><!--]--></div></section><section data-source-file="src/components/diet_logging_detail/DietLoggingDetailContent.vue" data-source-line-start="194" data-source-line-end="201" data-v-22f0037b=""><label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-label mb-3 block" data-source-file="src/components/ui/label/Label.vue" data-source-line-start="14" data-source-line-end="24" data-v-22f0037b=""><!--[--><!--[-->上传餐食照片<!--]--><!--]--></label><div data-source-file="src/components/diet_logging_detail/ImageUploadZone.vue" data-source-line-start="71" data-source-line-end="128" data-v-22f0037b="" data-v-6a4d818f=""><!----><div class="flex flex-col items-center justify-center gap-3 p-6 rounded-lg border-2 border-dashed transition-all duration-200 cursor-pointer border-muted-foreground/30 bg-muted/20 hover:border-primary/50 hover:bg-primary/5" data-source-file="src/components/diet_logging_detail/ImageUploadZone.vue" data-source-line-start="93" data-source-line-end="118" data-v-6a4d818f=""><div class="p-3 rounded-full bg-muted" data-source-file="src/components/diet_logging_detail/ImageUploadZone.vue" data-source-line-start="106" data-source-line-end="113" data-v-6a4d818f=""><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide text-muted-foreground lucide-camera-icon lucide-camera text-muted-foreground" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-6a4d818f=""><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"></path><circle cx="12" cy="13" r="3"></circle></svg></div><div class="text-center" data-source-file="src/components/diet_logging_detail/ImageUploadZone.vue" data-source-line-start="114" data-source-line-end="117" data-v-6a4d818f=""><p class="text-item-title text-foreground" data-source-file="src/components/diet_logging_detail/ImageUploadZone.vue" data-source-line-start="115" data-source-line-end="115" data-v-6a4d818f="">上传餐食照片</p><p class="text-caption text-muted-foreground" data-source-file="src/components/diet_logging_detail/ImageUploadZone.vue" data-source-line-start="116" data-source-line-end="116" data-v-6a4d818f="">点击选择或拖拽上传</p></div></div><input type="file" accept="image/*" class="hidden" data-source-file="src/components/diet_logging_detail/ImageUploadZone.vue" data-source-line-start="121" data-source-line-end="127" data-v-6a4d818f=""></div></section><section data-source-file="src/components/diet_logging_detail/DietLoggingDetailContent.vue" data-source-line-start="204" data-source-line-end="213" data-v-22f0037b=""><label for="mealName" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-label mb-2 block" data-source-file="src/components/ui/label/Label.vue" data-source-line-start="14" data-source-line-end="24" data-v-22f0037b=""><!--[--><!--[-->餐食名称 *<!--]--><!--]--></label><input class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full" id="mealName" type="text" placeholder="例如：番茄鸡蛋面、清粥榨菜..." data-source-file="src/components/ui/input/Input.vue" data-source-line-start="23" data-source-line-end="23" data-v-22f0037b="" value=""></section><section data-source-file="src/components/diet_logging_detail/DietLoggingDetailContent.vue" data-source-line-start="216" data-source-line-end="222" data-v-22f0037b=""><label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-label mb-2 block" data-source-file="src/components/ui/label/Label.vue" data-source-line-start="14" data-source-line-end="24" data-v-22f0037b=""><!--[--><!--[-->进食时间 *<!--]--><!--]--></label><div class="relative" data-source-file="src/components/diet_logging_detail/MealTimeInput.vue" data-source-line-start="50" data-source-line-end="109" data-v-22f0037b="" data-v-bf445b25=""><div class="flex items-center gap-2" data-source-file="src/components/diet_logging_detail/MealTimeInput.vue" data-source-line-start="52" data-source-line-end="66" data-v-bf445b25=""><input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex-1 cursor-pointer text-center font-mono text-lg" type="text" readonly="" data-source-file="src/components/ui/input/Input.vue" data-source-line-start="23" data-source-line-end="23" data-v-bf445b25=""><button class="p-2 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors" data-source-file="src/components/diet_logging_detail/MealTimeInput.vue" data-source-line-start="60" data-source-line-end="65" data-v-bf445b25=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-bf445b25="" class="lucide lucide-clock-icon lucide-clock"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg></button></div><!----></div></section><section data-source-file="src/components/diet_logging_detail/DietLoggingDetailContent.vue" data-source-line-start="225" data-source-line-end="231" data-v-22f0037b=""><label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-label mb-3 block" data-source-file="src/components/ui/label/Label.vue" data-source-line-start="14" data-source-line-end="24" data-v-22f0037b=""><!--[--><!--[-->当时心情<!--]--><!--]--></label><div class="grid grid-cols-5 gap-2" data-source-file="src/components/diet_logging_detail/MoodSelector.vue" data-source-line-start="31" data-source-line-end="54" data-v-22f0037b="" data-v-977938fa=""><!--[--><button class="flex flex-col items-center justify-center gap-1.5 p-2 rounded-lg transition-all duration-200 bg-primary/10 border-2 border-primary scale-110" data-source-file="src/components/diet_logging_detail/MoodSelector.vue" data-source-line-start="32" data-source-line-end="53" data-v-977938fa=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide transition-colors text-primary lucide-smile-icon lucide-smile transition-colors text-primary" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-977938fa=""><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" x2="9.01" y1="9" y2="9"></line><line x1="15" x2="15.01" y1="9" y2="9"></line></svg><span class="text-[10px] font-medium leading-tight" data-source-file="src/components/diet_logging_detail/MoodSelector.vue" data-source-line-start="52" data-source-line-end="52" data-v-977938fa="">放松</span></button><button class="flex flex-col items-center justify-center gap-1.5 p-2 rounded-lg transition-all duration-200 bg-muted/50 border-2 border-transparent hover:bg-muted active:scale-95" data-source-file="src/components/diet_logging_detail/MoodSelector.vue" data-source-line-start="32" data-source-line-end="53" data-v-977938fa=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide transition-colors text-orange-400 lucide-zap-icon lucide-zap transition-colors text-orange-400" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-977938fa=""><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg><span class="text-[10px] font-medium leading-tight" data-source-file="src/components/diet_logging_detail/MoodSelector.vue" data-source-line-start="52" data-source-line-end="52" data-v-977938fa="">忙碌</span></button><button class="flex flex-col items-center justify-center gap-1.5 p-2 rounded-lg transition-all duration-200 bg-muted/50 border-2 border-transparent hover:bg-muted active:scale-95" data-source-file="src/components/diet_logging_detail/MoodSelector.vue" data-source-line-start="32" data-source-line-end="53" data-v-977938fa=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide transition-colors text-red-400 lucide-circle-alert-icon lucide-circle-alert transition-colors text-red-400" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-977938fa=""><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg><span class="text-[10px] font-medium leading-tight" data-source-file="src/components/diet_logging_detail/MoodSelector.vue" data-source-line-start="52" data-source-line-end="52" data-v-977938fa="">压力</span></button><button class="flex flex-col items-center justify-center gap-1.5 p-2 rounded-lg transition-all duration-200 bg-muted/50 border-2 border-transparent hover:bg-muted active:scale-95" data-source-file="src/components/diet_logging_detail/MoodSelector.vue" data-source-line-start="32" data-source-line-end="53" data-v-977938fa=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide transition-colors text-pink-400 lucide-heart-icon lucide-heart transition-colors text-pink-400" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-977938fa=""><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path></svg><span class="text-[10px] font-medium leading-tight" data-source-file="src/components/diet_logging_detail/MoodSelector.vue" data-source-line-start="52" data-source-line-end="52" data-v-977938fa="">充能</span></button><button class="flex flex-col items-center justify-center gap-1.5 p-2 rounded-lg transition-all duration-200 bg-muted/50 border-2 border-transparent hover:bg-muted active:scale-95" data-source-file="src/components/diet_logging_detail/MoodSelector.vue" data-source-line-start="32" data-source-line-end="53" data-v-977938fa=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide transition-colors text-blue-400 lucide-moon-icon lucide-moon transition-colors text-blue-400" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-977938fa=""><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"></path></svg><span class="text-[10px] font-medium leading-tight" data-source-file="src/components/diet_logging_detail/MoodSelector.vue" data-source-line-start="52" data-source-line-end="52" data-v-977938fa="">疲惫</span></button><!--]--></div></section><section data-source-file="src/components/diet_logging_detail/DietLoggingDetailContent.vue" data-source-line-start="234" data-source-line-end="242" data-v-22f0037b=""><label for="recordText" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-label mb-2 block" data-source-file="src/components/ui/label/Label.vue" data-source-line-start="14" data-source-line-end="24" data-v-22f0037b=""><!--[--><!--[-->饮食备注<!--]--><!--]--></label><textarea class="flex rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full min-h-[100px] resize-none" id="recordText" placeholder="分享一下这顿饭的感受，或者记录任何想说的话..." data-source-file="src/components/ui/textarea/Textarea.vue" data-source-line-start="23" data-source-line-end="23" data-v-22f0037b=""></textarea></section><section class="flex gap-3 pt-4" data-source-file="src/components/diet_logging_detail/DietLoggingDetailContent.vue" data-source-line-start="245" data-source-line-end="267" data-v-22f0037b=""><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 border border-input bg-transparent hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 flex-1" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-22f0037b=""><!--[--> 取消 <!--]--></button><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 text-primary-foreground h-10 px-4 py-2 flex-1 bg-primary hover:bg-primary/90" disabled="" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-22f0037b=""><!--[--><!----> 完成打卡<!--]--></button></section></div></main><!--astro:end--></astro-island>
-
-    </main>
-  </div>
-
-    <astro-island uid="Z1rXJ5e" prefix="s2" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/sonner.BzCgywvZ.js" component-export="Toaster" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;Toaster&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><!--[--><!-- Remove item from normal navigation flow, only available via hotkey --><section aria-label="Notifications alt+T" tabindex="-1" aria-live="polite" aria-relevant="additions text" aria-atomic="false"><!--[--><ol data-sonner-toaster="" data-sonner-theme="light" class="toaster group" dir="ltr" tabindex="-1" data-theme="light" data-rich-colors="false" data-y-position="bottom" data-x-position="right" style="--front-toast-height:0px;--width:356px;--gap:14px;--offset-top:24px;--offset-right:24px;--offset-bottom:24px;--offset-left:24px;--mobile-offset-top:16px;--mobile-offset-right:16px;--mobile-offset-bottom:16px;--mobile-offset-left:16px;" data-source-file="src/components/ui/sonner/Sonner.vue" data-source-line-start="9" data-source-line-end="22"><!--[--><!--]--></ol><!--]--></section><!--]--><!--astro:end--></astro-island>
-  <script>
-    const originalBack = window.history.back
-    const originalForward = window.history.forward
-    const originalGo = window.history.go
-    function isValidNavigation(){
-      if(!window.parent.history.state.back || !window.parent.history.state.back.startsWith(&#39;/designPage&#39;)){
-        return false
-      }
-      return true
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>记录饮食 - 吃了么</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    window.history.back = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalBack.apply(this, args);
-    };
+    body {
+      background: #fef9e8;
+      font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    /* 头部 */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      width: 100%;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
+      padding: 0 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+    .back-btn {
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: #f0e4d4; }
+    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
+    .title {
+      flex: 1;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #5a3e2b;
+    }
+    .right-placeholder { width: 2.5rem; }
 
-    window.history.forward = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalForward.apply(this, args);
-    };
+    /* 主内容滚动区 */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      scrollbar-width: thin;
+    }
+    /* 卡片样式 */
+    .section {
+      margin-bottom: 1.5rem;
+    }
+    .section-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #5a3e2b;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    /* 餐次选择网格 */
+    .meal-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+    }
+    .meal-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      padding: 0.75rem;
+      background: #fffbf5;
+      border: 1px solid #f0e4d4;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .meal-btn.active {
+      background: #e67e22;
+      border-color: #e67e22;
+      color: white;
+    }
+    .meal-btn.active svg { stroke: white; }
+    .meal-btn svg { width: 1.5rem; height: 1.5rem; stroke: #e67e22; }
+    .meal-btn span { font-size: 0.7rem; font-weight: 500; }
+    /* 图片上传区 */
+    .upload-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1.5rem;
+      background: #fffbf5;
+      border: 2px dashed #e2d4c8;
+      border-radius: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .upload-zone:hover { border-color: #e67e22; background: #fff7f0; }
+    .upload-icon { width: 2.5rem; height: 2.5rem; stroke: #c0a080; }
+    .image-preview {
+      margin-top: 0.5rem;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    .image-preview img { max-width: 100%; max-height: 150px; border-radius: 0.75rem; }
+    /* 输入框 */
+    .input-field {
+      width: 100%;
+      padding: 0.75rem;
+      background: white;
+      border: 1px solid #f0e4d4;
+      border-radius: 0.75rem;
+      font-size: 0.9rem;
+    }
+    .input-field:focus { outline: none; border-color: #e67e22; }
+    /* 时间选择行 */
+    .time-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .time-input {
+      flex: 1;
+      padding: 0.75rem;
+      background: white;
+      border: 1px solid #f0e4d4;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      text-align: center;
+      font-family: monospace;
+    }
+    .time-btn {
+      padding: 0.75rem;
+      background: #fdf3e8;
+      border: none;
+      border-radius: 0.75rem;
+      cursor: pointer;
+    }
+    /* 心情网格 */
+    .mood-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.5rem;
+    }
+    .mood-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem;
+      background: #fffbf5;
+      border: 1px solid #f0e4d4;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mood-btn.active {
+      background: #e67e22;
+      border-color: #e67e22;
+      color: white;
+    }
+    .mood-btn.active svg { stroke: white; }
+    .mood-btn svg { width: 1.2rem; height: 1.2rem; }
+    .mood-btn span { font-size: 0.7rem; }
+    /* 按钮组 */
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .btn-cancel {
+      flex: 1;
+      padding: 0.75rem;
+      background: transparent;
+      border: 1px solid #e2d4c8;
+      border-radius: 2rem;
+      font-weight: 600;
+      color: #a07a5c;
+      cursor: pointer;
+    }
+    .btn-submit {
+      flex: 1;
+      padding: 0.75rem;
+      background: #e67e22;
+      border: none;
+      border-radius: 2rem;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+    }
+    .btn-submit:disabled {
+      background: #d9c8b8;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" id="backBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="title">记录饮食</div>
+    <div class="right-placeholder"></div>
+  </header>
 
-    window.history.go = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalGo.apply(this, args);
-    };
-  </script></body></html>'></iframe>
-                    </div>
-                  </div>
+  <main class="main-content">
+    <!-- 餐次选择 -->
+    <div class="section">
+      <div class="section-label">选择餐次</div>
+      <div class="meal-grid" id="mealGrid">
+        <div class="meal-btn active" data-meal="breakfast">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2v2M14 2v2M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1M6 2v2"/></svg>
+          <span>早餐</span>
+        </div>
+        <div class="meal-btn" data-meal="lunch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+          <span>午餐</span>
+        </div>
+        <div class="meal-btn" data-meal="dinner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9ZM7 21h10M19.5 12 22 6M16.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62M11.25 3c.27.1.8.53.74 1.36-.05.83-.93 1.2-.98 2.02-.06.78.33 1.24.72 1.62M6.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.74 1.62"/></svg>
+          <span>晚餐</span>
+        </div>
+        <div class="meal-btn" data-meal="snack">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.528V3a1 1 0 0 1 1-1h0M18.237 21A15 15 0 0 0 22 11a6 6 0 0 0-10-4.472A6 6 0 0 0 2 11a15.1 15.1 0 0 0 3.763 10 3 3 0 0 0 3.648.648 5.5 5.5 0 0 1 5.178 0A3 3 0 0 0 18.237 21"/></svg>
+          <span>加餐</span>
+        </div>
+      </div>
+    </div>
 
-                </body>
-                </html>
+    <!-- 上传照片 -->
+    <div class="section">
+      <div class="section-label">上传餐食照片</div>
+      <div class="upload-zone" id="uploadZone">
+        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/>
+          <circle cx="12" cy="13" r="3"/>
+        </svg>
+        <div style="text-align:center;">
+          <p style="font-weight:500;">上传餐食照片</p>
+          <p style="font-size:0.7rem; color:#a07a5c;">点击选择或拖拽上传</p>
+        </div>
+        <div class="image-preview" id="imagePreview" style="display:none;">
+          <img id="previewImg" alt="预览">
+        </div>
+      </div>
+      <input type="file" id="imageInput" accept="image/*" style="display:none;">
+    </div>
+
+    <!-- 餐食名称 -->
+    <div class="section">
+      <div class="section-label">餐食名称 <span style="color:#e67e22;">*</span></div>
+      <input type="text" class="input-field" id="mealName" placeholder="例如：番茄鸡蛋面、清粥榨菜..." autocomplete="off">
+    </div>
+
+    <!-- 进食时间 -->
+    <div class="section">
+      <div class="section-label">进食时间 <span style="color:#e67e22;">*</span></div>
+      <div class="time-row">
+        <input type="time" class="time-input" id="mealTime" value="12:00">
+        <button class="time-btn" id="nowTimeBtn">现在</button>
+      </div>
+    </div>
+
+    <!-- 当时心情 -->
+    <div class="section">
+      <div class="section-label">当时心情</div>
+      <div class="mood-grid" id="moodGrid">
+        <div class="mood-btn" data-mood="relaxed">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>
+          <span>放松</span>
+        </div>
+        <div class="mood-btn" data-mood="busy">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+          <span>忙碌</span>
+        </div>
+        <div class="mood-btn" data-mood="stressed">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+          <span>压力</span>
+        </div>
+        <div class="mood-btn" data-mood="energized">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg>
+          <span>充能</span>
+        </div>
+        <div class="mood-btn" data-mood="tired">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
+          <span>疲惫</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 饮食备注 -->
+    <div class="section">
+      <div class="section-label">饮食备注</div>
+      <textarea class="input-field" id="mealNote" rows="3" placeholder="分享一下这顿饭的感受，或者记录任何想说的话..."></textarea>
+    </div>
+
+    <div class="button-group">
+      <button class="btn-cancel" id="cancelBtn">取消</button>
+      <button class="btn-submit" id="submitBtn">完成打卡</button>
+    </div>
+  </main>
+
+  <script>
+    // DOM 元素
+    const mealBtns = document.querySelectorAll('.meal-btn');
+    const moodBtns = document.querySelectorAll('.mood-btn');
+    const mealNameInput = document.getElementById('mealName');
+    const mealTimeInput = document.getElementById('mealTime');
+    const nowTimeBtn = document.getElementById('nowTimeBtn');
+    const mealNote = document.getElementById('mealNote');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const backBtn = document.getElementById('backBtn');
+    const uploadZone = document.getElementById('uploadZone');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+
+    let selectedMeal = 'breakfast';   // breakfast, lunch, dinner, snack
+    let selectedMood = 'relaxed';
+    let imageData = null;              // base64 或 null
+
+    // 初始化当前时间
+    function setCurrentTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2,'0');
+      const minutes = String(now.getMinutes()).padStart(2,'0');
+      mealTimeInput.value = `${hours}:${minutes}`;
+    }
+    setCurrentTime();
+
+    nowTimeBtn.addEventListener('click', () => setCurrentTime());
+
+    // 餐次切换
+    mealBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        mealBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedMeal = btn.getAttribute('data-meal');
+      });
+    });
+
+    // 心情切换
+    moodBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        moodBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedMood = btn.getAttribute('data-mood');
+      });
+    });
+    // 默认选中放松
+    document.querySelector('.mood-btn[data-mood="relaxed"]').classList.add('active');
+
+    // 图片上传逻辑
+    uploadZone.addEventListener('click', () => {
+      imageInput.click();
+    });
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          imageData = ev.target.result;
+          previewImg.src = imageData;
+          imagePreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // 辅助函数：获取用户ID
+    function getUserId() {
+      let userId = localStorage.getItem('currentUserId');
+      if (!userId) {
+        userId = 'guest_' + Date.now();
+        localStorage.setItem('currentUserId', userId);
+      }
+      return userId;
+    }
+
+    // 获取打卡记录
+    function getCheckins() {
+      const userId = getUserId();
+      const key = `checkins_${userId}`;
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : {};
+    }
+
+    // 保存打卡记录
+    function saveCheckins(checkins) {
+      const userId = getUserId();
+      const key = `checkins_${userId}`;
+      localStorage.setItem(key, JSON.stringify(checkins));
+    }
+
+    // 获取饮食记录列表
+    function getMealsLog() {
+      const log = localStorage.getItem('mealsLog');
+      return log ? JSON.parse(log) : [];
+    }
+
+    // 保存饮食记录
+    function saveMealsLog(log) {
+      localStorage.setItem('mealsLog', JSON.stringify(log));
+    }
+
+    // 完成打卡
+    function submitLog() {
+      // 验证餐食名称
+      const mealName = mealNameInput.value.trim();
+      if (!mealName) {
+        alert('请填写餐食名称');
+        return;
+      }
+      const mealTime = mealTimeInput.value;
+      if (!mealTime) {
+        alert('请选择进食时间');
+        return;
+      }
+
+      // 构建记录对象
+      const today = new Date().toISOString().slice(0,10);
+      const now = new Date();
+      const timestamp = now.toISOString();
+
+      const record = {
+        id: Date.now(),
+        mealType: selectedMeal,
+        mealName: mealName,
+        mealTime: mealTime,
+        mood: selectedMood,
+        note: mealNote.value.trim() || '',
+        image: imageData || null,
+        date: today,
+        timestamp: timestamp
+      };
+
+      // 保存到 mealsLog
+      const mealsLog = getMealsLog();
+      mealsLog.push(record);
+      saveMealsLog(mealsLog);
+
+      // 如果是正餐（早餐/午餐/晚餐），更新打卡状态
+      if (selectedMeal === 'breakfast' || selectedMeal === 'lunch' || selectedMeal === 'dinner') {
+        const checkins = getCheckins();
+        if (!checkins[today]) checkins[today] = {};
+        checkins[today][selectedMeal] = true;
+        saveCheckins(checkins);
+      }
+
+      // 跳转到打卡反馈页（或者返回首页，这里跳转到打卡反馈页）
+      window.location.href = '打卡反馈页.html';
+    }
+
+    submitBtn.addEventListener('click', submitLog);
+    cancelBtn.addEventListener('click', () => {
+      window.location.href = '饮食管理首页.html';
+    });
+    backBtn.addEventListener('click', () => {
+      window.location.href = '饮食管理首页.html';
+    });
+  </script>
+</body>
+</html>
             
