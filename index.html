@@ -1,205 +1,204 @@
-
-                <!DOCTYPE html>
-                <html lang="zh">
-                <head>
-                  <meta charset="UTF-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <meta name="color-scheme" content="light">
-                  <meta name="supported-color-schemes" content="light">
-                  <title>登录注册页</title>
-                  <style>
-                    *,
-                    *::before,
-                    *::after {
-                      box-sizing: border-box;
-                      margin: 0;
-                    }
-                    .iframe-outer {
-                      position: fixed;
-                      top: 0;
-                      left: 0;
-                      bottom: 0;
-                      right: 0;
-                      display: flex;
-                      justify-content: center;
-                      background-color: #E0E0E0;
-                    }
-                    .iframe-wrapper {
-                      width: 100%;
-                      height: 100%;
-                      margin: 0 auto;
-                      transform-origin: center top;
-                      flex-shrink: 0;
-                    }
-                    #dynamicIframe {
-                      border: none;
-                      width: 100%;
-                      height: 100%;
-                    }
-                  </style>
-                  <script>
-                const width = 402
-                const height = 874
-                const resolutionRatio = width && height ? width / height : 1
-                const pageNameMap = {
-                  'login_screen': '登录注册页',
-    'user_profile_setup': '基础信息采集页',
-    'goal_setting': '核心目标设定页',
-    'plan_selection': '饮食计划选择页',
-    'plan_details': '计划详情页',
-    'plan_tracking': '我的计划进度页',
-    'home_dashboard': '饮食管理首页',
-    'diet_logging_detail': '打卡详情页',
-    'logging_success_feedback': '打卡反馈页',
-    'social_circles_main': '亲友共享空间主页',
-    'invite_connection': '邀请关注页',
-    'interaction_hub': '关怀互动页',
-    'diet_encyclopedia': '饮食百科',
-    'health_metrics_test': '健康指标测试',
-    'ai_diet_recommendation': 'AI个性化膳食建议',
-    'dietary_statistics_report': '饮食趋势报表',
-    'habit_milestone_badges': '习惯里程碑成就'
-                }
-                const allPageIds = ["login_screen","user_profile_setup","goal_setting","plan_selection","plan_details","plan_tracking","home_dashboard","diet_logging_detail","logging_success_feedback","social_circles_main","invite_connection","interaction_hub","diet_encyclopedia","health_metrics_test","ai_diet_recommendation","dietary_statistics_report","habit_milestone_badges"]
-                const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-                const IFRAME_MESSAGE_TYPE = {
-                  iframeNavigation: 'iframeNavigation',
-                }
-                const safeAddEventListener = function Tc(e,t,r,n=!1){e.removeEventListener(t,r,n),e.addEventListener(t,r,n)}
-                const processOnclick = (e,t,r)=>{if(r){const n=zw(t);if(n.methodName&&Rp(n.methodName,r))return;e.preventDefault(),e.stopPropagation();const s=n.args||[],i=(s==null?void 0:s.find(u=>u))||"";i&&jp(i)}}
-                const checkIframeMethod = (e,t)=>{try{return typeof t[e]=="function"||typeof t[e]=="function"}catch(r){return!1}}
-                const postIframeMessage = (targetPageId) => {
-                  window.parent.postMessage({
-                    type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                    targetPageId,
-                  })
-                }
-                const handleIframeLinkClick = (event) => {
-                  const dynamicIframe = document.querySelector('#dynamicIframe')
-                  if (!dynamicIframe?.contentWindow) {
-                    return
-                  }
-                  const link = event.target.closest('a')
-                  const target = event.target
-                  if (link) {
-                    const href = link.getAttribute('href')
-                    const onclick = link.getAttribute('onclick')
-                    if (href && href !== '#' && !href.startsWith('javascript:')) {
-                      event.preventDefault()
-                      event.stopPropagation()
-                      const targetPageId = getKeyByValueObj(allFormatPageIdsMap, href)
-                      if (targetPageId) {
-                        postIframeMessage(targetPageId)
-                      }
-                      return
-                    }
-                    if (onclick) {
-                      processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                    } else {
-                      event.preventDefault()
-                      event.stopPropagation()
-                    }
-                    return
-                  }
-                  const onclick = target.getAttribute('onclick')
-                  if (onclick) {
-                    processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                  }
-                }
-                function stringExt(link) {
-                  let s = String(link || '')
-                  s = (s.split('#')[0] || '')
-                  s = (s.split('?')[0] || '')
-                  s = s.trim()
-                  s = s.split('/').filter(Boolean).pop() || ''
-                  const lower = s.toLowerCase()
-                  if (lower.endsWith('.html') || lower.endsWith('.php') || lower.endsWith('.aspx')) {
-                    s = s.slice(0, s.lastIndexOf('.'))
-                  }
-                  return s
-                }
-                function formatHref(href) {
-                  if (!href) {
-                    return ''
-                  }
-                  try {
-                    const url = new URL(href, window.location.href)
-                    const pathname = url.pathname || ''
-                    return stringExt(pathname)
-                  } catch {
-                    return stringExt(href)
-                  }
-                }
-                function getKeyByValueObj(obj, value) {
-                  const newValue = formatHref(value)
-                  const keyFind = Object.keys(obj).find(k => k === newValue)
-                  if (keyFind) {
-                    return keyFind
-                  }
-                  return Object.keys(obj).find(k => obj[k] === newValue)
-                }
-                function setIframeSize(w, h) {
-                  const currentContainerRadio = w / h
-                  let widthValue = w
-                  let heightValue = h
-                  let zoom = 1
-                  if (currentContainerRadio > resolutionRatio) {
-                    widthValue = h * resolutionRatio
-                    heightValue = h
-                  } else {
-                    widthValue = w
-                    heightValue = w / resolutionRatio
-                  }
-                  zoom = width ? widthValue / width : 1
-                  return {
-                    width: widthValue / zoom + 'px',
-                    height: heightValue / zoom + 'px',
-                    zoom,
-                  }
-                }
-                function adjustIframeSize() {
-                  const iframeWrapper = document.querySelector(".iframe-wrapper")
-                  const { width, height, zoom } = setIframeSize(window.innerWidth, window.innerHeight)
-                  iframeWrapper.style.height = height
-                  iframeWrapper.style.width = width
-                  iframeWrapper.style.transform = 'scale(' + zoom + ')'
-                }
-                function sanitizeFilename(name) {
-                  return name.replace(/[\/:*?"<>|]/g, '_')
-                }
-                function handlePostMessage(event) {
-                  if (!event.data) {
-                    return
-                  }
-                  const { type, targetPageId } = event.data
-                  const targetPageName = pageNameMap[targetPageId]
-                  if (type === "iframeNavigation" && targetPageId && targetPageName) {
-                    window.location.href = targetPageName + '.html'
-                  }
-                }
-                function setupIframeEvents() {
-                  const iframe = document.getElementById('dynamicIframe')
-                  if (iframe && iframe.contentWindow && iframe.contentWindow.document) {
-                    safeAddEventListener(iframe.contentWindow.document, 'click', handleIframeLinkClick, true)
-                  } else {
-                    setTimeout(setupIframeEvents, 100)
-                  }
-                }
-                window.addEventListener('message', handlePostMessage)
-                window.onload = function() {
-                  adjustIframeSize()
-                  setupIframeEvents()
-                }
-                window.onresize = adjustIframeSize
-                window.onunload = () => {
-                  window.removeEventListener('message', handlePostMessage)
-                }
-              </script>
-                </head>
-                <body>
-                  <div class="iframe-outer">
-                    <div class="iframe-wrapper">
-                      <iframe id="dynamicIframe" srcdoc='<html data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="14" data-source-line-end="25" lang="en"><head data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="15" data-source-line-end="20"><script>(function(){
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>登录注册页</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+    }
+    .iframe-outer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      background-color: #E0E0E0;
+    }
+    .iframe-wrapper {
+      width: 100%;
+      height: 100%;
+      margin: 0 auto;
+      transform-origin: center top;
+      flex-shrink: 0;
+    }
+    #dynamicIframe {
+      border: none;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <script>
+const width = 402
+const height = 874
+const resolutionRatio = width && height ? width / height : 1
+const pageNameMap = {
+  'login_screen': '登录注册页',
+  'user_profile_setup': '基础信息采集页',
+  'goal_setting': '核心目标设定页',
+  'plan_selection': '饮食计划选择页',
+  'plan_details': '计划详情页',
+  'plan_tracking': '我的计划进度页',
+  'home_dashboard': '饮食管理首页',
+  'diet_logging_detail': '打卡详情页',
+  'logging_success_feedback': '打卡反馈页',
+  'social_circles_main': '亲友共享空间主页',
+  'invite_connection': '邀请关注页',
+  'interaction_hub': '关怀互动页',
+  'diet_encyclopedia': '饮食百科',
+  'health_metrics_test': '健康指标测试',
+  'ai_diet_recommendation': 'AI个性化膳食建议',
+  'dietary_statistics_report': '饮食趋势报表',
+  'habit_milestone_badges': '习惯里程碑成就'
+}
+const allPageIds = ["login_screen","user_profile_setup","goal_setting","plan_selection","plan_details","plan_tracking","home_dashboard","diet_logging_detail","logging_success_feedback","social_circles_main","invite_connection","interaction_hub","diet_encyclopedia","health_metrics_test","ai_diet_recommendation","dietary_statistics_report","habit_milestone_badges"]
+const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
+const IFRAME_MESSAGE_TYPE = {
+  iframeNavigation: 'iframeNavigation',
+}
+const safeAddEventListener = function Tc(e,t,r,n=!1){e.removeEventListener(t,r,n),e.addEventListener(t,r,n)}
+const processOnclick = (e,t,r)=>{if(r){const n=zw(t);if(n.methodName&&Rp(n.methodName,r))return;e.preventDefault(),e.stopPropagation();const s=n.args||[],i=(s==null?void 0:s.find(u=>u))||"";i&&jp(i)}}
+const checkIframeMethod = (e,t)=>{try{return typeof t[e]=="function"||typeof t[e]=="function"}catch(r){return!1}}
+const postIframeMessage = (targetPageId) => {
+  window.parent.postMessage({
+    type: IFRAME_MESSAGE_TYPE.iframeNavigation,
+    targetPageId,
+  })
+}
+const handleIframeLinkClick = (event) => {
+  const dynamicIframe = document.querySelector('#dynamicIframe')
+  if (!dynamicIframe?.contentWindow) {
+    return
+  }
+  const link = event.target.closest('a')
+  const target = event.target
+  if (link) {
+    const href = link.getAttribute('href')
+    const onclick = link.getAttribute('onclick')
+    if (href && href !== '#' && !href.startsWith('javascript:')) {
+      event.preventDefault()
+      event.stopPropagation()
+      const targetPageId = getKeyByValueObj(allFormatPageIdsMap, href)
+      if (targetPageId) {
+        postIframeMessage(targetPageId)
+      }
+      return
+    }
+    if (onclick) {
+      processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
+    } else {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    return
+  }
+  const onclick = target.getAttribute('onclick')
+  if (onclick) {
+    processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
+  }
+}
+function stringExt(link) {
+  let s = String(link || '')
+  s = (s.split('#')[0] || '')
+  s = (s.split('?')[0] || '')
+  s = s.trim()
+  s = s.split('/').filter(Boolean).pop() || ''
+  const lower = s.toLowerCase()
+  if (lower.endsWith('.html') || lower.endsWith('.php') || lower.endsWith('.aspx')) {
+    s = s.slice(0, s.lastIndexOf('.'))
+  }
+  return s
+}
+function formatHref(href) {
+  if (!href) {
+    return ''
+  }
+  try {
+    const url = new URL(href, window.location.href)
+    const pathname = url.pathname || ''
+    return stringExt(pathname)
+  } catch {
+    return stringExt(href)
+  }
+}
+function getKeyByValueObj(obj, value) {
+  const newValue = formatHref(value)
+  const keyFind = Object.keys(obj).find(k => k === newValue)
+  if (keyFind) {
+    return keyFind
+  }
+  return Object.keys(obj).find(k => obj[k] === newValue)
+}
+function setIframeSize(w, h) {
+  const currentContainerRadio = w / h
+  let widthValue = w
+  let heightValue = h
+  let zoom = 1
+  if (currentContainerRadio > resolutionRatio) {
+    widthValue = h * resolutionRatio
+    heightValue = h
+  } else {
+    widthValue = w
+    heightValue = w / resolutionRatio
+  }
+  zoom = width ? widthValue / width : 1
+  return {
+    width: widthValue / zoom + 'px',
+    height: heightValue / zoom + 'px',
+    zoom,
+  }
+}
+function adjustIframeSize() {
+  const iframeWrapper = document.querySelector(".iframe-wrapper")
+  const { width, height, zoom } = setIframeSize(window.innerWidth, window.innerHeight)
+  iframeWrapper.style.height = height
+  iframeWrapper.style.width = width
+  iframeWrapper.style.transform = 'scale(' + zoom + ')'
+}
+function sanitizeFilename(name) {
+  return name.replace(/[\/:*?"<>|]/g, '_')
+}
+function handlePostMessage(event) {
+  if (!event.data) {
+    return
+  }
+  const { type, targetPageId } = event.data
+  const targetPageName = pageNameMap[targetPageId]
+  if (type === "iframeNavigation" && targetPageId && targetPageName) {
+    window.location.href = targetPageName + '.html'
+  }
+}
+function setupIframeEvents() {
+  const iframe = document.getElementById('dynamicIframe')
+  if (iframe && iframe.contentWindow && iframe.contentWindow.document) {
+    safeAddEventListener(iframe.contentWindow.document, 'click', handleIframeLinkClick, true)
+  } else {
+    setTimeout(setupIframeEvents, 100)
+  }
+}
+window.addEventListener('message', handlePostMessage)
+window.onload = function() {
+  adjustIframeSize()
+  setupIframeEvents()
+}
+window.onresize = adjustIframeSize
+window.onunload = () => {
+  window.removeEventListener('message', handlePostMessage)
+}
+  </script>
+</head>
+<body>
+  <div class="iframe-outer">
+    <div class="iframe-wrapper">
+      <iframe id="dynamicIframe" srcdoc='<html data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="14" data-source-line-end="25" lang="en"><head data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="15" data-source-line-end="20"><script>(function(){
       function stringExt(link) {
         let s = String(link || &#39;&#39;)
         s = (s.split(&#39;#&#39;)[0] || &#39;&#39;)
@@ -226,11 +225,11 @@
       }
       function getKeyByValueObj(obj, value) {
         const newValue = formatHref(value)
-        const keyFind = Object.keys(obj).find(k => k === newValue)
+        const keyFind = Object.keys(obj).find(k =&gt; k === newValue)
         if (keyFind) {
           return keyFind
         }
-        return Object.keys(obj).find(k => obj[k] === newValue)
+        return Object.keys(obj).find(k =&gt; obj[k] === newValue)
       }
       function emit(to, source){
         try {
@@ -269,9 +268,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Built with Astro">
     <title data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="19" data-source-line-end="19">登录 - 吃了么</title>
-  <link rel="stylesheet" href="./assets/html/113216/ai-diet-recommendation.CyT-fR9B.css">
+  <link rel="stylesheet" href="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/assets/html/113216/ai-diet-recommendation.CyT-fR9B.css">
 <style>@keyframes float-in-5ff685a5{0%{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}div[data-v-5ff685a5]{animation:float-in-5ff685a5 .6s ease-out}div[data-v-5ff685a5]:nth-child(2){animation-delay:.1s}div[data-v-5ff685a5]:nth-child(3){animation-delay:.2s}button[data-v-7fb37de3]{transition:all .15s cubic-bezier(.4,0,.2,1)}button[data-v-7fb37de3]:hover:not(:disabled){transform:translateY(-1px)}button[data-v-7fb37de3]:active:not(:disabled){transform:translateY(0)}@keyframes spin-7fb37de3{to{transform:rotate(360deg)}}.animate-spin[data-v-7fb37de3]{animation:spin-7fb37de3 1s linear infinite}
-</style><script src="./assets/static/uxbot/25_6/holder.js"></script></head>
+</style><script src="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/assets/static/uxbot/25_6/holder.js"></script></head>
   <body data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="21" data-source-line-end="24">
     
   <main data-source-file="src/pages/login-screen.astro" data-source-line-start="9" data-source-line-end="27" class="min-h-screen flex flex-col bg-gradient-radial-at-t from-primary/5 to-background">
@@ -326,9 +325,7 @@
       return originalGo.apply(this, args);
     };
   </script></body></html>'></iframe>
-                    </div>
-                  </div>
-
-                </body>
-                </html>
-            
+    </div>
+  </div>
+</body>
+</html>
