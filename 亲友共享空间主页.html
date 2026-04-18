@@ -1,355 +1,512 @@
-
-                <!DOCTYPE html>
-                <html lang="zh">
-                <head>
-                  <meta charset="UTF-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <meta name="color-scheme" content="light">
-                  <meta name="supported-color-schemes" content="light">
-                  <title>亲友共享空间主页</title>
-                  <style>
-                    *,
-                    *::before,
-                    *::after {
-                      box-sizing: border-box;
-                      margin: 0;
-                    }
-                    .iframe-outer {
-                      position: fixed;
-                      top: 0;
-                      left: 0;
-                      bottom: 0;
-                      right: 0;
-                      display: flex;
-                      justify-content: center;
-                      background-color: #E0E0E0;
-                    }
-                    .iframe-wrapper {
-                      width: 100%;
-                      height: 100%;
-                      margin: 0 auto;
-                      transform-origin: center top;
-                      flex-shrink: 0;
-                    }
-                    #dynamicIframe {
-                      border: none;
-                      width: 100%;
-                      height: 100%;
-                    }
-                  </style>
-                  <script>
-                const width = 402
-                const height = 874
-                const resolutionRatio = width && height ? width / height : 1
-                const pageNameMap = {
-                  'login_screen': '登录注册页',
-    'user_profile_setup': '基础信息采集页',
-    'goal_setting': '核心目标设定页',
-    'plan_selection': '饮食计划选择页',
-    'plan_details': '计划详情页',
-    'plan_tracking': '我的计划进度页',
-    'home_dashboard': '饮食管理首页',
-    'diet_logging_detail': '打卡详情页',
-    'logging_success_feedback': '打卡反馈页',
-    'social_circles_main': '亲友共享空间主页',
-    'invite_connection': '邀请关注页',
-    'interaction_hub': '关怀互动页',
-    'diet_encyclopedia': '饮食百科',
-    'health_metrics_test': '健康指标测试',
-    'ai_diet_recommendation': 'AI个性化膳食建议',
-    'dietary_statistics_report': '饮食趋势报表',
-    'habit_milestone_badges': '习惯里程碑成就'
-                }
-                const allPageIds = ["login_screen","user_profile_setup","goal_setting","plan_selection","plan_details","plan_tracking","home_dashboard","diet_logging_detail","logging_success_feedback","social_circles_main","invite_connection","interaction_hub","diet_encyclopedia","health_metrics_test","ai_diet_recommendation","dietary_statistics_report","habit_milestone_badges"]
-                const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-                const IFRAME_MESSAGE_TYPE = {
-                  iframeNavigation: 'iframeNavigation',
-                }
-                const safeAddEventListener = function Tc(e,t,r,n=!1){e.removeEventListener(t,r,n),e.addEventListener(t,r,n)}
-                const processOnclick = (e,t,r)=>{if(r){const n=zw(t);if(n.methodName&&Rp(n.methodName,r))return;e.preventDefault(),e.stopPropagation();const s=n.args||[],i=(s==null?void 0:s.find(u=>u))||"";i&&jp(i)}}
-                const checkIframeMethod = (e,t)=>{try{return typeof t[e]=="function"||typeof t[e]=="function"}catch(r){return!1}}
-                const postIframeMessage = (targetPageId) => {
-                  window.parent.postMessage({
-                    type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                    targetPageId,
-                  })
-                }
-                const handleIframeLinkClick = (event) => {
-                  const dynamicIframe = document.querySelector('#dynamicIframe')
-                  if (!dynamicIframe?.contentWindow) {
-                    return
-                  }
-                  const link = event.target.closest('a')
-                  const target = event.target
-                  if (link) {
-                    const href = link.getAttribute('href')
-                    const onclick = link.getAttribute('onclick')
-                    if (href && href !== '#' && !href.startsWith('javascript:')) {
-                      event.preventDefault()
-                      event.stopPropagation()
-                      const targetPageId = getKeyByValueObj(allFormatPageIdsMap, href)
-                      if (targetPageId) {
-                        postIframeMessage(targetPageId)
-                      }
-                      return
-                    }
-                    if (onclick) {
-                      processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                    } else {
-                      event.preventDefault()
-                      event.stopPropagation()
-                    }
-                    return
-                  }
-                  const onclick = target.getAttribute('onclick')
-                  if (onclick) {
-                    processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                  }
-                }
-                function stringExt(link) {
-                  let s = String(link || '')
-                  s = (s.split('#')[0] || '')
-                  s = (s.split('?')[0] || '')
-                  s = s.trim()
-                  s = s.split('/').filter(Boolean).pop() || ''
-                  const lower = s.toLowerCase()
-                  if (lower.endsWith('.html') || lower.endsWith('.php') || lower.endsWith('.aspx')) {
-                    s = s.slice(0, s.lastIndexOf('.'))
-                  }
-                  return s
-                }
-                function formatHref(href) {
-                  if (!href) {
-                    return ''
-                  }
-                  try {
-                    const url = new URL(href, window.location.href)
-                    const pathname = url.pathname || ''
-                    return stringExt(pathname)
-                  } catch {
-                    return stringExt(href)
-                  }
-                }
-                function getKeyByValueObj(obj, value) {
-                  const newValue = formatHref(value)
-                  const keyFind = Object.keys(obj).find(k => k === newValue)
-                  if (keyFind) {
-                    return keyFind
-                  }
-                  return Object.keys(obj).find(k => obj[k] === newValue)
-                }
-                function setIframeSize(w, h) {
-                  const currentContainerRadio = w / h
-                  let widthValue = w
-                  let heightValue = h
-                  let zoom = 1
-                  if (currentContainerRadio > resolutionRatio) {
-                    widthValue = h * resolutionRatio
-                    heightValue = h
-                  } else {
-                    widthValue = w
-                    heightValue = w / resolutionRatio
-                  }
-                  zoom = width ? widthValue / width : 1
-                  return {
-                    width: widthValue / zoom + 'px',
-                    height: heightValue / zoom + 'px',
-                    zoom,
-                  }
-                }
-                function adjustIframeSize() {
-                  const iframeWrapper = document.querySelector(".iframe-wrapper")
-                  const { width, height, zoom } = setIframeSize(window.innerWidth, window.innerHeight)
-                  iframeWrapper.style.height = height
-                  iframeWrapper.style.width = width
-                  iframeWrapper.style.transform = 'scale(' + zoom + ')'
-                }
-                function sanitizeFilename(name) {
-                  return name.replace(/[\/:*?"<>|]/g, '_')
-                }
-                function handlePostMessage(event) {
-                  if (!event.data) {
-                    return
-                  }
-                  const { type, targetPageId } = event.data
-                  const targetPageName = pageNameMap[targetPageId]
-                  if (type === "iframeNavigation" && targetPageId && targetPageName) {
-                    window.location.href = targetPageName + '.html'
-                  }
-                }
-                function setupIframeEvents() {
-                  const iframe = document.getElementById('dynamicIframe')
-                  if (iframe && iframe.contentWindow && iframe.contentWindow.document) {
-                    safeAddEventListener(iframe.contentWindow.document, 'click', handleIframeLinkClick, true)
-                  } else {
-                    setTimeout(setupIframeEvents, 100)
-                  }
-                }
-                window.addEventListener('message', handlePostMessage)
-                window.onload = function() {
-                  adjustIframeSize()
-                  setupIframeEvents()
-                }
-                window.onresize = adjustIframeSize
-                window.onunload = () => {
-                  window.removeEventListener('message', handlePostMessage)
-                }
-              </script>
-                </head>
-                <body>
-                  <div class="iframe-outer">
-                    <div class="iframe-wrapper">
-                      <iframe id="dynamicIframe" srcdoc='<html data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="14" data-source-line-end="25" lang="en"><head data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="15" data-source-line-end="20"><script>(function(){
-      function stringExt(link) {
-        let s = String(link || &#39;&#39;)
-        s = (s.split(&#39;#&#39;)[0] || &#39;&#39;)
-        s = (s.split(&#39;?&#39;)[0] || &#39;&#39;)
-        s = s.trim()
-        s = s.split(&#39;/&#39;).filter(Boolean).pop() || &#39;&#39;
-        const lower = s.toLowerCase()
-        if (lower.endsWith(&#39;.html&#39;) || lower.endsWith(&#39;.php&#39;) || lower.endsWith(&#39;.aspx&#39;)) {
-          s = s.slice(0, s.lastIndexOf(&#39;.&#39;))
-        }
-        return s
-      }
-      function formatHref(href) {
-        if (!href) {
-          return &#39;&#39;
-        }
-        try {
-          const url = new URL(href, window.location.href)
-          const pathname = url.pathname || &#39;&#39;
-          return stringExt(pathname)
-        } catch {
-          return stringExt(href)
-        }
-      }
-      function getKeyByValueObj(obj, value) {
-        const newValue = formatHref(value)
-        const keyFind = Object.keys(obj).find(k => k === newValue)
-        if (keyFind) {
-          return keyFind
-        }
-        return Object.keys(obj).find(k => obj[k] === newValue)
-      }
-      function emit(to, source){
-        try {
-          if (window.parent) {
-            const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-            const IFRAME_MESSAGE_TYPE = {
-              iframeNavigation: &#39;iframeNavigation&#39;,
-            }
-            const targetPageId = getKeyByValueObj(allFormatPageIdsMap, String(to || &#39;&#39;))
-            if (targetPageId) {
-              window.parent.postMessage({
-                type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                targetPageId,
-              }, &#39;*&#39;)
-            }
-          }
-        } catch(e) {}
-      }
-      try{
-        if (&#39;navigation&#39; in window &amp;&amp; window.navigation &amp;&amp; typeof window.navigation.addEventListener===&#39;function&#39;){
-          window.navigation.addEventListener(&#39;navigate&#39;, function(e){
-            try{
-              var url = (e.destination &amp;&amp; e.destination.url) || &#39;&#39;;
-              if (e.canIntercept &amp;&amp; typeof e.intercept===&#39;function&#39;){ e.intercept({ handler:function(){} }) }
-              else if (e.preventDefault){ e.preventDefault() }
-              emit(url)
-            }catch(_){}
-          })
-        }
-      }catch(_){}
-    })();</script><meta name="supported-color-schemes" content="light"><meta name="color-scheme" content="light"><style>
-      :root, html, body { color-scheme: light; }
-      html { forced-color-adjust: none; }
-    </style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Built with Astro">
-    <title data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="19" data-source-line-end="19">亲友共享空间</title>
-  <link rel="stylesheet" href="./assets/html/113216/ai-diet-recommendation.CyT-fR9B.css">
-<style>header[data-v-0b81bb01]{height:56px;backdrop-filter:blur(8px);background-color:hsl(var(--card) / .95)}.truncate[data-v-0b81bb01]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-[data-v-a03ebd51] .bottom-nav-container{height:calc(var(--bottom-nav-height) + env(safe-area-inset-bottom))}
-.empty-state[data-v-1800684b]{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-</style><script src="./assets/static/uxbot/25_6/holder.js"></script><style>
-#iemx {
-  height: var(--header-height);
-}
-
-#ismimn {
-  --front-toast-height: 0px;
-  --gap: 14px;
-  --mobile-offset-bottom: 16px;
-  --mobile-offset-left: 16px;
-  --mobile-offset-right: 16px;
-  --mobile-offset-top: 16px;
-  --offset-bottom: 24px;
-  --offset-left: 24px;
-  --offset-right: 24px;
-  --offset-top: 24px;
-  --width: 356px;
-}
-
-#ieeqa,
-#inzvy {
-  flex-flow: row;
-}
-
-</style></head>
-  <body data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="21" data-source-line-end="24">
-    
-  <div data-source-file="src/layouts/MobileMainLayout.astro" data-source-line-start="17" data-source-line-end="28" class="h-screen overflow-hidden flex flex-col bg-background">
-    <!-- Header -->
-    <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&amp;&amp;s.isSameNode(this)&amp;&amp;(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&amp;&amp;s.isSameNode(this)&amp;&amp;(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&amp;&amp;(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&amp;&amp;this.lastChild.nodeValue==="astro:end"&amp;&amp;(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&amp;&amp;await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="Zzstpv" prefix="s1" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/MobileHeader.DIYhopFc.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{&amp;quot;title&amp;quot;:[0,&amp;quot;亲友共享空间&amp;quot;],&amp;quot;showBack&amp;quot;:[0,true]}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;MobileHeader&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><header class="sticky top-0 z-50 w-full bg-card border-b border-border shadow-sm px-4 flex items-center justify-between" style="height:var(--header-height);" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="30" data-source-line-end="67" data-v-0b81bb01=""><div class="flex items-center min-w-[56px]" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="35" data-source-line-end="45" data-v-0b81bb01=""><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 hover:bg-accent h-10 w-10 tap-target -ml-2 text-foreground/80 hover:text-primary transition-colors" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-0b81bb01=""><!--[--><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-0b81bb01="" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg><!--]--></button></div><h1 class="flex-1 text-center truncate px-2 text-base font-semibold tracking-tight text-foreground" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="48" data-source-line-end="50" data-v-0b81bb01="">亲友共享空间</h1><div class="flex items-center justify-end min-w-[56px] space-x-1" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="53" data-source-line-end="66" data-v-0b81bb01=""><!--[--><!----><!--]--></div></header><!--astro:end--></astro-island>
-
-    <!-- Main Content Area -->
-    <div data-source-file="src/layouts/MobileMainLayout.astro" data-source-line-start="22" data-source-line-end="24" class="flex-1 overflow-y-auto min-h-0">
-      
-  <astro-island uid="24EpsY" prefix="s0" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/SocialCirclesContent.BHWYbFWV.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;SocialCirclesContent&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><div class="page-body flex flex-col gap-4 min-h-full relative overflow-hidden" data-source-file="src/components/social-circles-main/SocialCirclesContent.vue" data-source-line-start="23" data-source-line-end="64" data-v-0d292b9d=""><div class="absolute -top-10 -right-10 w-40 h-40 bg-rose-200/20 rounded-full blur-3xl pointer-events-none" data-source-file="src/components/social-circles-main/SocialCirclesContent.vue" data-source-line-start="25" data-source-line-end="25" data-v-0d292b9d=""></div><div class="absolute top-1/2 -left-20 w-60 h-60 bg-sky-200/20 rounded-full blur-3xl pointer-events-none" data-source-file="src/components/social-circles-main/SocialCirclesContent.vue" data-source-line-start="26" data-source-line-end="26" data-v-0d292b9d=""></div><div class="relative z-10 space-y-6" data-source-file="src/components/social-circles-main/SocialCirclesContent.vue" data-source-line-start="28" data-source-line-end="63" data-v-0d292b9d=""><div class="flex items-center justify-between" data-source-file="src/components/social-circles-main/SocialCirclesContent.vue" data-source-line-start="30" data-source-line-end="50" data-v-0d292b9d=""><div class="space-y-1" data-source-file="src/components/social-circles-main/SocialCirclesContent.vue" data-source-line-start="31" data-source-line-end="39" data-v-0d292b9d=""><h2 class="text-2xl font-black text-foreground/90 tracking-tight" data-source-file="src/components/social-circles-main/SocialCirclesContent.vue" data-source-line-start="32" data-source-line-end="34" data-v-0d292b9d=""> 我的亲友 </h2><p class="text-xs font-medium text-muted-foreground/60 flex items-center gap-1" data-source-file="src/components/social-circles-main/SocialCirclesContent.vue" data-source-line-start="35" data-source-line-end="38" data-v-0d292b9d=""><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-rose-400 lucide-heart-icon lucide-heart text-rose-400" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-0d292b9d=""><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path></svg><b data-source-file="src/components/social-circles-main/SocialCirclesContent.vue" data-source-line-start="37" data-source-line-end="37" data-v-0d292b9d="">唯有爱和美食不可辜负</b></p></div><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground size-11 rounded-[1.25rem] border-2 border-white bg-white/80 shadow-soft text-primary hover:scale-105 transition-transform" aria-label="添加亲友连接" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-0d292b9d=""><!--[--><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-0d292b9d="" class="lucide lucide-plus-icon lucide-plus"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg><!--]--></button></div><div class="space-y-4" data-source-file="src/components/social-circles-main/SocialCirclesContent.vue" data-source-line-start="53" data-source-line-end="60" data-v-0d292b9d=""><!--[--><div class="card-interactive p-5 flex items-center gap-5 cursor-pointer bg-white/80 backdrop-blur-md border-2 border-white/60 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)]" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="96" data-source-line-end="168" data-v-0d292b9d="" data-v-869f723a=""><div class="flex-shrink-0 relative" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="101" data-source-line-end="119" data-v-869f723a=""><div class="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br flex items-center justify-center shadow-inner border-2 border-white/80 from-rose-200 to-orange-100" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="102" data-source-line-end="109" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide text-rose-400 lucide-heart-icon lucide-heart text-rose-400" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a=""><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path></svg></div><div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-[3px] border-white shadow-sm flex items-center justify-center overflow-hidden bg-emerald-500" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="111" data-source-line-end="118" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="lucide text-white lucide-circle-check-icon lucide-circle-check text-white" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a=""><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg></div></div><div class="flex-1 min-w-0" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="122" data-source-line-end="148" data-v-869f723a=""><div class="flex items-center gap-2 mb-1.5" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="124" data-source-line-end="131" data-v-869f723a=""><h3 class="text-lg font-bold tracking-tight text-foreground/90" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="125" data-source-line-end="127" data-v-869f723a="">爸爸</h3><span class="px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider bg-rose-100 text-rose-500 border-rose-200" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="128" data-source-line-end="130" data-v-869f723a="">家人</span></div><div class="mb-2.5 flex items-start gap-1.5" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="134" data-source-line-end="139" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-primary/40 mt-0.5 shrink-0 lucide-quote-icon lucide-quote text-primary/40 mt-0.5 shrink-0" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a=""><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path></svg><p class="text-xs font-medium text-muted-foreground/80 italic line-clamp-1 leading-tight" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="136" data-source-line-end="138" data-v-869f723a="">再忙也要记得补充能量呀！</p></div><div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white bg-white/50 shadow-sm" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="142" data-source-line-end="147" data-v-869f723a=""><div class="w-1.5 h-1.5 rounded-full animate-pulse bg-emerald-500" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="143" data-source-line-end="143" data-v-869f723a=""></div><span class="text-[11px] font-bold text-emerald-500" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="144" data-source-line-end="146" data-v-869f723a="">已按时吃饭</span></div></div><div class="flex flex-col items-end gap-3 flex-shrink-0" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="151" data-source-line-end="167" data-v-869f723a=""><button class="p-2 rounded-xl border border-white shadow-sm flex items-center gap-1.5 transition-all active:scale-95 bg-emerald-50 text-emerald-500" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="152" data-source-line-end="162" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a="" class="lucide lucide-flower2-icon lucide-flower-2"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"></path><circle cx="12" cy="8" r="2"></circle><path d="M12 10v12"></path><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"></path><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"></path></svg><span class="text-[10px] font-black" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="161" data-source-line-end="161" data-v-869f723a="">送朵花</span></button><div class="pr-1 text-muted-foreground/30" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="164" data-source-line-end="166" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a="" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></div></div></div><div class="card-interactive p-5 flex items-center gap-5 cursor-pointer bg-white/80 backdrop-blur-md border-2 border-white/60 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)]" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="96" data-source-line-end="168" data-v-0d292b9d="" data-v-869f723a=""><div class="flex-shrink-0 relative" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="101" data-source-line-end="119" data-v-869f723a=""><div class="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br flex items-center justify-center shadow-inner border-2 border-white/80 from-sky-200 to-indigo-100" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="102" data-source-line-end="109" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide text-indigo-400 lucide-user-icon lucide-user text-indigo-400" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a=""><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div><div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-[3px] border-white shadow-sm flex items-center justify-center overflow-hidden bg-amber-500" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="111" data-source-line-end="118" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="lucide text-white lucide-clock-icon lucide-clock text-white" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a=""><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg></div></div><div class="flex-1 min-w-0" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="122" data-source-line-end="148" data-v-869f723a=""><div class="flex items-center gap-2 mb-1.5" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="124" data-source-line-end="131" data-v-869f723a=""><h3 class="text-lg font-bold tracking-tight text-foreground/90" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="125" data-source-line-end="127" data-v-869f723a="">同学</h3><span class="px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider bg-indigo-100 text-indigo-500 border-indigo-200" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="128" data-source-line-end="130" data-v-869f723a="">朋友</span></div><div class="mb-2.5 flex items-start gap-1.5" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="134" data-source-line-end="139" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-primary/40 mt-0.5 shrink-0 lucide-quote-icon lucide-quote text-primary/40 mt-0.5 shrink-0" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a=""><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path></svg><p class="text-xs font-medium text-muted-foreground/80 italic line-clamp-1 leading-tight" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="136" data-source-line-end="138" data-v-869f723a="">干饭人，干饭魂，吃饭才有精气神！</p></div><div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white bg-white/50 shadow-sm" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="142" data-source-line-end="147" data-v-869f723a=""><div class="w-1.5 h-1.5 rounded-full animate-pulse bg-amber-500" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="143" data-source-line-end="143" data-v-869f723a=""></div><span class="text-[11px] font-bold text-amber-500" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="144" data-source-line-end="146" data-v-869f723a="">正在忙碌中</span></div></div><div class="flex flex-col items-end gap-3 flex-shrink-0" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="151" data-source-line-end="167" data-v-869f723a=""><button class="p-2 rounded-xl border border-white shadow-sm flex items-center gap-1.5 transition-all active:scale-95 bg-amber-50 text-amber-500" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="152" data-source-line-end="162" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a="" class="lucide lucide-bell-ring-icon lucide-bell-ring"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M22 8c0-2.3-.8-4.3-2-6"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path><path d="M4 2C2.8 3.7 2 5.7 2 8"></path></svg><span class="text-[10px] font-black" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="161" data-source-line-end="161" data-v-869f723a="">催吃饭</span></button><div class="pr-1 text-muted-foreground/30" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="164" data-source-line-end="166" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a="" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></div></div></div><div class="card-interactive p-5 flex items-center gap-5 cursor-pointer bg-white/80 backdrop-blur-md border-2 border-white/60 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)]" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="96" data-source-line-end="168" data-v-0d292b9d="" data-v-869f723a=""><div class="flex-shrink-0 relative" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="101" data-source-line-end="119" data-v-869f723a=""><div class="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br flex items-center justify-center shadow-inner border-2 border-white/80 from-rose-200 to-orange-100" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="102" data-source-line-end="109" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide text-rose-400 lucide-heart-icon lucide-heart text-rose-400" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a=""><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path></svg></div><div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-[3px] border-white shadow-sm flex items-center justify-center overflow-hidden bg-sky-500" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="111" data-source-line-end="118" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="lucide text-white lucide-circle-icon lucide-circle text-white" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a=""><circle cx="12" cy="12" r="10"></circle></svg></div></div><div class="flex-1 min-w-0" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="122" data-source-line-end="148" data-v-869f723a=""><div class="flex items-center gap-2 mb-1.5" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="124" data-source-line-end="131" data-v-869f723a=""><h3 class="text-lg font-bold tracking-tight text-foreground/90" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="125" data-source-line-end="127" data-v-869f723a="">女儿</h3><span class="px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider bg-rose-100 text-rose-500 border-rose-200" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="128" data-source-line-end="130" data-v-869f723a="">家人</span></div><div class="mb-2.5 flex items-start gap-1.5" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="134" data-source-line-end="139" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-primary/40 mt-0.5 shrink-0 lucide-quote-icon lucide-quote text-primary/40 mt-0.5 shrink-0" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a=""><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path></svg><p class="text-xs font-medium text-muted-foreground/80 italic line-clamp-1 leading-tight" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="136" data-source-line-end="138" data-v-869f723a="">按时吃饭，照顾好自己喔~</p></div><div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white bg-white/50 shadow-sm" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="142" data-source-line-end="147" data-v-869f723a=""><div class="w-1.5 h-1.5 rounded-full animate-pulse bg-sky-500" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="143" data-source-line-end="143" data-v-869f723a=""></div><span class="text-[11px] font-bold text-sky-500" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="144" data-source-line-end="146" data-v-869f723a="">在线</span></div></div><div class="flex flex-col items-end gap-3 flex-shrink-0" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="151" data-source-line-end="167" data-v-869f723a=""><button class="p-2 rounded-xl border border-white shadow-sm flex items-center gap-1.5 transition-all active:scale-95 bg-sky-50 text-sky-500" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="152" data-source-line-end="162" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a="" class="lucide lucide-hand-icon lucide-hand"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"></path><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"></path><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"></path><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path></svg><span class="text-[10px] font-black" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="161" data-source-line-end="161" data-v-869f723a="">打招呼</span></button><div class="pr-1 text-muted-foreground/30" data-source-file="src/components/social-circles-main/ConnectionCard.vue" data-source-line-start="164" data-source-line-end="166" data-v-869f723a=""><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-869f723a="" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></div></div></div><!--]--></div></div></div><!--astro:end--></astro-island>
-
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>亲友共享空间 - 吃了么</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #fef9e8;
+      font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    /* 头部 */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      width: 100%;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
+      padding: 0 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+    .back-btn {
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: #f0e4d4; }
+    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
+    .title {
+      flex: 1;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #5a3e2b;
+    }
+    /* 主内容滚动区 */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      padding-bottom: 80px;
+      scrollbar-width: thin;
+    }
+    /* 顶部标题区 */
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+    .hero-text h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #5a3e2b;
+      letter-spacing: -0.5px;
+    }
+    .hero-text p {
+      font-size: 0.7rem;
+      color: #c0a080;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin-top: 0.25rem;
+    }
+    .add-friend-btn {
+      width: 2.75rem;
+      height: 2.75rem;
+      background: white;
+      border-radius: 1.25rem;
+      border: 2px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .add-friend-btn:active { transform: scale(0.94); background: #fff7f0; }
+    .add-friend-btn svg { width: 1.5rem; height: 1.5rem; stroke: #e67e22; stroke-width: 2.5; }
+    /* 亲友卡片 */
+    .friend-card {
+      background: rgba(255,255,240,0.8);
+      backdrop-filter: blur(4px);
+      border: 2px solid rgba(255,255,255,0.6);
+      border-radius: 2rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.02);
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .friend-card:active { transform: scale(0.98); background: #fff7f0; }
+    .avatar {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .avatar-bg {
+      width: 4rem;
+      height: 4rem;
+      border-radius: 1.5rem;
+      background: linear-gradient(135deg, #fce4d6, #ffd9b5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid white;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+    }
+    .avatar-bg svg { width: 2rem; height: 2rem; stroke: #e67e22; stroke-width: 2; }
+    .status-dot {
+      position: absolute;
+      bottom: -0.25rem;
+      right: -0.25rem;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 50%;
+      border: 3px solid white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e67e22;
+    }
+    .status-dot svg { width: 0.8rem; height: 0.8rem; stroke: white; stroke-width: 3; }
+    .friend-info {
+      flex: 1;
+    }
+    .friend-name-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+    .friend-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #5a3e2b;
+    }
+    .friend-tag {
+      font-size: 0.6rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 20px;
+      font-weight: 600;
+      background: #fee2e2;
+      color: #e67e22;
+    }
+    .friend-quote {
+      font-size: 0.7rem;
+      color: #a07a5c;
+      margin-bottom: 0.5rem;
+      display: flex;
+      gap: 0.25rem;
+      align-items: flex-start;
+    }
+    .friend-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.5);
+      border-radius: 30px;
+      padding: 0.2rem 0.75rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.5rem;
+    }
+    .action-btn {
+      padding: 0.4rem 0.8rem;
+      border-radius: 1rem;
+      background: #fef5ea;
+      border: 1px solid white;
+      font-size: 0.7rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #e67e22;
+    }
+    .action-btn:active { transform: scale(0.92); background: #fff0e0; }
+    .action-btn svg { width: 1rem; height: 1rem; stroke: currentColor; stroke-width: 2.5; }
+    .arrow-icon {
+      color: #d9c8b8;
+      margin-top: 0.25rem;
+    }
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #c0a080;
+    }
+    /* 底部导航栏 */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff9f0;
+      border-top: 1px solid #f0e4d4;
+      display: flex;
+      justify-content: space-around;
+      padding: 0.5rem 1rem 1rem;
+      z-index: 20;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      cursor: pointer;
+      color: #c0a080;
+      transition: color 0.2s;
+    }
+    .nav-item.active { color: #e67e22; }
+    .nav-icon { width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2; }
+    .nav-label { font-size: 0.7rem; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" id="backBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </div>
+    <div class="title">亲友共享空间</div>
+    <div class="right-placeholder" style="width:2.5rem;"></div>
+  </header>
 
-    <!-- Bottom Navigation -->
-    <astro-island uid="I0FT3" prefix="s2" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/MobileBottomNav.CF0jFY6D.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{&amp;quot;currentPath&amp;quot;:[0,&amp;quot;/social-circles-main.html&amp;quot;]}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;MobileBottomNav&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><nav class="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-soft bottom-nav-container" aria-label="主要导航" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="60" data-source-line-end="91" data-v-a03ebd51=""><div class="flex items-center justify-around h-[var(--bottom-nav-height)] px-2" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="64" data-source-line-end="90" data-v-a03ebd51=""><!--[--><button class="flex flex-col items-center justify-center flex-1 gap-1 h-full interactive text-muted-foreground" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="65" data-source-line-end="89" data-v-a03ebd51=""><div class="relative flex items-center justify-center" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="74" data-source-line-end="85" data-v-a03ebd51=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-a03ebd51="" class="lucide lucide-layout-dashboard-icon lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg><!----></div><span class="text-[10px] font-medium leading-none" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="86" data-source-line-end="88" data-v-a03ebd51="">首页</span></button><button class="flex flex-col items-center justify-center flex-1 gap-1 h-full interactive text-muted-foreground" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="65" data-source-line-end="89" data-v-a03ebd51=""><div class="relative flex items-center justify-center" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="74" data-source-line-end="85" data-v-a03ebd51=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-a03ebd51="" class="lucide lucide-clipboard-list-icon lucide-clipboard-list"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></svg><!----></div><span class="text-[10px] font-medium leading-none" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="86" data-source-line-end="88" data-v-a03ebd51="">饮食记录</span></button><button class="flex flex-col items-center justify-center flex-1 gap-1 h-full interactive text-primary" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="65" data-source-line-end="89" data-v-a03ebd51=""><div class="relative flex items-center justify-center" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="74" data-source-line-end="85" data-v-a03ebd51=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-a03ebd51="" class="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg><div class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-primary" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="81" data-source-line-end="84" data-v-a03ebd51=""></div></div><span class="text-[10px] font-medium leading-none" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="86" data-source-line-end="88" data-v-a03ebd51="">亲友空间</span></button><button class="flex flex-col items-center justify-center flex-1 gap-1 h-full interactive text-muted-foreground" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="65" data-source-line-end="89" data-v-a03ebd51=""><div class="relative flex items-center justify-center" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="74" data-source-line-end="85" data-v-a03ebd51=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-a03ebd51="" class="lucide lucide-chart-column-icon lucide-chart-column"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg><!----></div><span class="text-[10px] font-medium leading-none" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="86" data-source-line-end="88" data-v-a03ebd51="">报表</span></button><!--]--></div></nav><!--astro:end--></astro-island>
+  <main class="main-content" id="mainContent">
+    <!-- 动态渲染亲友列表 -->
+    <div id="friendsList"></div>
+  </main>
+
+  <div class="bottom-nav">
+    <div class="nav-item" data-nav="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/>
+        <rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
+      </svg>
+      <span class="nav-label">首页</span>
+    </div>
+    <div class="nav-item" data-nav="record">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
+      </svg>
+      <span class="nav-label">饮食记录</span>
+    </div>
+    <div class="nav-item active" data-nav="friends">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>
+      </svg>
+      <span class="nav-label">亲友空间</span>
+    </div>
+    <div class="nav-item" data-nav="report">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
+      </svg>
+      <span class="nav-label">报表</span>
+    </div>
   </div>
 
-    <astro-island uid="Z1rXJ5e" prefix="s3" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/sonner.BzCgywvZ.js" component-export="Toaster" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;Toaster&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><!--[--><!-- Remove item from normal navigation flow, only available via hotkey --><section aria-label="Notifications alt+T" tabindex="-1" aria-live="polite" aria-relevant="additions text" aria-atomic="false"><!--[--><ol data-sonner-toaster="" data-sonner-theme="light" class="toaster group" dir="ltr" tabindex="-1" data-theme="light" data-rich-colors="false" data-y-position="bottom" data-x-position="right" style="--front-toast-height:0px;--width:356px;--gap:14px;--offset-top:24px;--offset-right:24px;--offset-bottom:24px;--offset-left:24px;--mobile-offset-top:16px;--mobile-offset-right:16px;--mobile-offset-bottom:16px;--mobile-offset-left:16px;" data-source-file="src/components/ui/sonner/Sonner.vue" data-source-line-start="9" data-source-line-end="22"><!--[--><!--]--></ol><!--]--></section><!--]--><!--astro:end--></astro-island>
   <script>
-    const originalBack = window.history.back
-    const originalForward = window.history.forward
-    const originalGo = window.history.go
-    function isValidNavigation(){
-      if(!window.parent.history.state.back || !window.parent.history.state.back.startsWith(&#39;/designPage&#39;)){
-        return false
+    // ---------- 数据模型 ----------
+    // 默认亲友数据
+    const defaultFriends = [
+      {
+        id: '1',
+        name: '爸爸',
+        relation: '家人',
+        quote: '再忙也要记得补充能量呀！',
+        status: 'checked', // checked, busy, online
+        statusText: '已按时吃饭',
+        statusColor: 'emerald',
+        actionType: 'flower',
+        actionLabel: '送朵花',
+        actionIcon: 'flower'
+      },
+      {
+        id: '2',
+        name: '同学',
+        relation: '朋友',
+        quote: '干饭人，干饭魂，吃饭才有精气神！',
+        status: 'busy',
+        statusText: '正在忙碌中',
+        statusColor: 'amber',
+        actionType: 'remind',
+        actionLabel: '催吃饭',
+        actionIcon: 'bell'
+      },
+      {
+        id: '3',
+        name: '女儿',
+        relation: '家人',
+        quote: '按时吃饭，照顾好自己喔~',
+        status: 'online',
+        statusText: '在线',
+        statusColor: 'sky',
+        actionType: 'greet',
+        actionLabel: '打招呼',
+        actionIcon: 'hand'
       }
-      return true
+    ];
+
+    // 获取亲友列表
+    function getFriends() {
+      const stored = localStorage.getItem('friendsList');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch(e) {}
+      }
+      return defaultFriends;
     }
-    window.history.back = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalBack.apply(this, args);
-    };
 
-    window.history.forward = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalForward.apply(this, args);
-    };
+    // 保存亲友列表
+    function saveFriends(friends) {
+      localStorage.setItem('friendsList', JSON.stringify(friends));
+    }
 
-    window.history.go = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalGo.apply(this, args);
-    };
-  </script></body></html>'></iframe>
-                    </div>
-                  </div>
+    // 添加亲友（模拟）
+    function addFriend() {
+      const name = prompt('请输入亲友昵称：');
+      if (!name) return;
+      const relation = prompt('关系（例如：家人、朋友、同事）：', '朋友');
+      const newFriend = {
+        id: Date.now().toString(),
+        name: name,
+        relation: relation || '朋友',
+        quote: '一起好好吃饭！',
+        status: 'online',
+        statusText: '在线',
+        statusColor: 'sky',
+        actionType: 'greet',
+        actionLabel: '打招呼',
+        actionIcon: 'hand'
+      };
+      const friends = getFriends();
+      friends.push(newFriend);
+      saveFriends(friends);
+      renderFriendsList();
+      alert(`已添加 ${name} 到亲友空间`);
+    }
 
-                </body>
-                </html>
-            
+    // 互动动作
+    function interact(friendId, actionType) {
+      const friend = getFriends().find(f => f.id === friendId);
+      if (!friend) return;
+      let msg = '';
+      if (actionType === 'flower') msg = `🌸 你送了一朵花给 ${friend.name}，ta会感受到你的关心~`;
+      else if (actionType === 'remind') msg = `⏰ 已提醒 ${friend.name} 记得吃饭！`;
+      else if (actionType === 'greet') msg = `👋 向 ${friend.name} 打了个招呼！`;
+      alert(msg);
+      // 可以记录互动日志到 localStorage，此处简化
+    }
+
+    // 渲染亲友列表
+    function renderFriendsList() {
+      const friends = getFriends();
+      const container = document.getElementById('friendsList');
+      if (!friends.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <p>还没有亲友，点击右上角 + 添加</p>
+          </div>
+        `;
+        return;
+      }
+
+      const heroHtml = `
+        <div class="hero">
+          <div class="hero-text">
+            <h2>我的亲友</h2>
+            <p><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg> 唯有爱和美食不可辜负</p>
+          </div>
+          <div class="add-friend-btn" id="addFriendBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5v14"/></svg>
+          </div>
+        </div>
+      `;
+
+      const cardsHtml = friends.map(friend => {
+        // 根据 statusColor 设置颜色类（用于小圆点和标签）
+        const colorMap = {
+          emerald: '#10b981',
+          amber: '#f59e0b',
+          sky: '#0ea5e9'
+        };
+        const dotColor = colorMap[friend.statusColor] || '#e67e22';
+        // 状态图标
+        let statusIcon = '';
+        if (friend.status === 'checked') statusIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>';
+        else if (friend.status === 'busy') statusIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/></svg>';
+        else statusIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4"><circle cx="12" cy="12" r="10"/></svg>';
+        
+        // 动作按钮图标
+        let actionSvg = '';
+        if (friend.actionIcon === 'flower') actionSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>';
+        else if (friend.actionIcon === 'bell') actionSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M22 8c0-2.3-.8-4.3-2-6"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/><path d="M4 2C2.8 3.7 2 5.7 2 8"/></svg>';
+        else actionSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>';
+        
+        return `
+          <div class="friend-card" data-id="${friend.id}">
+            <div class="avatar">
+              <div class="avatar-bg">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <div class="status-dot" style="background:${dotColor};">${statusIcon}</div>
+            </div>
+            <div class="friend-info">
+              <div class="friend-name-row">
+                <span class="friend-name">${friend.name}</span>
+                <span class="friend-tag">${friend.relation}</span>
+              </div>
+              <div class="friend-quote">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
+                <span style="font-size:0.7rem; color:#a07a5c; font-style:italic;">${friend.quote}</span>
+              </div>
+              <div class="friend-status" style="background:${dotColor}10; color:${dotColor};">
+                <div style="width:0.5rem; height:0.5rem; background:${dotColor}; border-radius:50%;"></div>
+                <span>${friend.statusText}</span>
+              </div>
+            </div>
+            <div class="action-buttons">
+              <button class="action-btn" data-action="${friend.actionType}" data-id="${friend.id}">
+                ${actionSvg}
+                <span>${friend.actionLabel}</span>
+              </button>
+              <div class="arrow-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = heroHtml + cardsHtml;
+      
+      // 绑定添加按钮
+      document.getElementById('addFriendBtn')?.addEventListener('click', addFriend);
+      
+      // 绑定卡片点击（查看详情）
+      document.querySelectorAll('.friend-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          // 防止点击内部按钮时冒泡触发卡片详情
+          if (e.target.closest('.action-btn')) return;
+          const id = card.getAttribute('data-id');
+          // 跳转到详情页或弹出信息，这里简单 alert
+          alert(`点击查看 ${friends.find(f => f.id === id)?.name} 的饮食记录`);
+          // 可改为 window.location.href = '关怀互动页.html?id=' + id;
+        });
+      });
+      
+      // 绑定动作按钮
+      document.querySelectorAll('.action-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const action = btn.getAttribute('data-action');
+          const id = btn.getAttribute('data-id');
+          interact(id, action);
+        });
+      });
+    }
+
+    // 底部导航栏跳转
+    function initBottomNav() {
+      const navs = document.querySelectorAll('.nav-item');
+      navs.forEach(nav => {
+        nav.addEventListener('click', () => {
+          const navTo = nav.getAttribute('data-nav');
+          if (navTo === 'home') window.location.href = '饮食管理首页.html';
+          else if (navTo === 'record') window.location.href = '打卡详情页.html';
+          else if (navTo === 'friends') window.location.href = '亲友共享空间主页.html';
+          else if (navTo === 'report') window.location.href = '饮食趋势报表.html';
+        });
+      });
+    }
+
+    // 返回按钮
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.location.href = '饮食管理首页.html';
+    });
+
+    renderFriendsList();
+    initBottomNav();
+  </script>
+</body>
+</html>
