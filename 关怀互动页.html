@@ -1,328 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>关怀互动 - 吃了么</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #fef9e8;
+      font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    /* 头部 */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      width: 100%;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
+      padding: 0 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+    .back-btn {
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: #f0e4d4; }
+    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
+    .title {
+      flex: 1;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #5a3e2b;
+    }
+    /* 主内容滚动区 */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    /* 亲友头部卡片 */
+    .profile-card {
+      background: white;
+      padding: 1rem;
+      border-bottom: 1px solid #f0e4d4;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .avatar {
+      width: 3rem;
+      height: 3rem;
+      background: linear-gradient(135deg, #fdf3e8, #ffe6d5);
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #e67e22;
+    }
+    .profile-info {
+      flex: 1;
+    }
+    .profile-name {
+      font-weight: 700;
+      color: #5a3e2b;
+    }
+    .profile-status {
+      font-size: 0.7rem;
+      color: #a07a5c;
+    }
+    /* 互动记录列表 */
+    .interactions-list {
+      flex: 1;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .interaction-item {
+      background: white;
+      border-radius: 1rem;
+      border: 1px solid #f0e4d4;
+      padding: 0.75rem;
+    }
+    .item-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .item-icon {
+      width: 1.8rem;
+      height: 1.8rem;
+      background: #fdf3e8;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .item-icon svg { width: 1rem; height: 1rem; stroke: #e67e22; stroke-width: 2.5; }
+    .item-title {
+      flex: 1;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #5a3e2b;
+    }
+    .item-date {
+      font-size: 0.6rem;
+      color: #c0a080;
+    }
+    .item-message {
+      font-size: 0.8rem;
+      color: #5a3e2b;
+      margin-bottom: 0.25rem;
+      line-height: 1.4;
+    }
+    .item-from {
+      font-size: 0.65rem;
+      color: #a07a5c;
+      text-align: right;
+    }
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #c0a080;
+    }
+    /* 底部操作栏 */
+    .action-bar {
+      background: #fff9f0;
+      border-top: 1px solid #f0e4d4;
+      padding: 0.75rem 1rem;
+      display: flex;
+      gap: 0.75rem;
+    }
+    .action-btn {
+      flex: 1;
+      background: white;
+      border: 1px solid #e2d4c8;
+      border-radius: 2rem;
+      padding: 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #e67e22;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .action-btn:active { transform: scale(0.98); background: #fff7f0; }
+    .action-btn svg { width: 1.2rem; height: 1.2rem; stroke: currentColor; stroke-width: 2; }
+    .action-btn.primary {
+      background: #e67e22;
+      color: white;
+      border: none;
+    }
+    .action-btn.primary:active { background: #d4691a; }
+    /* 底部导航栏 */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff9f0;
+      border-top: 1px solid #f0e4d4;
+      display: flex;
+      justify-content: space-around;
+      padding: 0.5rem 1rem 1rem;
+      z-index: 20;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      cursor: pointer;
+      color: #c0a080;
+      transition: color 0.2s;
+    }
+    .nav-item.active { color: #e67e22; }
+    .nav-icon { width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2; }
+    .nav-label { font-size: 0.7rem; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" id="backBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="title">关怀互动</div>
+    <div class="right-placeholder" style="width:2.5rem;"></div>
+  </header>
 
-                <!DOCTYPE html>
-                <html lang="zh">
-                <head>
-                  <meta charset="UTF-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <meta name="color-scheme" content="light">
-                  <meta name="supported-color-schemes" content="light">
-                  <title>关怀互动页</title>
-                  <style>
-                    *,
-                    *::before,
-                    *::after {
-                      box-sizing: border-box;
-                      margin: 0;
-                    }
-                    .iframe-outer {
-                      position: fixed;
-                      top: 0;
-                      left: 0;
-                      bottom: 0;
-                      right: 0;
-                      display: flex;
-                      justify-content: center;
-                      background-color: #E0E0E0;
-                    }
-                    .iframe-wrapper {
-                      width: 100%;
-                      height: 100%;
-                      margin: 0 auto;
-                      transform-origin: center top;
-                      flex-shrink: 0;
-                    }
-                    #dynamicIframe {
-                      border: none;
-                      width: 100%;
-                      height: 100%;
-                    }
-                  </style>
-                  <script>
-                const width = 402
-                const height = 874
-                const resolutionRatio = width && height ? width / height : 1
-                const pageNameMap = {
-                  'login_screen': '登录注册页',
-    'user_profile_setup': '基础信息采集页',
-    'goal_setting': '核心目标设定页',
-    'plan_selection': '饮食计划选择页',
-    'plan_details': '计划详情页',
-    'plan_tracking': '我的计划进度页',
-    'home_dashboard': '饮食管理首页',
-    'diet_logging_detail': '打卡详情页',
-    'logging_success_feedback': '打卡反馈页',
-    'social_circles_main': '亲友共享空间主页',
-    'invite_connection': '邀请关注页',
-    'interaction_hub': '关怀互动页',
-    'diet_encyclopedia': '饮食百科',
-    'health_metrics_test': '健康指标测试',
-    'ai_diet_recommendation': 'AI个性化膳食建议',
-    'dietary_statistics_report': '饮食趋势报表',
-    'habit_milestone_badges': '习惯里程碑成就'
-                }
-                const allPageIds = ["login_screen","user_profile_setup","goal_setting","plan_selection","plan_details","plan_tracking","home_dashboard","diet_logging_detail","logging_success_feedback","social_circles_main","invite_connection","interaction_hub","diet_encyclopedia","health_metrics_test","ai_diet_recommendation","dietary_statistics_report","habit_milestone_badges"]
-                const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-                const IFRAME_MESSAGE_TYPE = {
-                  iframeNavigation: 'iframeNavigation',
-                }
-                const safeAddEventListener = function Tc(e,t,r,n=!1){e.removeEventListener(t,r,n),e.addEventListener(t,r,n)}
-                const processOnclick = (e,t,r)=>{if(r){const n=zw(t);if(n.methodName&&Rp(n.methodName,r))return;e.preventDefault(),e.stopPropagation();const s=n.args||[],i=(s==null?void 0:s.find(u=>u))||"";i&&jp(i)}}
-                const checkIframeMethod = (e,t)=>{try{return typeof t[e]=="function"||typeof t[e]=="function"}catch(r){return!1}}
-                const postIframeMessage = (targetPageId) => {
-                  window.parent.postMessage({
-                    type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                    targetPageId,
-                  })
-                }
-                const handleIframeLinkClick = (event) => {
-                  const dynamicIframe = document.querySelector('#dynamicIframe')
-                  if (!dynamicIframe?.contentWindow) {
-                    return
-                  }
-                  const link = event.target.closest('a')
-                  const target = event.target
-                  if (link) {
-                    const href = link.getAttribute('href')
-                    const onclick = link.getAttribute('onclick')
-                    if (href && href !== '#' && !href.startsWith('javascript:')) {
-                      event.preventDefault()
-                      event.stopPropagation()
-                      const targetPageId = getKeyByValueObj(allFormatPageIdsMap, href)
-                      if (targetPageId) {
-                        postIframeMessage(targetPageId)
-                      }
-                      return
-                    }
-                    if (onclick) {
-                      processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                    } else {
-                      event.preventDefault()
-                      event.stopPropagation()
-                    }
-                    return
-                  }
-                  const onclick = target.getAttribute('onclick')
-                  if (onclick) {
-                    processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                  }
-                }
-                function stringExt(link) {
-                  let s = String(link || '')
-                  s = (s.split('#')[0] || '')
-                  s = (s.split('?')[0] || '')
-                  s = s.trim()
-                  s = s.split('/').filter(Boolean).pop() || ''
-                  const lower = s.toLowerCase()
-                  if (lower.endsWith('.html') || lower.endsWith('.php') || lower.endsWith('.aspx')) {
-                    s = s.slice(0, s.lastIndexOf('.'))
-                  }
-                  return s
-                }
-                function formatHref(href) {
-                  if (!href) {
-                    return ''
-                  }
-                  try {
-                    const url = new URL(href, window.location.href)
-                    const pathname = url.pathname || ''
-                    return stringExt(pathname)
-                  } catch {
-                    return stringExt(href)
-                  }
-                }
-                function getKeyByValueObj(obj, value) {
-                  const newValue = formatHref(value)
-                  const keyFind = Object.keys(obj).find(k => k === newValue)
-                  if (keyFind) {
-                    return keyFind
-                  }
-                  return Object.keys(obj).find(k => obj[k] === newValue)
-                }
-                function setIframeSize(w, h) {
-                  const currentContainerRadio = w / h
-                  let widthValue = w
-                  let heightValue = h
-                  let zoom = 1
-                  if (currentContainerRadio > resolutionRatio) {
-                    widthValue = h * resolutionRatio
-                    heightValue = h
-                  } else {
-                    widthValue = w
-                    heightValue = w / resolutionRatio
-                  }
-                  zoom = width ? widthValue / width : 1
-                  return {
-                    width: widthValue / zoom + 'px',
-                    height: heightValue / zoom + 'px',
-                    zoom,
-                  }
-                }
-                function adjustIframeSize() {
-                  const iframeWrapper = document.querySelector(".iframe-wrapper")
-                  const { width, height, zoom } = setIframeSize(window.innerWidth, window.innerHeight)
-                  iframeWrapper.style.height = height
-                  iframeWrapper.style.width = width
-                  iframeWrapper.style.transform = 'scale(' + zoom + ')'
-                }
-                function sanitizeFilename(name) {
-                  return name.replace(/[\/:*?"<>|]/g, '_')
-                }
-                function handlePostMessage(event) {
-                  if (!event.data) {
-                    return
-                  }
-                  const { type, targetPageId } = event.data
-                  const targetPageName = pageNameMap[targetPageId]
-                  if (type === "iframeNavigation" && targetPageId && targetPageName) {
-                    window.location.href = targetPageName + '.html'
-                  }
-                }
-                function setupIframeEvents() {
-                  const iframe = document.getElementById('dynamicIframe')
-                  if (iframe && iframe.contentWindow && iframe.contentWindow.document) {
-                    safeAddEventListener(iframe.contentWindow.document, 'click', handleIframeLinkClick, true)
-                  } else {
-                    setTimeout(setupIframeEvents, 100)
-                  }
-                }
-                window.addEventListener('message', handlePostMessage)
-                window.onload = function() {
-                  adjustIframeSize()
-                  setupIframeEvents()
-                }
-                window.onresize = adjustIframeSize
-                window.onunload = () => {
-                  window.removeEventListener('message', handlePostMessage)
-                }
-              </script>
-                </head>
-                <body>
-                  <div class="iframe-outer">
-                    <div class="iframe-wrapper">
-                      <iframe id="dynamicIframe" srcdoc='<html data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="14" data-source-line-end="25" lang="en"><head data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="15" data-source-line-end="20"><script>(function(){
-      function stringExt(link) {
-        let s = String(link || &#39;&#39;)
-        s = (s.split(&#39;#&#39;)[0] || &#39;&#39;)
-        s = (s.split(&#39;?&#39;)[0] || &#39;&#39;)
-        s = s.trim()
-        s = s.split(&#39;/&#39;).filter(Boolean).pop() || &#39;&#39;
-        const lower = s.toLowerCase()
-        if (lower.endsWith(&#39;.html&#39;) || lower.endsWith(&#39;.php&#39;) || lower.endsWith(&#39;.aspx&#39;)) {
-          s = s.slice(0, s.lastIndexOf(&#39;.&#39;))
-        }
-        return s
-      }
-      function formatHref(href) {
-        if (!href) {
-          return &#39;&#39;
-        }
-        try {
-          const url = new URL(href, window.location.href)
-          const pathname = url.pathname || &#39;&#39;
-          return stringExt(pathname)
-        } catch {
-          return stringExt(href)
-        }
-      }
-      function getKeyByValueObj(obj, value) {
-        const newValue = formatHref(value)
-        const keyFind = Object.keys(obj).find(k => k === newValue)
-        if (keyFind) {
-          return keyFind
-        }
-        return Object.keys(obj).find(k => obj[k] === newValue)
-      }
-      function emit(to, source){
-        try {
-          if (window.parent) {
-            const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-            const IFRAME_MESSAGE_TYPE = {
-              iframeNavigation: &#39;iframeNavigation&#39;,
-            }
-            const targetPageId = getKeyByValueObj(allFormatPageIdsMap, String(to || &#39;&#39;))
-            if (targetPageId) {
-              window.parent.postMessage({
-                type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                targetPageId,
-              }, &#39;*&#39;)
-            }
-          }
-        } catch(e) {}
-      }
-      try{
-        if (&#39;navigation&#39; in window &amp;&amp; window.navigation &amp;&amp; typeof window.navigation.addEventListener===&#39;function&#39;){
-          window.navigation.addEventListener(&#39;navigate&#39;, function(e){
-            try{
-              var url = (e.destination &amp;&amp; e.destination.url) || &#39;&#39;;
-              if (e.canIntercept &amp;&amp; typeof e.intercept===&#39;function&#39;){ e.intercept({ handler:function(){} }) }
-              else if (e.preventDefault){ e.preventDefault() }
-              emit(url)
-            }catch(_){}
-          })
-        }
-      }catch(_){}
-    })();</script><meta name="supported-color-schemes" content="light"><meta name="color-scheme" content="light"><style>
-      :root, html, body { color-scheme: light; }
-      html { forced-color-adjust: none; }
-    </style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Built with Astro">
-    <title data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="19" data-source-line-end="19">关怀互动</title>
-  <link rel="stylesheet" href="./assets/html/113216/ai-diet-recommendation.CyT-fR9B.css">
-<style>header[data-v-0b81bb01]{height:56px;backdrop-filter:blur(8px);background-color:hsl(var(--card) / .95)}.truncate[data-v-0b81bb01]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@keyframes spin-bb80e381{0%{transform:rotate(0)}to{transform:rotate(360deg)}}.animate-spin[data-v-bb80e381]{animation:spin-bb80e381 1s linear infinite}[data-v-e337d766] .tap-target{min-height:44px;min-width:44px}.h-full[data-v-38b3dff2]{height:100%}
-.empty-state[data-v-1800684b]{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-</style><script src="./assets/static/uxbot/25_6/holder.js"></script></head>
-  <body data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="21" data-source-line-end="24">
-    
-  <div data-source-file="src/layouts/MobileFlowLayout.astro" data-source-line-start="15" data-source-line-end="23" class="h-screen overflow-hidden flex flex-col bg-background">
-    <!-- Header with back button -->
-    <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&amp;&amp;s.isSameNode(this)&amp;&amp;(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&amp;&amp;s.isSameNode(this)&amp;&amp;(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&amp;&amp;(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&amp;&amp;this.lastChild.nodeValue==="astro:end"&amp;&amp;(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&amp;&amp;await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="Z1rE8lf" prefix="s1" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/MobileHeader.DIYhopFc.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{&amp;quot;title&amp;quot;:[0,&amp;quot;关怀互动&amp;quot;],&amp;quot;showBack&amp;quot;:[0,true]}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;MobileHeader&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><header class="sticky top-0 z-50 w-full bg-card border-b border-border shadow-sm px-4 flex items-center justify-between" style="height:var(--header-height);" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="30" data-source-line-end="67" data-v-0b81bb01=""><div class="flex items-center min-w-[56px]" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="35" data-source-line-end="45" data-v-0b81bb01=""><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 hover:bg-accent h-10 w-10 tap-target -ml-2 text-foreground/80 hover:text-primary transition-colors" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-0b81bb01=""><!--[--><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-0b81bb01="" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg><!--]--></button></div><h1 class="flex-1 text-center truncate px-2 text-base font-semibold tracking-tight text-foreground" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="48" data-source-line-end="50" data-v-0b81bb01="">关怀互动</h1><div class="flex items-center justify-end min-w-[56px] space-x-1" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="53" data-source-line-end="66" data-v-0b81bb01=""><!--[--><!----><!--]--></div></header><!--astro:end--></astro-island>
-    
-    <!-- Main content area - scrollable -->
-    <main data-source-file="src/layouts/MobileFlowLayout.astro" data-source-line-start="20" data-source-line-end="22" class="flex-1 overflow-y-auto min-h-0 mobile-content-scroll">
-      
-  <astro-island uid="Z1l3IRh" prefix="s0" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/InteractionHubContent.BHCX4VlQ.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;InteractionHubContent&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><div class="h-full flex flex-col bg-background" data-source-file="src/components/interaction-hub/InteractionHubContent.vue" data-source-line-start="77" data-source-line-end="112" data-v-38b3dff2=""><div class="page-body border-b border-border" data-source-file="src/components/interaction-hub/InteractionHubContent.vue" data-source-line-start="79" data-source-line-end="93" data-v-38b3dff2=""><div class="flex items-center gap-3 mb-2" data-source-file="src/components/interaction-hub/InteractionHubContent.vue" data-source-line-start="80" data-source-line-end="92" data-v-38b3dff2=""><div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white" data-source-file="src/components/interaction-hub/InteractionHubContent.vue" data-source-line-start="81" data-source-line-end="83" data-v-38b3dff2=""><span class="text-lg font-bold" data-source-file="src/components/interaction-hub/InteractionHubContent.vue" data-source-line-start="82" data-source-line-end="82" data-v-38b3dff2="">爸</span></div><div class="flex-1" data-source-file="src/components/interaction-hub/InteractionHubContent.vue" data-source-line-start="84" data-source-line-end="91" data-v-38b3dff2=""><h2 class="text-item-title" data-source-file="src/components/interaction-hub/InteractionHubContent.vue" data-source-line-start="85" data-source-line-end="85" data-v-38b3dff2="">爸爸</h2><p class="text-caption" data-source-file="src/components/interaction-hub/InteractionHubContent.vue" data-source-line-start="86" data-source-line-end="90" data-v-38b3dff2=""><span class="text-accent" data-source-file="src/components/interaction-hub/InteractionHubContent.vue" data-source-line-start="87" data-source-line-end="87" data-v-38b3dff2="">已按时吃饭</span></p></div></div></div><div class="flex-1 overflow-y-auto min-h-0 mobile-content-scroll" data-source-file="src/components/interaction-hub/InteractionHubContent.vue" data-source-line-start="96" data-source-line-end="101" data-v-38b3dff2=""><div class="flex flex-col" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="60" data-source-line-end="128" data-v-38b3dff2="" data-v-bb80e381=""><div class="space-y-3 page-body" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="73" data-source-line-end="116" data-v-bb80e381=""><!--[--><div class="surface-base card-padding rounded-lg border border-border/50 transition-all duration-200" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="74" data-source-line-end="115" data-v-bb80e381=""><div class="flex items-start gap-3 mb-2" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="80" data-source-line-end="104" data-v-bb80e381=""><div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-warning bg-muted/30" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="81" data-source-line-end="91" data-v-bb80e381=""><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-bb80e381="" class="lucide lucide-bell-icon lucide-bell"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg></div><div class="flex-1 min-w-0" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="92" data-source-line-end="101" data-v-bb80e381=""><div class="flex items-center justify-between gap-2" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="93" data-source-line-end="100" data-v-bb80e381=""><span class="text-label font-medium" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="94" data-source-line-end="96" data-v-bb80e381="">催饭提醒</span><span class="text-caption whitespace-nowrap" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="97" data-source-line-end="99" data-v-bb80e381="">2026/3/28</span></div></div><!----></div><p class="text-body text-foreground/90 leading-relaxed break-words" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="107" data-source-line-end="109" data-v-bb80e381="">记得准时吃午饭哦，别太忙啦。</p><p class="text-caption text-muted-foreground mt-2" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="112" data-source-line-end="114" data-v-bb80e381=""> 来自 爸爸</p></div><div class="surface-base card-padding rounded-lg border border-border/50 transition-all duration-200" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="74" data-source-line-end="115" data-v-bb80e381=""><div class="flex items-start gap-3 mb-2" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="80" data-source-line-end="104" data-v-bb80e381=""><div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-secondary bg-muted/30" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="81" data-source-line-end="91" data-v-bb80e381=""><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-bb80e381="" class="lucide lucide-message-circle-icon lucide-message-circle"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"></path></svg></div><div class="flex-1 min-w-0" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="92" data-source-line-end="101" data-v-bb80e381=""><div class="flex items-center justify-between gap-2" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="93" data-source-line-end="100" data-v-bb80e381=""><span class="text-label font-medium" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="94" data-source-line-end="96" data-v-bb80e381="">回复消息</span><span class="text-caption whitespace-nowrap" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="97" data-source-line-end="99" data-v-bb80e381="">2026/3/28</span></div></div><!----></div><p class="text-body text-foreground/90 leading-relaxed break-words" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="107" data-source-line-end="109" data-v-bb80e381="">已经吃上了，谢谢关心。</p><p class="text-caption text-muted-foreground mt-2" data-source-file="src/components/interaction-hub/InteractionThread.vue" data-source-line-start="112" data-source-line-end="114" data-v-bb80e381=""> 来自 爸爸</p></div><!--]--></div></div></div><div class="flex-shrink-0 border-t border-border page-body" data-source-file="src/components/interaction-hub/InteractionHubContent.vue" data-source-line-start="104" data-source-line-end="111" data-v-38b3dff2=""><!--[--><div class="flex gap-2 w-full" data-source-file="src/components/interaction-hub/InteractionActions.vue" data-source-line-start="46" data-source-line-end="66" data-v-e337d766=""><button class="inline-flex items-center justify-center whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 flex-1 gap-2 h-11 rounded-lg font-medium" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-e337d766=""><!--[--><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-e337d766="" class="lucide lucide-bell-icon lucide-bell"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg><span data-source-file="src/components/interaction-hub/InteractionActions.vue" data-source-line-start="54" data-source-line-end="54" data-v-e337d766="">一键催饭</span><!--]--></button><button class="inline-flex items-center justify-center whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 border border-input bg-transparent hover:bg-accent hover:text-accent-foreground px-4 py-2 flex-1 gap-2 h-11 rounded-lg font-medium" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-e337d766=""><!--[--><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-e337d766="" class="lucide lucide-smile-icon lucide-smile"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" x2="9.01" y1="9" y2="9"></line><line x1="15" x2="15.01" y1="9" y2="9"></line></svg><span data-source-file="src/components/interaction-hub/InteractionActions.vue" data-source-line-start="64" data-source-line-end="64" data-v-e337d766="">发送表情</span><!--]--></button></div><!--[--><!--[--><!--v-if--><!--]--><!--]--><!--]--></div></div><!--astro:end--></astro-island>
+  <main class="main-content" id="mainContent">
+    <!-- 动态渲染 -->
+    <div style="text-align: center; padding: 2rem;">加载中...</div>
+  </main>
 
-    </main>
+  <div class="bottom-nav">
+    <div class="nav-item" data-nav="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/>
+        <rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
+      </svg>
+      <span class="nav-label">首页</span>
+    </div>
+    <div class="nav-item" data-nav="record">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
+      </svg>
+      <span class="nav-label">饮食记录</span>
+    </div>
+    <div class="nav-item" data-nav="friends">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>
+      </svg>
+      <span class="nav-label">亲友空间</span>
+    </div>
+    <div class="nav-item" data-nav="report">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
+      </svg>
+      <span class="nav-label">报表</span>
+    </div>
   </div>
 
-    <astro-island uid="Z1rXJ5e" prefix="s2" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/sonner.BzCgywvZ.js" component-export="Toaster" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;Toaster&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><!--[--><!-- Remove item from normal navigation flow, only available via hotkey --><section aria-label="Notifications alt+T" tabindex="-1" aria-live="polite" aria-relevant="additions text" aria-atomic="false"><!--[--><ol data-sonner-toaster="" data-sonner-theme="light" class="toaster group" dir="ltr" tabindex="-1" data-theme="light" data-rich-colors="false" data-y-position="bottom" data-x-position="right" style="--front-toast-height:0px;--width:356px;--gap:14px;--offset-top:24px;--offset-right:24px;--offset-bottom:24px;--offset-left:24px;--mobile-offset-top:16px;--mobile-offset-right:16px;--mobile-offset-bottom:16px;--mobile-offset-left:16px;" data-source-file="src/components/ui/sonner/Sonner.vue" data-source-line-start="9" data-source-line-end="22"><!--[--><!--]--></ol><!--]--></section><!--]--><!--astro:end--></astro-island>
   <script>
-    const originalBack = window.history.back
-    const originalForward = window.history.forward
-    const originalGo = window.history.go
-    function isValidNavigation(){
-      if(!window.parent.history.state.back || !window.parent.history.state.back.startsWith(&#39;/designPage&#39;)){
-        return false
+    // 获取亲友列表（与亲友空间共享数据）
+    function getFriends() {
+      const stored = localStorage.getItem('friendsList');
+      if (stored) {
+        try { return JSON.parse(stored); } catch(e) {}
       }
-      return true
+      return [
+        { id: '1', name: '爸爸', relation: '家人', status: 'checked', statusText: '已按时吃饭' },
+        { id: '2', name: '同学', relation: '朋友', status: 'busy', statusText: '正在忙碌中' },
+        { id: '3', name: '女儿', relation: '家人', status: 'online', statusText: '在线' }
+      ];
     }
-    window.history.back = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalBack.apply(this, args);
-    };
 
-    window.history.forward = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalForward.apply(this, args);
-    };
+    // 获取互动记录（按亲友ID存储）
+    function getInteractions(friendId) {
+      const key = `interactions_${friendId}`;
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : [];
+    }
 
-    window.history.go = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalGo.apply(this, args);
-    };
-  </script></body></html>'></iframe>
-                    </div>
-                  </div>
+    // 保存互动记录
+    function saveInteractions(friendId, interactions) {
+      const key = `interactions_${friendId}`;
+      localStorage.setItem(key, JSON.stringify(interactions));
+    }
 
-                </body>
-                </html>
-            
+    // 添加新互动
+    function addInteraction(friendId, type, message, fromMe = true) {
+      const interactions = getInteractions(friendId);
+      const newItem = {
+        id: Date.now(),
+        type: type, // 'remind', 'reply', 'emotion'
+        title: type === 'remind' ? '催饭提醒' : (type === 'reply' ? '回复消息' : '表情互动'),
+        message: message,
+        from: fromMe ? '我' : (getFriends().find(f => f.id === friendId)?.name || '亲友'),
+        timestamp: new Date().toISOString(),
+        dateStr: new Date().toLocaleDateString('zh-CN')
+      };
+      interactions.unshift(newItem);
+      saveInteractions(friendId, interactions);
+    }
+
+    // 渲染当前页面（默认使用第一个亲友，或者通过URL参数指定）
+    function renderPage() {
+      const friends = getFriends();
+      if (friends.length === 0) {
+        document.getElementById('mainContent').innerHTML = `
+          <div class="empty-state">
+            <p>暂无亲友，请先添加亲友</p>
+            <button class="action-btn primary" style="margin-top:1rem;" id="goToFriendsBtn">去亲友空间</button>
+          </div>
+        `;
+        const goBtn = document.getElementById('goToFriendsBtn');
+        if (goBtn) goBtn.addEventListener('click', () => {
+          window.location.href = '亲友共享空间主页.html';
+        });
+        return;
+      }
+
+      // 取第一个亲友作为当前互动对象（可扩展选择逻辑）
+      const currentFriend = friends[0];
+      const interactions = getInteractions(currentFriend.id);
+
+      // 生成互动列表HTML
+      let interactionsHtml = '';
+      if (interactions.length === 0) {
+        interactionsHtml = `<div class="empty-state">暂无互动记录，点击下方按钮发起关怀~</div>`;
+      } else {
+        interactionsHtml = interactions.map(item => `
+          <div class="interaction-item">
+            <div class="item-header">
+              <div class="item-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  ${item.type === 'remind' ? '<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>' : 
+                    (item.type === 'reply' ? '<path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>' :
+                    '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/>')}
+                </svg>
+              </div>
+              <div class="item-title">${escapeHtml(item.title)}</div>
+              <div class="item-date">${item.dateStr}</div>
+            </div>
+            <div class="item-message">${escapeHtml(item.message)}</div>
+            <div class="item-from">来自 ${escapeHtml(item.from)}</div>
+          </div>
+        `).join('');
+      }
+
+      const fullHtml = `
+        <div class="profile-card">
+          <div class="avatar">${currentFriend.name.charAt(0)}</div>
+          <div class="profile-info">
+            <div class="profile-name">${escapeHtml(currentFriend.name)}</div>
+            <div class="profile-status">${currentFriend.statusText || '在线'}</div>
+          </div>
+        </div>
+        <div class="interactions-list" id="interactionsList">
+          ${interactionsHtml}
+        </div>
+      `;
+      document.getElementById('mainContent').innerHTML = fullHtml;
+
+      // 绑定操作栏（因为操作栏是固定的，不需要重新渲染，但需要确保按钮事件有效）
+      // 操作栏已经在页面底部存在，但可能因为重新渲染被覆盖？不会，操作栏独立于mainContent。
+      // 绑定事件需要在页面加载时执行一次。
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
+    }
+
+    // 初始化操作栏按钮事件
+    function initActionButtons() {
+      const friends = getFriends();
+      if (friends.length === 0) return;
+      const currentFriend = friends[0];
+
+      const remindBtn = document.getElementById('remindBtn');
+      const emotionBtn = document.getElementById('emotionBtn');
+      if (remindBtn) {
+        remindBtn.onclick = () => {
+          const msg = prompt('发送催饭提醒内容：', '记得准时吃饭哦，别太忙啦。');
+          if (msg && msg.trim()) {
+            addInteraction(currentFriend.id, 'remind', msg.trim(), true);
+            renderPage(); // 刷新页面显示新记录
+          }
+        };
+      }
+      if (emotionBtn) {
+        emotionBtn.onclick = () => {
+          const emojis = ['😊 加油', '💪 按时吃饭', '🌸 照顾好自己', '❤️ 关心你', '🍚 记得吃饭'];
+          const selected = prompt('选择或输入表情/问候语：\n' + emojis.join('\n'), emojis[0]);
+          if (selected && selected.trim()) {
+            addInteraction(currentFriend.id, 'emotion', selected.trim(), true);
+            renderPage();
+          }
+        };
+      }
+    }
+
+    // 底部导航栏
+    function initBottomNav() {
+      const navItems = document.querySelectorAll('.nav-item');
+      navItems.forEach(item => {
+        item.addEventListener('click', () => {
+          const navTo = item.getAttribute('data-nav');
+          if (navTo === 'home') window.location.href = '饮食管理首页.html';
+          else if (navTo === 'record') window.location.href = '打卡详情页.html';
+          else if (navTo === 'friends') window.location.href = '亲友共享空间主页.html';
+          else if (navTo === 'report') window.location.href = '饮食趋势报表.html';
+        });
+      });
+    }
+
+    // 返回按钮
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.location.href = '亲友共享空间主页.html';
+    });
+
+    // 渲染页面和操作栏（操作栏需要先存在于DOM中）
+    // 由于操作栏在HTML中已经写好，但需要确保ID存在
+    // 我们可以在页面加载后动态创建操作栏（或者使用固定HTML）
+    // 注意：上面HTML中已经包含了.action-bar，但为了方便，我们在JS中动态追加一下，确保兼容性
+    function ensureActionBar() {
+      let actionBar = document.querySelector('.action-bar');
+      if (!actionBar) {
+        const bar = document.createElement('div');
+        bar.className = 'action-bar';
+        bar.innerHTML = `
+          <button class="action-btn primary" id="remindBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
+            一键催饭
+          </button>
+          <button class="action-btn" id="emotionBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>
+            发送表情
+          </button>
+        `;
+        document.body.appendChild(bar);
+      }
+    }
+
+    ensureActionBar();
+    renderPage();
+    initActionButtons();
+    initBottomNav();
+  </script>
+</body>
+</html>
