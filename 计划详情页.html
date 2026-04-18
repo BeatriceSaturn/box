@@ -1,327 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>计划详情 - 吃了么</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #fef9e8;
+      font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    /* 头部样式 */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      width: 100%;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
+      padding: 0 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+    .back-btn {
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: #f0e4d4; }
+    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
+    .title {
+      flex: 1;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #5a3e2b;
+    }
+    .right-placeholder { width: 2.5rem; }
 
-                <!DOCTYPE html>
-                <html lang="zh">
-                <head>
-                  <meta charset="UTF-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <meta name="color-scheme" content="light">
-                  <meta name="supported-color-schemes" content="light">
-                  <title>计划详情页</title>
-                  <style>
-                    *,
-                    *::before,
-                    *::after {
-                      box-sizing: border-box;
-                      margin: 0;
-                    }
-                    .iframe-outer {
-                      position: fixed;
-                      top: 0;
-                      left: 0;
-                      bottom: 0;
-                      right: 0;
-                      display: flex;
-                      justify-content: center;
-                      background-color: #E0E0E0;
-                    }
-                    .iframe-wrapper {
-                      width: 100%;
-                      height: 100%;
-                      margin: 0 auto;
-                      transform-origin: center top;
-                      flex-shrink: 0;
-                    }
-                    #dynamicIframe {
-                      border: none;
-                      width: 100%;
-                      height: 100%;
-                    }
-                  </style>
-                  <script>
-                const width = 402
-                const height = 874
-                const resolutionRatio = width && height ? width / height : 1
-                const pageNameMap = {
-                  'login_screen': '登录注册页',
-    'user_profile_setup': '基础信息采集页',
-    'goal_setting': '核心目标设定页',
-    'plan_selection': '饮食计划选择页',
-    'plan_details': '计划详情页',
-    'plan_tracking': '我的计划进度页',
-    'home_dashboard': '饮食管理首页',
-    'diet_logging_detail': '打卡详情页',
-    'logging_success_feedback': '打卡反馈页',
-    'social_circles_main': '亲友共享空间主页',
-    'invite_connection': '邀请关注页',
-    'interaction_hub': '关怀互动页',
-    'diet_encyclopedia': '饮食百科',
-    'health_metrics_test': '健康指标测试',
-    'ai_diet_recommendation': 'AI个性化膳食建议',
-    'dietary_statistics_report': '饮食趋势报表',
-    'habit_milestone_badges': '习惯里程碑成就'
-                }
-                const allPageIds = ["login_screen","user_profile_setup","goal_setting","plan_selection","plan_details","plan_tracking","home_dashboard","diet_logging_detail","logging_success_feedback","social_circles_main","invite_connection","interaction_hub","diet_encyclopedia","health_metrics_test","ai_diet_recommendation","dietary_statistics_report","habit_milestone_badges"]
-                const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-                const IFRAME_MESSAGE_TYPE = {
-                  iframeNavigation: 'iframeNavigation',
-                }
-                const safeAddEventListener = function Tc(e,t,r,n=!1){e.removeEventListener(t,r,n),e.addEventListener(t,r,n)}
-                const processOnclick = (e,t,r)=>{if(r){const n=zw(t);if(n.methodName&&Rp(n.methodName,r))return;e.preventDefault(),e.stopPropagation();const s=n.args||[],i=(s==null?void 0:s.find(u=>u))||"";i&&jp(i)}}
-                const checkIframeMethod = (e,t)=>{try{return typeof t[e]=="function"||typeof t[e]=="function"}catch(r){return!1}}
-                const postIframeMessage = (targetPageId) => {
-                  window.parent.postMessage({
-                    type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                    targetPageId,
-                  })
-                }
-                const handleIframeLinkClick = (event) => {
-                  const dynamicIframe = document.querySelector('#dynamicIframe')
-                  if (!dynamicIframe?.contentWindow) {
-                    return
-                  }
-                  const link = event.target.closest('a')
-                  const target = event.target
-                  if (link) {
-                    const href = link.getAttribute('href')
-                    const onclick = link.getAttribute('onclick')
-                    if (href && href !== '#' && !href.startsWith('javascript:')) {
-                      event.preventDefault()
-                      event.stopPropagation()
-                      const targetPageId = getKeyByValueObj(allFormatPageIdsMap, href)
-                      if (targetPageId) {
-                        postIframeMessage(targetPageId)
-                      }
-                      return
-                    }
-                    if (onclick) {
-                      processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                    } else {
-                      event.preventDefault()
-                      event.stopPropagation()
-                    }
-                    return
-                  }
-                  const onclick = target.getAttribute('onclick')
-                  if (onclick) {
-                    processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                  }
-                }
-                function stringExt(link) {
-                  let s = String(link || '')
-                  s = (s.split('#')[0] || '')
-                  s = (s.split('?')[0] || '')
-                  s = s.trim()
-                  s = s.split('/').filter(Boolean).pop() || ''
-                  const lower = s.toLowerCase()
-                  if (lower.endsWith('.html') || lower.endsWith('.php') || lower.endsWith('.aspx')) {
-                    s = s.slice(0, s.lastIndexOf('.'))
-                  }
-                  return s
-                }
-                function formatHref(href) {
-                  if (!href) {
-                    return ''
-                  }
-                  try {
-                    const url = new URL(href, window.location.href)
-                    const pathname = url.pathname || ''
-                    return stringExt(pathname)
-                  } catch {
-                    return stringExt(href)
-                  }
-                }
-                function getKeyByValueObj(obj, value) {
-                  const newValue = formatHref(value)
-                  const keyFind = Object.keys(obj).find(k => k === newValue)
-                  if (keyFind) {
-                    return keyFind
-                  }
-                  return Object.keys(obj).find(k => obj[k] === newValue)
-                }
-                function setIframeSize(w, h) {
-                  const currentContainerRadio = w / h
-                  let widthValue = w
-                  let heightValue = h
-                  let zoom = 1
-                  if (currentContainerRadio > resolutionRatio) {
-                    widthValue = h * resolutionRatio
-                    heightValue = h
-                  } else {
-                    widthValue = w
-                    heightValue = w / resolutionRatio
-                  }
-                  zoom = width ? widthValue / width : 1
-                  return {
-                    width: widthValue / zoom + 'px',
-                    height: heightValue / zoom + 'px',
-                    zoom,
-                  }
-                }
-                function adjustIframeSize() {
-                  const iframeWrapper = document.querySelector(".iframe-wrapper")
-                  const { width, height, zoom } = setIframeSize(window.innerWidth, window.innerHeight)
-                  iframeWrapper.style.height = height
-                  iframeWrapper.style.width = width
-                  iframeWrapper.style.transform = 'scale(' + zoom + ')'
-                }
-                function sanitizeFilename(name) {
-                  return name.replace(/[\/:*?"<>|]/g, '_')
-                }
-                function handlePostMessage(event) {
-                  if (!event.data) {
-                    return
-                  }
-                  const { type, targetPageId } = event.data
-                  const targetPageName = pageNameMap[targetPageId]
-                  if (type === "iframeNavigation" && targetPageId && targetPageName) {
-                    window.location.href = targetPageName + '.html'
-                  }
-                }
-                function setupIframeEvents() {
-                  const iframe = document.getElementById('dynamicIframe')
-                  if (iframe && iframe.contentWindow && iframe.contentWindow.document) {
-                    safeAddEventListener(iframe.contentWindow.document, 'click', handleIframeLinkClick, true)
-                  } else {
-                    setTimeout(setupIframeEvents, 100)
-                  }
-                }
-                window.addEventListener('message', handlePostMessage)
-                window.onload = function() {
-                  adjustIframeSize()
-                  setupIframeEvents()
-                }
-                window.onresize = adjustIframeSize
-                window.onunload = () => {
-                  window.removeEventListener('message', handlePostMessage)
-                }
-              </script>
-                </head>
-                <body>
-                  <div class="iframe-outer">
-                    <div class="iframe-wrapper">
-                      <iframe id="dynamicIframe" srcdoc='<html data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="14" data-source-line-end="25" lang="en"><head data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="15" data-source-line-end="20"><script>(function(){
-      function stringExt(link) {
-        let s = String(link || &#39;&#39;)
-        s = (s.split(&#39;#&#39;)[0] || &#39;&#39;)
-        s = (s.split(&#39;?&#39;)[0] || &#39;&#39;)
-        s = s.trim()
-        s = s.split(&#39;/&#39;).filter(Boolean).pop() || &#39;&#39;
-        const lower = s.toLowerCase()
-        if (lower.endsWith(&#39;.html&#39;) || lower.endsWith(&#39;.php&#39;) || lower.endsWith(&#39;.aspx&#39;)) {
-          s = s.slice(0, s.lastIndexOf(&#39;.&#39;))
-        }
-        return s
-      }
-      function formatHref(href) {
-        if (!href) {
-          return &#39;&#39;
-        }
-        try {
-          const url = new URL(href, window.location.href)
-          const pathname = url.pathname || &#39;&#39;
-          return stringExt(pathname)
-        } catch {
-          return stringExt(href)
-        }
-      }
-      function getKeyByValueObj(obj, value) {
-        const newValue = formatHref(value)
-        const keyFind = Object.keys(obj).find(k => k === newValue)
-        if (keyFind) {
-          return keyFind
-        }
-        return Object.keys(obj).find(k => obj[k] === newValue)
-      }
-      function emit(to, source){
-        try {
-          if (window.parent) {
-            const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-            const IFRAME_MESSAGE_TYPE = {
-              iframeNavigation: &#39;iframeNavigation&#39;,
-            }
-            const targetPageId = getKeyByValueObj(allFormatPageIdsMap, String(to || &#39;&#39;))
-            if (targetPageId) {
-              window.parent.postMessage({
-                type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                targetPageId,
-              }, &#39;*&#39;)
-            }
-          }
-        } catch(e) {}
-      }
-      try{
-        if (&#39;navigation&#39; in window &amp;&amp; window.navigation &amp;&amp; typeof window.navigation.addEventListener===&#39;function&#39;){
-          window.navigation.addEventListener(&#39;navigate&#39;, function(e){
-            try{
-              var url = (e.destination &amp;&amp; e.destination.url) || &#39;&#39;;
-              if (e.canIntercept &amp;&amp; typeof e.intercept===&#39;function&#39;){ e.intercept({ handler:function(){} }) }
-              else if (e.preventDefault){ e.preventDefault() }
-              emit(url)
-            }catch(_){}
-          })
-        }
-      }catch(_){}
-    })();</script><meta name="supported-color-schemes" content="light"><meta name="color-scheme" content="light"><style>
-      :root, html, body { color-scheme: light; }
-      html { forced-color-adjust: none; }
-    </style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Built with Astro">
-    <title data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="19" data-source-line-end="19">计划详情</title>
-  <link rel="stylesheet" href="./assets/html/113216/ai-diet-recommendation.CyT-fR9B.css">
-<style>header[data-v-0b81bb01]{height:56px;backdrop-filter:blur(8px);background-color:hsl(var(--card) / .95)}.truncate[data-v-0b81bb01]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.overflow-y-auto[data-v-a1093f4a]{-webkit-overflow-scrolling:touch}main[data-v-a1093f4a]{padding-bottom:180px}
-</style><script src="./assets/static/uxbot/25_6/holder.js"></script></head>
-  <body data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="21" data-source-line-end="24">
-    
-  <div data-source-file="src/layouts/MobileFlowLayout.astro" data-source-line-start="15" data-source-line-end="23" class="h-screen overflow-hidden flex flex-col bg-background">
-    <!-- Header with back button -->
-    <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&amp;&amp;s.isSameNode(this)&amp;&amp;(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&amp;&amp;s.isSameNode(this)&amp;&amp;(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&amp;&amp;(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&amp;&amp;this.lastChild.nodeValue==="astro:end"&amp;&amp;(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&amp;&amp;await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="12Xao" prefix="s1" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/MobileHeader.DIYhopFc.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{&amp;quot;title&amp;quot;:[0,&amp;quot;计划详情&amp;quot;],&amp;quot;showBack&amp;quot;:[0,true]}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;MobileHeader&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><header class="sticky top-0 z-50 w-full bg-card border-b border-border shadow-sm px-4 flex items-center justify-between" style="height:var(--header-height);" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="30" data-source-line-end="67" data-v-0b81bb01=""><div class="flex items-center min-w-[56px]" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="35" data-source-line-end="45" data-v-0b81bb01=""><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 hover:bg-accent h-10 w-10 tap-target -ml-2 text-foreground/80 hover:text-primary transition-colors" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-0b81bb01=""><!--[--><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-0b81bb01="" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg><!--]--></button></div><h1 class="flex-1 text-center truncate px-2 text-base font-semibold tracking-tight text-foreground" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="48" data-source-line-end="50" data-v-0b81bb01="">计划详情</h1><div class="flex items-center justify-end min-w-[56px] space-x-1" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="53" data-source-line-end="66" data-v-0b81bb01=""><!--[--><!----><!--]--></div></header><!--astro:end--></astro-island>
-    
-    <!-- Main content area - scrollable -->
-    <main data-source-file="src/layouts/MobileFlowLayout.astro" data-source-line-start="20" data-source-line-end="22" class="flex-1 overflow-y-auto min-h-0 mobile-content-scroll">
-      
-  <astro-island uid="2oCRwg" prefix="s0" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/PlanDetailsContent.C0PF7sWo.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;PlanDetailsContent&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><main class="page-body space-y-6 pb-24" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="72" data-source-line-end="181" data-v-a1093f4a=""><div class="surface-raised card-padding space-y-4" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="74" data-source-line-end="96" data-v-a1093f4a=""><div class="flex items-start gap-4" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="76" data-source-line-end="84" data-v-a1093f4a=""><div class="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="77" data-source-line-end="79" data-v-a1093f4a=""><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-primary lucide-sparkles-icon lucide-sparkles text-primary" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-a1093f4a=""><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path><path d="M20 2v4"></path><path d="M22 4h-4"></path><circle cx="4" cy="20" r="2"></circle></svg></div><div class="flex-1 min-w-0" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="80" data-source-line-end="83" data-v-a1093f4a=""><h1 class="text-page-title mb-2" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="81" data-source-line-end="81" data-v-a1093f4a="">3天体验计划</h1><p class="text-body text-muted-foreground" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="82" data-source-line-end="82" data-v-a1093f4a="">用最轻量的方式重建三餐感知，适合刚开始想调整节奏的用户。</p></div></div><div class="flex items-center gap-3 pt-2" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="87" data-source-line-end="95" data-v-a1093f4a=""><div class="badge-primary" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="88" data-source-line-end="91" data-v-a1093f4a=""><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide mr-1 lucide-calendar-icon lucide-calendar mr-1" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-a1093f4a=""><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg> 3天 </div><div class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-accent/10 text-accent" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="92" data-source-line-end="94" data-v-a1093f4a="">简单难度 </div></div></div><div class="space-y-3" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="99" data-source-line-end="109" data-v-a1093f4a=""><h2 class="text-section-title px-1" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="100" data-source-line-end="100" data-v-a1093f4a="">执行重点</h2><div class="space-y-2" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="101" data-source-line-end="108" data-v-a1093f4a=""><!--[--><div class="surface-base card-padding flex items-start gap-3" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="102" data-source-line-end="107" data-v-a1093f4a=""><div class="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mt-0.5" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="103" data-source-line-end="105" data-v-a1093f4a=""><span class="text-xs font-bold text-primary" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="104" data-source-line-end="104" data-v-a1093f4a="">1</span></div><p class="text-body text-foreground flex-1" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="106" data-source-line-end="106" data-v-a1093f4a="">固定早餐时间</p></div><div class="surface-base card-padding flex items-start gap-3" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="102" data-source-line-end="107" data-v-a1093f4a=""><div class="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mt-0.5" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="103" data-source-line-end="105" data-v-a1093f4a=""><span class="text-xs font-bold text-primary" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="104" data-source-line-end="104" data-v-a1093f4a="">2</span></div><p class="text-body text-foreground flex-1" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="106" data-source-line-end="106" data-v-a1093f4a="">午餐不拖延</p></div><div class="surface-base card-padding flex items-start gap-3" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="102" data-source-line-end="107" data-v-a1093f4a=""><div class="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mt-0.5" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="103" data-source-line-end="105" data-v-a1093f4a=""><span class="text-xs font-bold text-primary" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="104" data-source-line-end="104" data-v-a1093f4a="">3</span></div><p class="text-body text-foreground flex-1" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="106" data-source-line-end="106" data-v-a1093f4a="">晚餐不过晚</p></div><!--]--></div></div><div class="grid grid-cols-2 gap-3" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="112" data-source-line-end="130" data-v-a1093f4a=""><div class="surface-base card-padding space-y-2" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="114" data-source-line-end="120" data-v-a1093f4a=""><div class="flex items-center gap-2 mb-1" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="115" data-source-line-end="118" data-v-a1093f4a=""><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-accent lucide-bell-icon lucide-bell text-accent" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-a1093f4a=""><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg><span class="text-label text-muted-foreground" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="117" data-source-line-end="117" data-v-a1093f4a="">提醒方式</span></div><p class="text-item-title text-foreground" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="119" data-source-line-end="119" data-v-a1093f4a="">温柔提醒</p></div><div class="surface-base card-padding space-y-2" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="123" data-source-line-end="129" data-v-a1093f4a=""><div class="flex items-center gap-2 mb-1" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="124" data-source-line-end="127" data-v-a1093f4a=""><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-primary lucide-target-icon lucide-target text-primary" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-a1093f4a=""><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg><span class="text-label text-muted-foreground" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="126" data-source-line-end="126" data-v-a1093f4a="">预期收益</span></div><p class="text-item-title text-foreground" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="128" data-source-line-end="128" data-v-a1093f4a="">快速建立“先吃饭再忙”的基础习惯。</p></div></div><div class="surface-base card-padding space-y-4" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="133" data-source-line-end="153" data-v-a1093f4a=""><h3 class="text-section-title" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="134" data-source-line-end="134" data-v-a1093f4a="">计划协议</h3><div class="bg-muted/30 rounded-lg p-3 max-h-32 overflow-y-auto" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="137" data-source-line-end="141" data-v-a1093f4a=""><p class="text-sm text-muted-foreground leading-relaxed" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="138" data-source-line-end="140" data-v-a1093f4a=""> 我已阅读并理解该3天计划的执行要求。我承诺在计划期间坚持每日打卡，记录饮食情况。我理解本计划旨在帮助我养成良好的饮食习惯，但不能替代专业医学建议。如有任何健康问题，我会咨询专业医生。 </p></div><div class="flex items-start gap-3" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="144" data-source-line-end="152" data-v-a1093f4a=""><button class="grid place-content-center peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground mt-1" data-source-file="src/components/ui/checkbox/Checkbox.vue" data-source-line-start="18" data-source-line-end="29" data-v-a1093f4a="" role="checkbox" type="button" aria-checked="false" aria-required="false" data-state="unchecked"><!--[--><!----><!--]--><!--v-if--></button><label class="text-sm text-foreground cursor-pointer flex-1" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="149" data-source-line-end="151" data-v-a1093f4a=""> 我已阅读并同意上述计划协议 </label></div></div><div class="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background to-transparent pt-4 pb-6 px-5 space-y-3" data-source-file="src/components/plan_details/PlanDetailsContent.vue" data-source-line-start="156" data-source-line-end="180" data-v-a1093f4a=""><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-8 w-full h-12 text-base font-semibold" disabled="" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-a1093f4a=""><!--[--><!--[--> 确认协议并开始执行 <!--]--><!--]--></button><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 border border-input bg-transparent hover:bg-accent hover:text-accent-foreground rounded-md px-8 w-full h-12 text-base font-semibold" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-a1093f4a=""><!--[--> 返回选择 <!--]--></button></div></main><!--astro:end--></astro-island>
+    /* 主内容滚动区 */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+      padding-bottom: 120px;
+      scrollbar-width: thin;
+    }
+    /* 卡片样式 */
+    .detail-card {
+      background: white;
+      border-radius: 1rem;
+      border: 1px solid #f0e4d4;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .plan-header {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .plan-icon {
+      width: 4rem;
+      height: 4rem;
+      background: #fdf3e8;
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .plan-icon svg { width: 2rem; height: 2rem; stroke: #e67e22; stroke-width: 1.8; }
+    .plan-title h1 { font-size: 1.5rem; font-weight: 700; color: #5a3e2b; margin-bottom: 0.25rem; }
+    .plan-title p { font-size: 0.85rem; color: #a07a5c; }
+    .badge-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      background: #fdf3e8;
+      color: #e67e22;
+    }
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #5a3e2b;
+      margin: 1rem 0 0.75rem;
+    }
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .step-item {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      background: #fffbf5;
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+    }
+    .step-num {
+      width: 1.5rem;
+      height: 1.5rem;
+      background: #fdf3e8;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #e67e22;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin: 0.5rem 0;
+    }
+    .info-box {
+      background: #fffbf5;
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+    }
+    .info-label {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.7rem;
+      color: #a07a5c;
+      margin-bottom: 0.25rem;
+    }
+    .info-value {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #5a3e2b;
+    }
+    .protocol-box {
+      background: #fef5ea;
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+      font-size: 0.75rem;
+      color: #5a3e2b;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    .checkbox-item input {
+      width: 1.2rem;
+      height: 1.2rem;
+      margin-top: 0.1rem;
+      accent-color: #e67e22;
+    }
+    .checkbox-item label {
+      font-size: 0.85rem;
+      color: #5a3e2b;
+    }
+    /* 底部按钮 */
+    .bottom-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, #fef9e8 80%, transparent);
+      padding: 1rem 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .btn-primary {
+      width: 100%;
+      background: #d9c8b8;
+      border: none;
+      border-radius: 48px;
+      padding: 0.9rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      cursor: not-allowed;
+      transition: all 0.2s;
+    }
+    .btn-primary.active {
+      background: #e67e22;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(230,126,34,0.3);
+    }
+    .btn-primary.active:hover { background: #d4691a; transform: translateY(-1px); }
+    .btn-secondary {
+      width: 100%;
+      background: transparent;
+      border: 1px solid #e2d4c8;
+      border-radius: 48px;
+      padding: 0.9rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #a07a5c;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { background: #f0e4d4; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" id="backBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="title">计划详情</div>
+    <div class="right-placeholder"></div>
+  </header>
 
-    </main>
+  <main class="main-content" id="mainContent">
+    <!-- 动态内容将根据计划填充 -->
+    <div style="text-align: center; padding: 2rem;">加载中...</div>
+  </main>
+
+  <div class="bottom-buttons">
+    <button class="btn-primary" id="confirmBtn" disabled>确认协议并开始执行</button>
+    <button class="btn-secondary" id="backToSelectBtn">返回选择</button>
   </div>
 
-    <astro-island uid="Z1rXJ5e" prefix="s2" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/sonner.BzCgywvZ.js" component-export="Toaster" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;Toaster&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><!--[--><!-- Remove item from normal navigation flow, only available via hotkey --><section aria-label="Notifications alt+T" tabindex="-1" aria-live="polite" aria-relevant="additions text" aria-atomic="false"><!--[--><ol data-sonner-toaster="" data-sonner-theme="light" class="toaster group" dir="ltr" tabindex="-1" data-theme="light" data-rich-colors="false" data-y-position="bottom" data-x-position="right" style="--front-toast-height:0px;--width:356px;--gap:14px;--offset-top:24px;--offset-right:24px;--offset-bottom:24px;--offset-left:24px;--mobile-offset-top:16px;--mobile-offset-right:16px;--mobile-offset-bottom:16px;--mobile-offset-left:16px;" data-source-file="src/components/ui/sonner/Sonner.vue" data-source-line-start="9" data-source-line-end="22"><!--[--><!--]--></ol><!--]--></section><!--]--><!--astro:end--></astro-island>
   <script>
-    const originalBack = window.history.back
-    const originalForward = window.history.forward
-    const originalGo = window.history.go
-    function isValidNavigation(){
-      if(!window.parent.history.state.back || !window.parent.history.state.back.startsWith(&#39;/designPage&#39;)){
-        return false
+    // 计划详情数据映射
+    const plansData = {
+      '3day': {
+        name: '3天体验计划',
+        description: '用最轻量的方式重建三餐感知，适合刚开始想调整节奏的用户。',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg>',
+        duration: '3天',
+        difficulty: '简单',
+        steps: ['固定早餐时间', '午餐不拖延', '晚餐不过晚'],
+        reminder: '温柔提醒',
+        benefit: '快速建立“先吃饭再忙”的基础习惯。',
+        protocol: '我已阅读并理解该3天计划的执行要求。我承诺在计划期间坚持每日打卡，记录饮食情况。我理解本计划旨在帮助我养成良好的饮食习惯，但不能替代专业医学建议。如有任何健康问题，我会咨询专业医生。'
+      },
+      '7day': {
+        name: '7天巩固计划',
+        description: '通过一周连续打卡，让规律吃饭形成可感知的节奏。',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M17 14h-6"/><path d="M13 18H7"/><path d="M7 14h.01"/><path d="M17 18h.01"/></svg>',
+        duration: '7天',
+        difficulty: '简单',
+        steps: ['三餐完整记录', '避免空腹过久', '固定用餐时间'],
+        reminder: '定时提醒',
+        benefit: '让饮食规律开始稳定下来。',
+        protocol: '我已阅读并理解该7天计划的执行要求。我承诺在计划期间坚持每日打卡，记录饮食情况。我理解本计划旨在帮助我养成良好的饮食习惯，但不能替代专业医学建议。如有任何健康问题，我会咨询专业医生。'
+      },
+      '14day': {
+        name: '14天平衡计划',
+        description: '在忙碌与健康之间找到更好的平衡，兼顾工作学习强度。',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>',
+        duration: '14天',
+        difficulty: '中等',
+        steps: ['合理加餐', '记录饮食心情', '每周总结'],
+        reminder: '智能提醒',
+        benefit: '建立更适合自己的饮食节律。',
+        protocol: '我已阅读并理解该14天计划的执行要求。我承诺在计划期间坚持每日打卡，记录饮食情况。我理解本计划旨在帮助我养成良好的饮食习惯，但不能替代专业医学建议。如有任何健康问题，我会咨询专业医生。'
+      },
+      '21day': {
+        name: '21天蜕变计划',
+        description: '面向长期习惯重建，强调持续性与自我管理能力。',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/><path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"/><path d="M18 9h1.5a1 1 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/><path d="M6 9H4.5a1 1 0 0 1 0-5H6"/></svg>',
+        duration: '21天',
+        difficulty: '困难',
+        steps: ['精准计划执行', '每周复盘', '营养分析'],
+        reminder: '个性化提醒',
+        benefit: '帮助用户形成更稳固的饮食惯性。',
+        protocol: '我已阅读并理解该21天计划的执行要求。我承诺在计划期间坚持每日打卡，记录饮食情况。我理解本计划旨在帮助我养成良好的饮食习惯，但不能替代专业医学建议。如有任何健康问题，我会咨询专业医生。'
       }
-      return true
+    };
+
+    // 获取选中的计划（从 localStorage）
+    let selectedPlan = localStorage.getItem('selectedPlan');
+    // 如果没有选中的计划，默认显示3天计划（或提示错误）
+    if (!selectedPlan || !plansData[selectedPlan]) {
+      selectedPlan = '3day';
     }
-    window.history.back = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalBack.apply(this, args);
-    };
 
-    window.history.forward = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalForward.apply(this, args);
-    };
+    const plan = plansData[selectedPlan];
+    const mainEl = document.getElementById('mainContent');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const backToSelectBtn = document.getElementById('backToSelectBtn');
+    const backBtn = document.getElementById('backBtn');
 
-    window.history.go = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalGo.apply(this, args);
-    };
-  </script></body></html>'></iframe>
-                    </div>
-                  </div>
+    let isAgreed = false;
 
-                </body>
-                </html>
-            
+    // 渲染页面内容
+    function renderPlan() {
+      const stepsHtml = plan.steps.map((step, idx) => `
+        <div class="step-item">
+          <div class="step-num">${idx+1}</div>
+          <div style="flex:1;">${step}</div>
+        </div>
+      `).join('');
+
+      const html = `
+        <div class="detail-card">
+          <div class="plan-header">
+            <div class="plan-icon">${plan.icon}</div>
+            <div class="plan-title">
+              <h1>${plan.name}</h1>
+              <p>${plan.description}</p>
+              <div class="badge-group">
+                <span class="badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg> ${plan.duration}</span>
+                <span class="badge">${plan.difficulty}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <div class="section-title">执行重点</div>
+          <div class="step-list">${stepsHtml}</div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg> 提醒方式</div>
+            <div class="info-value">${plan.reminder}</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> 预期收益</div>
+            <div class="info-value">${plan.benefit}</div>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <div class="section-title">计划协议</div>
+          <div class="protocol-box">${plan.protocol}</div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="agreeCheckbox">
+            <label for="agreeCheckbox">我已阅读并同意上述计划协议</label>
+          </div>
+        </div>
+      `;
+      mainEl.innerHTML = html;
+
+      // 绑定复选框事件
+      const checkbox = document.getElementById('agreeCheckbox');
+      if (checkbox) {
+        checkbox.addEventListener('change', (e) => {
+          isAgreed = e.target.checked;
+          if (isAgreed) {
+            confirmBtn.disabled = false;
+            confirmBtn.classList.add('active');
+          } else {
+            confirmBtn.disabled = true;
+            confirmBtn.classList.remove('active');
+          }
+        });
+      }
+    }
+
+    renderPlan();
+
+    // 确认按钮：保存计划开始标记，跳转到饮食管理首页
+    confirmBtn.addEventListener('click', () => {
+      if (!isAgreed) return;
+      // 保存已确认的计划开始状态（可选）
+      localStorage.setItem('planStarted', 'true');
+      localStorage.setItem('planStartDate', new Date().toISOString());
+      // 跳转到饮食管理首页（请确保文件名存在）
+      window.location.href = '饮食管理首页.html';
+    });
+
+    // 返回选择页
+    backToSelectBtn.addEventListener('click', () => {
+      window.location.href = '饮食计划选择页.html';
+    });
+
+    // 左上角返回（同返回选择）
+    backBtn.addEventListener('click', () => {
+      window.location.href = '饮食计划选择页.html';
+    });
+  </script>
+</body>
+</html>
