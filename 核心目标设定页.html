@@ -229,7 +229,7 @@
   <main class="main-content">
     <div class="page-title">
       <h2>选择你的健康目标</h2>
-      <p>根据你的需求选择最适合的目标，我们将为你定制个性化的饮食方案</p>
+      <p>根据你的需求选择最适合的目标，我们将为你定制个性化的饮食方案（可多选）</p>
     </div>
 
     <div class="cards-list" id="cardsList">
@@ -313,70 +313,76 @@
     const nextBtn = document.getElementById('nextBtn');
     const backBtn = document.getElementById('backBtn');
 
-    let selectedGoal = null;   // 存储选中的目标值
+    // 存储选中的目标列表（数组）
+    let selectedGoals = [];
 
-    // 从 localStorage 读取已保存的目标（如果有）
-    function loadSavedGoal() {
-      const saved = localStorage.getItem('userGoal');
+    // 从 localStorage 读取已保存的目标列表（如果有）
+    function loadSavedGoals() {
+      const saved = localStorage.getItem('userGoals');
       if (saved) {
-        selectedGoal = saved;
-        // 高亮对应的卡片
-        cards.forEach(card => {
-          const goalValue = card.getAttribute('data-goal');
-          if (goalValue === selectedGoal) {
-            card.classList.add('selected');
-          } else {
-            card.classList.remove('selected');
-          }
-        });
-        // 启用按钮
-        if (selectedGoal) {
-          nextBtn.disabled = false;
-          nextBtn.classList.add('active');
-        }
+        try {
+          selectedGoals = JSON.parse(saved);
+          // 高亮对应的卡片
+          cards.forEach(card => {
+            const goalValue = card.getAttribute('data-goal');
+            if (selectedGoals.includes(goalValue)) {
+              card.classList.add('selected');
+            } else {
+              card.classList.remove('selected');
+            }
+          });
+          // 更新按钮状态
+          updateButtonState();
+        } catch(e) {}
       }
     }
 
-    // 保存目标到 localStorage
-    function saveGoal(goal) {
-      localStorage.setItem('userGoal', goal);
-      selectedGoal = goal;
+    // 保存目标列表到 localStorage
+    function saveGoals() {
+      localStorage.setItem('userGoals', JSON.stringify(selectedGoals));
     }
 
-    // 处理卡片点击
+    // 更新底部按钮的启用/禁用状态
+    function updateButtonState() {
+      if (selectedGoals.length > 0) {
+        nextBtn.disabled = false;
+        nextBtn.classList.add('active');
+      } else {
+        nextBtn.disabled = true;
+        nextBtn.classList.remove('active');
+      }
+    }
+
+    // 处理卡片点击（多选逻辑）
     cards.forEach(card => {
       card.addEventListener('click', (e) => {
-        // 防止点击内部元素冒泡干扰
         e.stopPropagation();
         const goalValue = card.getAttribute('data-goal');
+        const index = selectedGoals.indexOf(goalValue);
         
-        // 如果点击的是已经选中的卡片，则取消选中
-        if (selectedGoal === goalValue) {
-          selectedGoal = null;
-          card.classList.remove('selected');
-          nextBtn.disabled = true;
-          nextBtn.classList.remove('active');
-          // 从 localStorage 中移除（可选，也可以保留但无选中状态）
-          localStorage.removeItem('userGoal');
-        } else {
-          // 否则移除其他卡片的选中状态，高亮当前卡片
-          cards.forEach(c => c.classList.remove('selected'));
+        if (index === -1) {
+          // 未选中 → 添加到选中列表
+          selectedGoals.push(goalValue);
           card.classList.add('selected');
-          selectedGoal = goalValue;
-          saveGoal(goalValue);
-          nextBtn.disabled = false;
-          nextBtn.classList.add('active');
+        } else {
+          // 已选中 → 从列表中移除
+          selectedGoals.splice(index, 1);
+          card.classList.remove('selected');
         }
+        
+        // 保存到 localStorage
+        saveGoals();
+        // 更新按钮状态
+        updateButtonState();
       });
     });
 
-    // 点击下一步：跳转到饮食计划选择页
+    // 点击下一步：保存目标列表并跳转
     nextBtn.addEventListener('click', () => {
-      if (!selectedGoal) {
-        // 理论上按钮被禁用不会触发，但以防万一
-        return;
-      }
-      // 跳转到下一个页面（请确保该文件存在于仓库中）
+      if (selectedGoals.length === 0) return;
+      // 确保最新数据已保存
+      saveGoals();
+      // 跳转到下一个页面（饮食计划选择页）
       window.location.href = '饮食计划选择页.html';
     });
 
@@ -385,9 +391,8 @@
       window.location.href = '基础信息采集页.html';
     });
 
-    // 页面加载时检查是否已有保存的目标
-    loadSavedGoal();
+    // 页面加载时读取已保存的目标
+    loadSavedGoals();
   </script>
 </body>
 </html>
-            
