@@ -1,329 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>个人信息 - 吃了么</title>
+  <style>
+    /* ========== 全局样式与变量（与登录页保持一致） ========== */
+    *, ::before, ::after {
+      box-sizing: border-box;
+      margin: 0;
+    }
+    :root {
+      --background: 30 25% 97%;
+      --foreground: 25 15% 20%;
+      --card: 40 30% 99%;
+      --card-foreground: 25 15% 20%;
+      --primary: 20 85% 68%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 260 60% 75%;
+      --secondary-foreground: 260 30% 15%;
+      --accent: 160 55% 70%;
+      --accent-foreground: 160 30% 15%;
+      --muted: 350 20% 85%;
+      --muted-foreground: 350 10% 45%;
+      --border: 30 15% 88%;
+      --input: 30 15% 88%;
+      --ring: 20 85% 68%;
+      --radius: 1rem;
+      --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.06);
+      --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.08);
+      --header-height: 56px;
+    }
+    body {
+      background-color: hsl(var(--background));
+      color: hsl(var(--foreground));
+      font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    /* 头部样式 */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      width: 100%;
+      background-color: hsl(var(--card));
+      border-bottom: 1px solid hsl(var(--border));
+      box-shadow: var(--shadow-soft);
+      padding: 0 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: var(--header-height);
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .back-btn:hover {
+      background-color: hsl(var(--accent));
+    }
+    .back-btn svg {
+      width: 1.5rem;
+      height: 1.5rem;
+      stroke: currentColor;
+      stroke-width: 2.5;
+    }
+    .title {
+      flex: 1;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      color: hsl(var(--foreground));
+      padding: 0 0.5rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* 主内容区滚动 */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 1.25rem 2rem;
+    }
+    /* 卡片样式 */
+    .card {
+      border-radius: var(--radius);
+      border: 1px solid hsl(var(--border));
+      background-color: hsl(var(--card));
+      box-shadow: var(--shadow-card);
+    }
+    .card-header {
+      padding: 1.5rem 1.5rem 0.75rem;
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.25rem;
+    }
+    .card-desc {
+      font-size: 0.875rem;
+      color: hsl(var(--muted-foreground));
+    }
+    .card-content {
+      padding: 0 1.5rem 1.5rem;
+    }
+    /* 表单样式 */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .radio-group {
+      display: flex;
+      gap: 1rem;
+    }
+    .radio-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+    .radio-item input {
+      width: 1rem;
+      height: 1rem;
+      accent-color: hsl(var(--primary));
+    }
+    .input {
+      width: 100%;
+      height: 2.5rem;
+      border-radius: calc(var(--radius) - 2px);
+      border: 1px solid hsl(var(--input));
+      background-color: hsl(var(--background));
+      padding: 0 0.75rem;
+      font-size: 1rem;
+    }
+    .input:focus {
+      outline: none;
+      ring: 2px solid hsl(var(--ring));
+    }
+    /* BMI 卡片内样式 */
+    .bmi-value {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 1rem;
+    }
+    .bmi-number {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: hsl(var(--primary));
+    }
+    .bmi-status {
+      padding: 0.25rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    .status-healthy { background-color: #d1fae5; color: #065f46; }
+    .status-underweight { background-color: #e0f2fe; color: #075985; }
+    .status-overweight { background-color: #fed7aa; color: #9a3412; }
+    .status-obese { background-color: #ffe4e6; color: #9f1239; }
+    .bmi-advice {
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin: 0.75rem 0;
+    }
+    .bmi-advice-detail {
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+      line-height: 1.5;
+    }
+    .reference-bar {
+      margin-top: 1rem;
+      border-top: 1px solid hsl(var(--border) / 0.5);
+      padding-top: 1rem;
+    }
+    .reference-bar p {
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 0.5rem;
+    }
+    .ref-labels {
+      display: flex;
+      gap: 0.25rem;
+      font-size: 0.625rem;
+    }
+    .ref-item {
+      flex: 1;
+      text-align: center;
+    }
+    .ref-color {
+      height: 0.5rem;
+      border-radius: 0.125rem;
+      margin-bottom: 0.25rem;
+    }
+    /* 按钮 */
+    .btn-primary {
+      width: 100%;
+      height: 3rem;
+      background-color: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-top: 1rem;
+    }
+    .btn-primary:hover {
+      background-color: hsl(var(--primary) / 0.9);
+    }
+    .footer-note {
+      text-align: center;
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- 头部 -->
+  <header class="header">
+    <div class="back-btn" id="backBtn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 18l-6-6 6-6" />
+      </svg>
+    </div>
+    <h1 class="title">个人信息</h1>
+    <div style="width: 2.5rem;"></div> <!-- 占位保持居中 -->
+  </header>
 
-                <!DOCTYPE html>
-                <html lang="zh">
-                <head>
-                  <meta charset="UTF-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <meta name="color-scheme" content="light">
-                  <meta name="supported-color-schemes" content="light">
-                  <title>基础信息采集页</title>
-                  <style>
-                    *,
-                    *::before,
-                    *::after {
-                      box-sizing: border-box;
-                      margin: 0;
-                    }
-                    .iframe-outer {
-                      position: fixed;
-                      top: 0;
-                      left: 0;
-                      bottom: 0;
-                      right: 0;
-                      display: flex;
-                      justify-content: center;
-                      background-color: #E0E0E0;
-                    }
-                    .iframe-wrapper {
-                      width: 100%;
-                      height: 100%;
-                      margin: 0 auto;
-                      transform-origin: center top;
-                      flex-shrink: 0;
-                    }
-                    #dynamicIframe {
-                      border: none;
-                      width: 100%;
-                      height: 100%;
-                    }
-                  </style>
-                  <script>
-                const width = 402
-                const height = 874
-                const resolutionRatio = width && height ? width / height : 1
-                const pageNameMap = {
-                  'login_screen': '登录注册页',
-    'user_profile_setup': '基础信息采集页',
-    'goal_setting': '核心目标设定页',
-    'plan_selection': '饮食计划选择页',
-    'plan_details': '计划详情页',
-    'plan_tracking': '我的计划进度页',
-    'home_dashboard': '饮食管理首页',
-    'diet_logging_detail': '打卡详情页',
-    'logging_success_feedback': '打卡反馈页',
-    'social_circles_main': '亲友共享空间主页',
-    'invite_connection': '邀请关注页',
-    'interaction_hub': '关怀互动页',
-    'diet_encyclopedia': '饮食百科',
-    'health_metrics_test': '健康指标测试',
-    'ai_diet_recommendation': 'AI个性化膳食建议',
-    'dietary_statistics_report': '饮食趋势报表',
-    'habit_milestone_badges': '习惯里程碑成就'
-                }
-                const allPageIds = ["login_screen","user_profile_setup","goal_setting","plan_selection","plan_details","plan_tracking","home_dashboard","diet_logging_detail","logging_success_feedback","social_circles_main","invite_connection","interaction_hub","diet_encyclopedia","health_metrics_test","ai_diet_recommendation","dietary_statistics_report","habit_milestone_badges"]
-                const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-                const IFRAME_MESSAGE_TYPE = {
-                  iframeNavigation: 'iframeNavigation',
-                }
-                const safeAddEventListener = function Tc(e,t,r,n=!1){e.removeEventListener(t,r,n),e.addEventListener(t,r,n)}
-                const processOnclick = (e,t,r)=>{if(r){const n=zw(t);if(n.methodName&&Rp(n.methodName,r))return;e.preventDefault(),e.stopPropagation();const s=n.args||[],i=(s==null?void 0:s.find(u=>u))||"";i&&jp(i)}}
-                const checkIframeMethod = (e,t)=>{try{return typeof t[e]=="function"||typeof t[e]=="function"}catch(r){return!1}}
-                const postIframeMessage = (targetPageId) => {
-                  window.parent.postMessage({
-                    type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                    targetPageId,
-                  })
-                }
-                const handleIframeLinkClick = (event) => {
-                  const dynamicIframe = document.querySelector('#dynamicIframe')
-                  if (!dynamicIframe?.contentWindow) {
-                    return
-                  }
-                  const link = event.target.closest('a')
-                  const target = event.target
-                  if (link) {
-                    const href = link.getAttribute('href')
-                    const onclick = link.getAttribute('onclick')
-                    if (href && href !== '#' && !href.startsWith('javascript:')) {
-                      event.preventDefault()
-                      event.stopPropagation()
-                      const targetPageId = getKeyByValueObj(allFormatPageIdsMap, href)
-                      if (targetPageId) {
-                        postIframeMessage(targetPageId)
-                      }
-                      return
-                    }
-                    if (onclick) {
-                      processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                    } else {
-                      event.preventDefault()
-                      event.stopPropagation()
-                    }
-                    return
-                  }
-                  const onclick = target.getAttribute('onclick')
-                  if (onclick) {
-                    processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                  }
-                }
-                function stringExt(link) {
-                  let s = String(link || '')
-                  s = (s.split('#')[0] || '')
-                  s = (s.split('?')[0] || '')
-                  s = s.trim()
-                  s = s.split('/').filter(Boolean).pop() || ''
-                  const lower = s.toLowerCase()
-                  if (lower.endsWith('.html') || lower.endsWith('.php') || lower.endsWith('.aspx')) {
-                    s = s.slice(0, s.lastIndexOf('.'))
-                  }
-                  return s
-                }
-                function formatHref(href) {
-                  if (!href) {
-                    return ''
-                  }
-                  try {
-                    const url = new URL(href, window.location.href)
-                    const pathname = url.pathname || ''
-                    return stringExt(pathname)
-                  } catch {
-                    return stringExt(href)
-                  }
-                }
-                function getKeyByValueObj(obj, value) {
-                  const newValue = formatHref(value)
-                  const keyFind = Object.keys(obj).find(k => k === newValue)
-                  if (keyFind) {
-                    return keyFind
-                  }
-                  return Object.keys(obj).find(k => obj[k] === newValue)
-                }
-                function setIframeSize(w, h) {
-                  const currentContainerRadio = w / h
-                  let widthValue = w
-                  let heightValue = h
-                  let zoom = 1
-                  if (currentContainerRadio > resolutionRatio) {
-                    widthValue = h * resolutionRatio
-                    heightValue = h
-                  } else {
-                    widthValue = w
-                    heightValue = w / resolutionRatio
-                  }
-                  zoom = width ? widthValue / width : 1
-                  return {
-                    width: widthValue / zoom + 'px',
-                    height: heightValue / zoom + 'px',
-                    zoom,
-                  }
-                }
-                function adjustIframeSize() {
-                  const iframeWrapper = document.querySelector(".iframe-wrapper")
-                  const { width, height, zoom } = setIframeSize(window.innerWidth, window.innerHeight)
-                  iframeWrapper.style.height = height
-                  iframeWrapper.style.width = width
-                  iframeWrapper.style.transform = 'scale(' + zoom + ')'
-                }
-                function sanitizeFilename(name) {
-                  return name.replace(/[\/:*?"<>|]/g, '_')
-                }
-                function handlePostMessage(event) {
-                  if (!event.data) {
-                    return
-                  }
-                  const { type, targetPageId } = event.data
-                  const targetPageName = pageNameMap[targetPageId]
-                  if (type === "iframeNavigation" && targetPageId && targetPageName) {
-                    window.location.href = targetPageName + '.html'
-                  }
-                }
-                function setupIframeEvents() {
-                  const iframe = document.getElementById('dynamicIframe')
-                  if (iframe && iframe.contentWindow && iframe.contentWindow.document) {
-                    safeAddEventListener(iframe.contentWindow.document, 'click', handleIframeLinkClick, true)
-                  } else {
-                    setTimeout(setupIframeEvents, 100)
-                  }
-                }
-                window.addEventListener('message', handlePostMessage)
-                window.onload = function() {
-                  adjustIframeSize()
-                  setupIframeEvents()
-                }
-                window.onresize = adjustIframeSize
-                window.onunload = () => {
-                  window.removeEventListener('message', handlePostMessage)
-                }
-              </script>
-                </head>
-                <body>
-                  <div class="iframe-outer">
-                    <div class="iframe-wrapper">
-                      <iframe id="dynamicIframe" srcdoc='<html data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="14" data-source-line-end="25" lang="en"><head data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="15" data-source-line-end="20"><script>(function(){
-      function stringExt(link) {
-        let s = String(link || &#39;&#39;)
-        s = (s.split(&#39;#&#39;)[0] || &#39;&#39;)
-        s = (s.split(&#39;?&#39;)[0] || &#39;&#39;)
-        s = s.trim()
-        s = s.split(&#39;/&#39;).filter(Boolean).pop() || &#39;&#39;
-        const lower = s.toLowerCase()
-        if (lower.endsWith(&#39;.html&#39;) || lower.endsWith(&#39;.php&#39;) || lower.endsWith(&#39;.aspx&#39;)) {
-          s = s.slice(0, s.lastIndexOf(&#39;.&#39;))
-        }
-        return s
+  <main class="main-content">
+    <!-- 提示卡片 -->
+    <div class="card" style="margin-bottom: 1.5rem; border-color: hsl(var(--primary) / 0.2); background-color: hsl(var(--primary) / 0.05);">
+      <div class="card-header">
+        <h3 class="card-title">完善个人信息</h3>
+        <p class="card-desc">这些信息将帮助我们为您提供更精准的膳食建议</p>
+      </div>
+    </div>
+
+    <!-- 表单 -->
+    <div class="form-group">
+      <label class="form-label">性别</label>
+      <div class="radio-group" id="genderGroup">
+        <label class="radio-item">
+          <input type="radio" name="gender" value="female"> 女性
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="gender" value="male"> 男性
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="gender" value="other"> 其他
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="age">年龄</label>
+      <input type="number" id="age" class="input" placeholder="请输入年龄" min="18" max="120" value="28">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="height">身高 (cm)</label>
+      <input type="number" id="height" class="input" placeholder="请输入身高" min="100" max="250" value="165">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="weight">体重 (kg)</label>
+      <input type="number" id="weight" class="input" placeholder="请输入体重" min="20" max="300" value="55">
+    </div>
+
+    <!-- BMI 卡片 -->
+    <div class="card" style="margin-top: 0.5rem;">
+      <div class="card-header">
+        <h3 class="card-title">BMI 健康指数</h3>
+      </div>
+      <div class="card-content">
+        <div class="bmi-value">
+          <div>
+            <p class="card-desc" style="margin-bottom: 0.25rem;">当前BMI</p>
+            <span class="bmi-number" id="bmiValue">21.3</span>
+          </div>
+          <div>
+            <span class="bmi-status" id="bmiStatus">健康</span>
+          </div>
+        </div>
+        <div id="bmiAdvice" class="bmi-advice">当前BMI处于相对健康区间。</div>
+        <div id="bmiAdviceDetail" class="bmi-advice-detail">保持规律饮食与适量活动，继续稳定作息。</div>
+
+        <div class="reference-bar">
+          <p>健康区间参考</p>
+          <div class="ref-labels">
+            <div class="ref-item"><div class="ref-color" style="background: #7dd3fc;"></div>偏瘦</div>
+            <div class="ref-item"><div class="ref-color" style="background: #6ee7b7;"></div>健康</div>
+            <div class="ref-item"><div class="ref-color" style="background: #fcd34d;"></div>超重</div>
+            <div class="ref-item"><div class="ref-color" style="background: #fda4af;"></div>肥胖</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 确认按钮 -->
+    <button class="btn-primary" id="submitBtn">确认信息并继续</button>
+    <div class="footer-note">您可以在之后随时修改这些信息</div>
+  </main>
+
+  <script>
+    // DOM 元素
+    const genderRadios = document.querySelectorAll('input[name="gender"]');
+    const ageInput = document.getElementById('age');
+    const heightInput = document.getElementById('height');
+    const weightInput = document.getElementById('weight');
+    const bmiValueSpan = document.getElementById('bmiValue');
+    const bmiStatusSpan = document.getElementById('bmiStatus');
+    const bmiAdviceDiv = document.getElementById('bmiAdvice');
+    const bmiAdviceDetailDiv = document.getElementById('bmiAdviceDetail');
+    const submitBtn = document.getElementById('submitBtn');
+    const backBtn = document.getElementById('backBtn');
+
+    // 辅助函数：计算BMI并更新界面
+    function updateBMI() {
+      const heightCm = parseFloat(heightInput.value);
+      const weightKg = parseFloat(weightInput.value);
+      if (isNaN(heightCm) || isNaN(weightKg) || heightCm <= 0 || weightKg <= 0) {
+        bmiValueSpan.textContent = '--';
+        bmiStatusSpan.textContent = '未知';
+        bmiAdviceDiv.textContent = '请输入有效的身高和体重';
+        bmiAdviceDetailDiv.textContent = '';
+        return;
       }
-      function formatHref(href) {
-        if (!href) {
-          return &#39;&#39;
+      const heightM = heightCm / 100;
+      const bmi = weightKg / (heightM * heightM);
+      const bmiFixed = bmi.toFixed(1);
+      bmiValueSpan.textContent = bmiFixed;
+
+      let status = '';
+      let advice = '';
+      let detail = '';
+      let statusClass = '';
+
+      if (bmi < 18.5) {
+        status = '偏瘦';
+        statusClass = 'status-underweight';
+        advice = '体重偏轻，建议适当增加营养摄入。';
+        detail = '多摄入优质蛋白和健康脂肪，保持三餐规律。';
+      } else if (bmi >= 18.5 && bmi < 24) {
+        status = '健康';
+        statusClass = 'status-healthy';
+        advice = '当前BMI处于相对健康区间。';
+        detail = '保持规律饮食与适量活动，继续稳定作息。';
+      } else if (bmi >= 24 && bmi < 28) {
+        status = '超重';
+        statusClass = 'status-overweight';
+        advice = '体重超标，注意饮食控制和运动。';
+        detail = '减少高热量食物，增加蔬菜和全谷物，每天坚持30分钟有氧运动。';
+      } else {
+        status = '肥胖';
+        statusClass = 'status-obese';
+        advice = '体重偏高，建议制定科学减重计划。';
+        detail = '咨询营养师，控制总热量摄入，定期监测体重。';
+      }
+
+      bmiStatusSpan.textContent = status;
+      bmiStatusSpan.className = `bmi-status ${statusClass}`;
+      bmiAdviceDiv.textContent = advice;
+      bmiAdviceDetailDiv.textContent = detail;
+    }
+
+    // 监听身高体重变化
+    heightInput.addEventListener('input', updateBMI);
+    weightInput.addEventListener('input', updateBMI);
+
+    // 保存数据并跳转
+    function saveAndContinue() {
+      // 获取选中的性别
+      let selectedGender = '';
+      for (let radio of genderRadios) {
+        if (radio.checked) {
+          selectedGender = radio.value;
+          break;
         }
+      }
+      const age = parseInt(ageInput.value) || 0;
+      const height = parseFloat(heightInput.value) || 0;
+      const weight = parseFloat(weightInput.value) || 0;
+      const bmi = (height && weight) ? (weight / ((height/100)**2)).toFixed(1) : 0;
+
+      // 保存到 localStorage
+      const userProfile = {
+        gender: selectedGender,
+        age: age,
+        height: height,
+        weight: weight,
+        bmi: bmi,
+        updatedAt: new Date().toISOString()
+      };
+      localStorage.setItem('userProfile', JSON.stringify(userProfile));
+      // 也可以标记用户已完成信息采集
+      localStorage.setItem('profileCompleted', 'true');
+
+      // 跳转到下一个页面（核心目标设定页）
+      window.location.href = '核心目标设定页.html';
+    }
+
+    submitBtn.addEventListener('click', saveAndContinue);
+
+    // 返回上一页（假设上一页是登录页）
+    backBtn.addEventListener('click', () => {
+      window.location.href = '登录注册页.html';
+    });
+
+    // 页面加载时，尝试读取已保存的个人信息并填充（如果有）
+    function loadSavedProfile() {
+      const saved = localStorage.getItem('userProfile');
+      if (saved) {
         try {
-          const url = new URL(href, window.location.href)
-          const pathname = url.pathname || &#39;&#39;
-          return stringExt(pathname)
-        } catch {
-          return stringExt(href)
-        }
-      }
-      function getKeyByValueObj(obj, value) {
-        const newValue = formatHref(value)
-        const keyFind = Object.keys(obj).find(k => k === newValue)
-        if (keyFind) {
-          return keyFind
-        }
-        return Object.keys(obj).find(k => obj[k] === newValue)
-      }
-      function emit(to, source){
-        try {
-          if (window.parent) {
-            const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-            const IFRAME_MESSAGE_TYPE = {
-              iframeNavigation: &#39;iframeNavigation&#39;,
-            }
-            const targetPageId = getKeyByValueObj(allFormatPageIdsMap, String(to || &#39;&#39;))
-            if (targetPageId) {
-              window.parent.postMessage({
-                type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                targetPageId,
-              }, &#39;*&#39;)
+          const profile = JSON.parse(saved);
+          if (profile.gender) {
+            for (let radio of genderRadios) {
+              if (radio.value === profile.gender) {
+                radio.checked = true;
+                break;
+              }
             }
           }
+          if (profile.age) ageInput.value = profile.age;
+          if (profile.height) heightInput.value = profile.height;
+          if (profile.weight) weightInput.value = profile.weight;
+          updateBMI(); // 重新计算BMI显示
         } catch(e) {}
+      } else {
+        // 默认选中女性
+        genderRadios[0].checked = true;
+        updateBMI();
       }
-      try{
-        if (&#39;navigation&#39; in window &amp;&amp; window.navigation &amp;&amp; typeof window.navigation.addEventListener===&#39;function&#39;){
-          window.navigation.addEventListener(&#39;navigate&#39;, function(e){
-            try{
-              var url = (e.destination &amp;&amp; e.destination.url) || &#39;&#39;;
-              if (e.canIntercept &amp;&amp; typeof e.intercept===&#39;function&#39;){ e.intercept({ handler:function(){} }) }
-              else if (e.preventDefault){ e.preventDefault() }
-              emit(url)
-            }catch(_){}
-          })
-        }
-      }catch(_){}
-    })();</script><meta name="supported-color-schemes" content="light"><meta name="color-scheme" content="light"><style>
-      :root, html, body { color-scheme: light; }
-      html { forced-color-adjust: none; }
-    </style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Built with Astro">
-    <title data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="19" data-source-line-end="19">个人信息</title>
-  <link rel="stylesheet" href="./assets/html/113216/ai-diet-recommendation.CyT-fR9B.css">
-<style>header[data-v-0b81bb01]{height:56px;backdrop-filter:blur(8px);background-color:hsl(var(--card) / .95)}.truncate[data-v-0b81bb01]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-[data-v-ee65f9d6] .input{border-radius:var(--radius);border-color:hsl(var(--border) / .6)}[data-v-ee65f9d6] .input:focus{--tw-ring-color: hsl(var(--primary) / .5) }[data-v-ee65f9d6] .radio-group-item{border-color:hsl(var(--border) / .6)}
-</style><script src="./assets/static/uxbot/25_6/holder.js"></script></head>
-  <body data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="21" data-source-line-end="24">
-    
-  <div data-source-file="src/layouts/MobileFlowLayout.astro" data-source-line-start="15" data-source-line-end="23" class="h-screen overflow-hidden flex flex-col bg-background">
-    <!-- Header with back button -->
-    <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&amp;&amp;s.isSameNode(this)&amp;&amp;(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&amp;&amp;s.isSameNode(this)&amp;&amp;(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&amp;&amp;(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&amp;&amp;this.lastChild.nodeValue==="astro:end"&amp;&amp;(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&amp;&amp;await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="Z1SgBxX" prefix="s1" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/MobileHeader.DIYhopFc.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{&amp;quot;title&amp;quot;:[0,&amp;quot;个人信息&amp;quot;],&amp;quot;showBack&amp;quot;:[0,true]}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;MobileHeader&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><header class="sticky top-0 z-50 w-full bg-card border-b border-border shadow-sm px-4 flex items-center justify-between" style="height:var(--header-height);" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="30" data-source-line-end="67" data-v-0b81bb01=""><div class="flex items-center min-w-[56px]" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="35" data-source-line-end="45" data-v-0b81bb01=""><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 hover:bg-accent h-10 w-10 tap-target -ml-2 text-foreground/80 hover:text-primary transition-colors" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-0b81bb01=""><!--[--><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-0b81bb01="" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg><!--]--></button></div><h1 class="flex-1 text-center truncate px-2 text-base font-semibold tracking-tight text-foreground" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="48" data-source-line-end="50" data-v-0b81bb01="">个人信息</h1><div class="flex items-center justify-end min-w-[56px] space-x-1" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="53" data-source-line-end="66" data-v-0b81bb01=""><!--[--><!----><!--]--></div></header><!--astro:end--></astro-island>
-    
-    <!-- Main content area - scrollable -->
-    <main data-source-file="src/layouts/MobileFlowLayout.astro" data-source-line-start="20" data-source-line-end="22" class="flex-1 overflow-y-auto min-h-0 mobile-content-scroll">
-      
-  <div data-source-file="src/pages/user-profile-setup.astro" data-source-line-start="8" data-source-line-end="10" class="page-body pb-8">
-    <astro-island uid="1y20Ic" prefix="s0" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/UserProfileForm.DgCPjQkF.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;UserProfileForm&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><div class="space-y-6" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="123" data-source-line-end="276" data-v-ee65f9d6=""><div class="rounded-lg border text-card-foreground shadow-sm border-primary/20 bg-primary/5" data-source-file="src/components/ui/card/Card.vue" data-source-line-start="11" data-source-line-end="20" data-v-ee65f9d6=""><!--[--><div class="flex flex-col gap-y-1.5 p-6 pb-3" data-source-file="src/components/ui/card/CardHeader.vue" data-source-line-start="11" data-source-line-end="13" data-v-ee65f9d6=""><!--[--><h3 class="font-semibold tracking-tight text-base" data-source-file="src/components/ui/card/CardTitle.vue" data-source-line-start="11" data-source-line-end="17" data-v-ee65f9d6=""><!--[-->完善个人信息<!--]--></h3><p class="text-sm text-muted-foreground" data-source-file="src/components/ui/card/CardDescription.vue" data-source-line-start="11" data-source-line-end="13" data-v-ee65f9d6=""><!--[-->这些信息将帮助我们为您提供更精准的膳食建议<!--]--></p><!--]--></div><!--]--></div><div class="space-y-3" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="133" data-source-line-end="151" data-v-ee65f9d6=""><label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-label" data-source-file="src/components/ui/label/Label.vue" data-source-line-start="14" data-source-line-end="24" data-v-ee65f9d6=""><!--[--><!--[-->性别<!--]--><!--]--></label><div class="grid gap-2" data-source-file="src/components/ui/radio-group/RadioGroup.vue" data-source-line-start="17" data-source-line-end="22" data-v-ee65f9d6="" tabindex="-1" dir="ltr" style="outline:none;" role="radiogroup" aria-required="false"><!--[--><!--[--><div class="flex gap-3" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="136" data-source-line-end="149" data-v-ee65f9d6=""><div class="flex items-center space-x-2 flex-1" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="137" data-source-line-end="140" data-v-ee65f9d6=""><button data-reka-collection-item="" tabindex="-1" data-active="" class="peer aspect-square h-4 w-4 rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" data-source-file="src/components/ui/radio-group/RadioGroupItem.vue" data-source-line-start="22" data-source-line-end="36" data-v-ee65f9d6="" id="gender-female" role="radio" type="button" aria-checked="true" data-state="checked" value="female"><!--[--><!--[--><span data-state="checked" class="flex items-center justify-center" data-source-file="src/components/ui/radio-group/RadioGroupItem.vue" data-source-line-start="31" data-source-line-end="35"><!--[--><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide h-2.5 w-2.5 fill-current text-current lucide-circle-icon lucide-circle h-2.5 w-2.5 fill-current text-current" data-source-file="src/components/ui/radio-group/RadioGroupItem.vue" data-source-line-start="34" data-source-line-end="34"><circle cx="12" cy="12" r="10"></circle></svg><!--]--></span><!--]--><!--]--><!--v-if--></button><label for="gender-female" class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1 font-normal" data-source-file="src/components/ui/label/Label.vue" data-source-line-start="14" data-source-line-end="24" data-v-ee65f9d6=""><!--[--><!--[-->女性<!--]--><!--]--></label></div><div class="flex items-center space-x-2 flex-1" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="141" data-source-line-end="144" data-v-ee65f9d6=""><button data-reka-collection-item="" tabindex="-1" class="peer aspect-square h-4 w-4 rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" data-source-file="src/components/ui/radio-group/RadioGroupItem.vue" data-source-line-start="22" data-source-line-end="36" data-v-ee65f9d6="" id="gender-male" role="radio" type="button" aria-checked="false" data-state="unchecked" value="male"><!--[--><!--[--><!----><!--]--><!--]--><!--v-if--></button><label for="gender-male" class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1 font-normal" data-source-file="src/components/ui/label/Label.vue" data-source-line-start="14" data-source-line-end="24" data-v-ee65f9d6=""><!--[--><!--[-->男性<!--]--><!--]--></label></div><div class="flex items-center space-x-2 flex-1" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="145" data-source-line-end="148" data-v-ee65f9d6=""><button data-reka-collection-item="" tabindex="-1" class="peer aspect-square h-4 w-4 rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" data-source-file="src/components/ui/radio-group/RadioGroupItem.vue" data-source-line-start="22" data-source-line-end="36" data-v-ee65f9d6="" id="gender-other" role="radio" type="button" aria-checked="false" data-state="unchecked" value="other"><!--[--><!--[--><!----><!--]--><!--]--><!--v-if--></button><label for="gender-other" class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1 font-normal" data-source-file="src/components/ui/label/Label.vue" data-source-line-start="14" data-source-line-end="24" data-v-ee65f9d6=""><!--[--><!--[-->其他<!--]--><!--]--></label></div></div><!--]--><!--]--><!--v-if--></div></div><div class="space-y-2" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="154" data-source-line-end="167" data-v-ee65f9d6=""><label for="age" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-label" data-source-file="src/components/ui/label/Label.vue" data-source-line-start="14" data-source-line-end="24" data-v-ee65f9d6=""><!--[--><!--[-->年龄<!--]--><!--]--></label><input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-base" id="age" type="number" placeholder="请输入年龄" min="18" max="120" data-source-file="src/components/ui/input/Input.vue" data-source-line-start="23" data-source-line-end="23" data-v-ee65f9d6=""><!----></div><div class="space-y-2" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="170" data-source-line-end="183" data-v-ee65f9d6=""><label for="height" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-label" data-source-file="src/components/ui/label/Label.vue" data-source-line-start="14" data-source-line-end="24" data-v-ee65f9d6=""><!--[--><!--[-->身高 (cm)<!--]--><!--]--></label><input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-base" id="height" type="number" placeholder="请输入身高" min="100" max="250" data-source-file="src/components/ui/input/Input.vue" data-source-line-start="23" data-source-line-end="23" data-v-ee65f9d6=""><!----></div><div class="space-y-2" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="186" data-source-line-end="199" data-v-ee65f9d6=""><label for="weight" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-label" data-source-file="src/components/ui/label/Label.vue" data-source-line-start="14" data-source-line-end="24" data-v-ee65f9d6=""><!--[--><!--[-->体重 (kg)<!--]--><!--]--></label><input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-base" id="weight" type="number" placeholder="请输入体重" min="20" max="300" data-source-file="src/components/ui/input/Input.vue" data-source-line-start="23" data-source-line-end="23" data-v-ee65f9d6=""><!----></div><div class="rounded-lg border bg-card text-card-foreground shadow-sm surface-raised border-border/60" data-source-file="src/components/ui/card/Card.vue" data-source-line-start="11" data-source-line-end="20" data-v-ee65f9d6=""><!--[--><div class="flex flex-col gap-y-1.5 p-6 pb-3" data-source-file="src/components/ui/card/CardHeader.vue" data-source-line-start="11" data-source-line-end="13" data-v-ee65f9d6=""><!--[--><h3 class="font-semibold tracking-tight text-base" data-source-file="src/components/ui/card/CardTitle.vue" data-source-line-start="11" data-source-line-end="17" data-v-ee65f9d6=""><!--[-->BMI 健康指数<!--]--></h3><!--]--></div><div class="p-6 pt-0 space-y-4" data-source-file="src/components/ui/card/CardContent.vue" data-source-line-start="11" data-source-line-end="13" data-v-ee65f9d6=""><!--[--><div class="flex items-end justify-between" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="207" data-source-line-end="224" data-v-ee65f9d6=""><div data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="208" data-source-line-end="211" data-v-ee65f9d6=""><p class="text-sm text-muted-foreground mb-1" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="209" data-source-line-end="209" data-v-ee65f9d6="">当前BMI</p><p class="text-4xl font-bold text-primary" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="210" data-source-line-end="210" data-v-ee65f9d6="">21.3</p></div><div class="px-4 py-2 rounded-lg font-medium text-sm bg-emerald-100 text-emerald-700" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="212" data-source-line-end="223" data-v-ee65f9d6="">健康</div></div><div class="pt-3 border-t border-border/50 space-y-2" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="226" data-source-line-end="229" data-v-ee65f9d6=""><p class="text-sm text-foreground font-medium" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="227" data-source-line-end="227" data-v-ee65f9d6="">当前BMI处于相对健康区间。</p><p class="text-xs text-muted-foreground leading-relaxed" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="228" data-source-line-end="228" data-v-ee65f9d6="">保持规律饮食与适量活动，继续稳定作息。</p></div><div class="pt-3 border-t border-border/50" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="232" data-source-line-end="252" data-v-ee65f9d6=""><p class="text-xs text-muted-foreground mb-2" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="233" data-source-line-end="233" data-v-ee65f9d6="">健康区间参考</p><div class="flex gap-1 text-[10px]" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="234" data-source-line-end="251" data-v-ee65f9d6=""><div class="flex-1 text-center" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="235" data-source-line-end="238" data-v-ee65f9d6=""><div class="h-2 bg-sky-200 rounded-sm mb-1" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="236" data-source-line-end="236" data-v-ee65f9d6=""></div><span data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="237" data-source-line-end="237" data-v-ee65f9d6="">偏瘦</span></div><div class="flex-1 text-center" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="239" data-source-line-end="242" data-v-ee65f9d6=""><div class="h-2 bg-emerald-200 rounded-sm mb-1" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="240" data-source-line-end="240" data-v-ee65f9d6=""></div><span data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="241" data-source-line-end="241" data-v-ee65f9d6="">健康</span></div><div class="flex-1 text-center" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="243" data-source-line-end="246" data-v-ee65f9d6=""><div class="h-2 bg-amber-200 rounded-sm mb-1" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="244" data-source-line-end="244" data-v-ee65f9d6=""></div><span data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="245" data-source-line-end="245" data-v-ee65f9d6="">超重</span></div><div class="flex-1 text-center" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="247" data-source-line-end="250" data-v-ee65f9d6=""><div class="h-2 bg-rose-200 rounded-sm mb-1" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="248" data-source-line-end="248" data-v-ee65f9d6=""></div><span data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="249" data-source-line-end="249" data-v-ee65f9d6="">肥胖</span></div></div></div><!--]--></div><!--]--></div><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 px-8 w-full h-12 text-base font-semibold rounded-lg" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-ee65f9d6=""><!--[--><!--[--> 确认信息并继续 <!--]--><!--]--></button><p class="text-xs text-muted-foreground text-center" data-source-file="src/components/user-profile-setup/UserProfileForm.vue" data-source-line-start="273" data-source-line-end="275" data-v-ee65f9d6=""> 您可以在之后随时修改这些信息 </p></div><!--astro:end--></astro-island>
-  </div>
-
-    </main>
-  </div>
-
-    <astro-island uid="Z1rXJ5e" prefix="s2" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/sonner.BzCgywvZ.js" component-export="Toaster" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;Toaster&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><!--[--><!-- Remove item from normal navigation flow, only available via hotkey --><section aria-label="Notifications alt+T" tabindex="-1" aria-live="polite" aria-relevant="additions text" aria-atomic="false"><!--[--><ol data-sonner-toaster="" data-sonner-theme="light" class="toaster group" dir="ltr" tabindex="-1" data-theme="light" data-rich-colors="false" data-y-position="bottom" data-x-position="right" style="--front-toast-height:0px;--width:356px;--gap:14px;--offset-top:24px;--offset-right:24px;--offset-bottom:24px;--offset-left:24px;--mobile-offset-top:16px;--mobile-offset-right:16px;--mobile-offset-bottom:16px;--mobile-offset-left:16px;" data-source-file="src/components/ui/sonner/Sonner.vue" data-source-line-start="9" data-source-line-end="22"><!--[--><!--]--></ol><!--]--></section><!--]--><!--astro:end--></astro-island>
-  <script>
-    const originalBack = window.history.back
-    const originalForward = window.history.forward
-    const originalGo = window.history.go
-    function isValidNavigation(){
-      if(!window.parent.history.state.back || !window.parent.history.state.back.startsWith(&#39;/designPage&#39;)){
-        return false
-      }
-      return true
     }
-    window.history.back = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalBack.apply(this, args);
-    };
 
-    window.history.forward = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalForward.apply(this, args);
-    };
-
-    window.history.go = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalGo.apply(this, args);
-    };
-  </script></body></html>'></iframe>
-                    </div>
-                  </div>
-
-                </body>
-                </html>
-            
+    loadSavedProfile();
+  </script>
+</body>
+</html>
