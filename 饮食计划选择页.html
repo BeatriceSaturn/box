@@ -1,331 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>选择饮食计划 - 吃了么</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #fef9e8;
+      font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    /* 头部样式 */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      width: 100%;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
+      padding: 0 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+    .back-btn {
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: #f0e4d4; }
+    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
+    .title {
+      flex: 1;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #5a3e2b;
+    }
+    .right-placeholder { width: 2.5rem; }
 
-                <!DOCTYPE html>
-                <html lang="zh">
-                <head>
-                  <meta charset="UTF-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <meta name="color-scheme" content="light">
-                  <meta name="supported-color-schemes" content="light">
-                  <title>饮食计划选择页</title>
-                  <style>
-                    *,
-                    *::before,
-                    *::after {
-                      box-sizing: border-box;
-                      margin: 0;
-                    }
-                    .iframe-outer {
-                      position: fixed;
-                      top: 0;
-                      left: 0;
-                      bottom: 0;
-                      right: 0;
-                      display: flex;
-                      justify-content: center;
-                      background-color: #E0E0E0;
-                    }
-                    .iframe-wrapper {
-                      width: 100%;
-                      height: 100%;
-                      margin: 0 auto;
-                      transform-origin: center top;
-                      flex-shrink: 0;
-                    }
-                    #dynamicIframe {
-                      border: none;
-                      width: 100%;
-                      height: 100%;
-                    }
-                  </style>
-                  <script>
-                const width = 402
-                const height = 874
-                const resolutionRatio = width && height ? width / height : 1
-                const pageNameMap = {
-                  'login_screen': '登录注册页',
-    'user_profile_setup': '基础信息采集页',
-    'goal_setting': '核心目标设定页',
-    'plan_selection': '饮食计划选择页',
-    'plan_details': '计划详情页',
-    'plan_tracking': '我的计划进度页',
-    'home_dashboard': '饮食管理首页',
-    'diet_logging_detail': '打卡详情页',
-    'logging_success_feedback': '打卡反馈页',
-    'social_circles_main': '亲友共享空间主页',
-    'invite_connection': '邀请关注页',
-    'interaction_hub': '关怀互动页',
-    'diet_encyclopedia': '饮食百科',
-    'health_metrics_test': '健康指标测试',
-    'ai_diet_recommendation': 'AI个性化膳食建议',
-    'dietary_statistics_report': '饮食趋势报表',
-    'habit_milestone_badges': '习惯里程碑成就'
-                }
-                const allPageIds = ["login_screen","user_profile_setup","goal_setting","plan_selection","plan_details","plan_tracking","home_dashboard","diet_logging_detail","logging_success_feedback","social_circles_main","invite_connection","interaction_hub","diet_encyclopedia","health_metrics_test","ai_diet_recommendation","dietary_statistics_report","habit_milestone_badges"]
-                const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-                const IFRAME_MESSAGE_TYPE = {
-                  iframeNavigation: 'iframeNavigation',
-                }
-                const safeAddEventListener = function Tc(e,t,r,n=!1){e.removeEventListener(t,r,n),e.addEventListener(t,r,n)}
-                const processOnclick = (e,t,r)=>{if(r){const n=zw(t);if(n.methodName&&Rp(n.methodName,r))return;e.preventDefault(),e.stopPropagation();const s=n.args||[],i=(s==null?void 0:s.find(u=>u))||"";i&&jp(i)}}
-                const checkIframeMethod = (e,t)=>{try{return typeof t[e]=="function"||typeof t[e]=="function"}catch(r){return!1}}
-                const postIframeMessage = (targetPageId) => {
-                  window.parent.postMessage({
-                    type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                    targetPageId,
-                  })
-                }
-                const handleIframeLinkClick = (event) => {
-                  const dynamicIframe = document.querySelector('#dynamicIframe')
-                  if (!dynamicIframe?.contentWindow) {
-                    return
-                  }
-                  const link = event.target.closest('a')
-                  const target = event.target
-                  if (link) {
-                    const href = link.getAttribute('href')
-                    const onclick = link.getAttribute('onclick')
-                    if (href && href !== '#' && !href.startsWith('javascript:')) {
-                      event.preventDefault()
-                      event.stopPropagation()
-                      const targetPageId = getKeyByValueObj(allFormatPageIdsMap, href)
-                      if (targetPageId) {
-                        postIframeMessage(targetPageId)
-                      }
-                      return
-                    }
-                    if (onclick) {
-                      processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                    } else {
-                      event.preventDefault()
-                      event.stopPropagation()
-                    }
-                    return
-                  }
-                  const onclick = target.getAttribute('onclick')
-                  if (onclick) {
-                    processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                  }
-                }
-                function stringExt(link) {
-                  let s = String(link || '')
-                  s = (s.split('#')[0] || '')
-                  s = (s.split('?')[0] || '')
-                  s = s.trim()
-                  s = s.split('/').filter(Boolean).pop() || ''
-                  const lower = s.toLowerCase()
-                  if (lower.endsWith('.html') || lower.endsWith('.php') || lower.endsWith('.aspx')) {
-                    s = s.slice(0, s.lastIndexOf('.'))
-                  }
-                  return s
-                }
-                function formatHref(href) {
-                  if (!href) {
-                    return ''
-                  }
-                  try {
-                    const url = new URL(href, window.location.href)
-                    const pathname = url.pathname || ''
-                    return stringExt(pathname)
-                  } catch {
-                    return stringExt(href)
-                  }
-                }
-                function getKeyByValueObj(obj, value) {
-                  const newValue = formatHref(value)
-                  const keyFind = Object.keys(obj).find(k => k === newValue)
-                  if (keyFind) {
-                    return keyFind
-                  }
-                  return Object.keys(obj).find(k => obj[k] === newValue)
-                }
-                function setIframeSize(w, h) {
-                  const currentContainerRadio = w / h
-                  let widthValue = w
-                  let heightValue = h
-                  let zoom = 1
-                  if (currentContainerRadio > resolutionRatio) {
-                    widthValue = h * resolutionRatio
-                    heightValue = h
-                  } else {
-                    widthValue = w
-                    heightValue = w / resolutionRatio
-                  }
-                  zoom = width ? widthValue / width : 1
-                  return {
-                    width: widthValue / zoom + 'px',
-                    height: heightValue / zoom + 'px',
-                    zoom,
-                  }
-                }
-                function adjustIframeSize() {
-                  const iframeWrapper = document.querySelector(".iframe-wrapper")
-                  const { width, height, zoom } = setIframeSize(window.innerWidth, window.innerHeight)
-                  iframeWrapper.style.height = height
-                  iframeWrapper.style.width = width
-                  iframeWrapper.style.transform = 'scale(' + zoom + ')'
-                }
-                function sanitizeFilename(name) {
-                  return name.replace(/[\/:*?"<>|]/g, '_')
-                }
-                function handlePostMessage(event) {
-                  if (!event.data) {
-                    return
-                  }
-                  const { type, targetPageId } = event.data
-                  const targetPageName = pageNameMap[targetPageId]
-                  if (type === "iframeNavigation" && targetPageId && targetPageName) {
-                    window.location.href = targetPageName + '.html'
-                  }
-                }
-                function setupIframeEvents() {
-                  const iframe = document.getElementById('dynamicIframe')
-                  if (iframe && iframe.contentWindow && iframe.contentWindow.document) {
-                    safeAddEventListener(iframe.contentWindow.document, 'click', handleIframeLinkClick, true)
-                  } else {
-                    setTimeout(setupIframeEvents, 100)
-                  }
-                }
-                window.addEventListener('message', handlePostMessage)
-                window.onload = function() {
-                  adjustIframeSize()
-                  setupIframeEvents()
-                }
-                window.onresize = adjustIframeSize
-                window.onunload = () => {
-                  window.removeEventListener('message', handlePostMessage)
-                }
-              </script>
-                </head>
-                <body>
-                  <div class="iframe-outer">
-                    <div class="iframe-wrapper">
-                      <iframe id="dynamicIframe" srcdoc='<html data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="14" data-source-line-end="25" lang="en"><head data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="15" data-source-line-end="20"><script>(function(){
-      function stringExt(link) {
-        let s = String(link || &#39;&#39;)
-        s = (s.split(&#39;#&#39;)[0] || &#39;&#39;)
-        s = (s.split(&#39;?&#39;)[0] || &#39;&#39;)
-        s = s.trim()
-        s = s.split(&#39;/&#39;).filter(Boolean).pop() || &#39;&#39;
-        const lower = s.toLowerCase()
-        if (lower.endsWith(&#39;.html&#39;) || lower.endsWith(&#39;.php&#39;) || lower.endsWith(&#39;.aspx&#39;)) {
-          s = s.slice(0, s.lastIndexOf(&#39;.&#39;))
-        }
-        return s
-      }
-      function formatHref(href) {
-        if (!href) {
-          return &#39;&#39;
-        }
-        try {
-          const url = new URL(href, window.location.href)
-          const pathname = url.pathname || &#39;&#39;
-          return stringExt(pathname)
-        } catch {
-          return stringExt(href)
-        }
-      }
-      function getKeyByValueObj(obj, value) {
-        const newValue = formatHref(value)
-        const keyFind = Object.keys(obj).find(k => k === newValue)
-        if (keyFind) {
-          return keyFind
-        }
-        return Object.keys(obj).find(k => obj[k] === newValue)
-      }
-      function emit(to, source){
-        try {
-          if (window.parent) {
-            const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-            const IFRAME_MESSAGE_TYPE = {
-              iframeNavigation: &#39;iframeNavigation&#39;,
-            }
-            const targetPageId = getKeyByValueObj(allFormatPageIdsMap, String(to || &#39;&#39;))
-            if (targetPageId) {
-              window.parent.postMessage({
-                type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                targetPageId,
-              }, &#39;*&#39;)
-            }
-          }
-        } catch(e) {}
-      }
-      try{
-        if (&#39;navigation&#39; in window &amp;&amp; window.navigation &amp;&amp; typeof window.navigation.addEventListener===&#39;function&#39;){
-          window.navigation.addEventListener(&#39;navigate&#39;, function(e){
-            try{
-              var url = (e.destination &amp;&amp; e.destination.url) || &#39;&#39;;
-              if (e.canIntercept &amp;&amp; typeof e.intercept===&#39;function&#39;){ e.intercept({ handler:function(){} }) }
-              else if (e.preventDefault){ e.preventDefault() }
-              emit(url)
-            }catch(_){}
-          })
-        }
-      }catch(_){}
-    })();</script><meta name="supported-color-schemes" content="light"><meta name="color-scheme" content="light"><style>
-      :root, html, body { color-scheme: light; }
-      html { forced-color-adjust: none; }
-    </style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Built with Astro">
-    <title data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="19" data-source-line-end="19">选择饮食计划</title>
-  <link rel="stylesheet" href="./assets/html/113216/ai-diet-recommendation.CyT-fR9B.css">
-<style>header[data-v-0b81bb01]{height:56px;backdrop-filter:blur(8px);background-color:hsl(var(--card) / .95)}.truncate[data-v-0b81bb01]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-[data-v-a03ebd51] .bottom-nav-container{height:calc(var(--bottom-nav-height) + env(safe-area-inset-bottom))}
-.card-interactive[data-v-8a6220c4]{cursor:pointer;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.2s;animation-duration:.2s}.card-interactive[data-v-8a6220c4]:active{--tw-scale-x: .98;--tw-scale-y: .98;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.badge-muted[data-v-8a6220c4]{display:inline-flex;align-items:center;border-radius:9999px;padding:.125rem .5rem;font-size:.75rem;line-height:1rem;font-weight:500;background-color:hsl(var(--muted) / .5);color:hsl(var(--muted-foreground))}.badge-primary[data-v-8a6220c4]{display:inline-flex;align-items:center;border-radius:9999px;padding:.125rem .5rem;font-size:.75rem;line-height:1rem;font-weight:500;background-color:hsl(var(--primary) / .1);color:hsl(var(--primary))}
-</style><script src="./assets/static/uxbot/25_6/holder.js"></script></head>
-  <body data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="21" data-source-line-end="24">
-    
-  <div data-source-file="src/layouts/MobileMainLayout.astro" data-source-line-start="17" data-source-line-end="28" class="h-screen overflow-hidden flex flex-col bg-background">
-    <!-- Header -->
-    <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&amp;&amp;s.isSameNode(this)&amp;&amp;(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&amp;&amp;s.isSameNode(this)&amp;&amp;(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&amp;&amp;(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&amp;&amp;this.lastChild.nodeValue==="astro:end"&amp;&amp;(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&amp;&amp;await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="xeYN6" prefix="s1" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/MobileHeader.DIYhopFc.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{&amp;quot;title&amp;quot;:[0,&amp;quot;选择饮食计划&amp;quot;],&amp;quot;showBack&amp;quot;:[0,false]}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;MobileHeader&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><header class="sticky top-0 z-50 w-full bg-card border-b border-border shadow-sm px-4 flex items-center justify-between" style="height:var(--header-height);" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="30" data-source-line-end="67" data-v-0b81bb01=""><div class="flex items-center min-w-[56px]" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="35" data-source-line-end="45" data-v-0b81bb01=""><!----></div><h1 class="flex-1 text-center truncate px-2 text-base font-semibold tracking-tight text-foreground" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="48" data-source-line-end="50" data-v-0b81bb01="">选择饮食计划</h1><div class="flex items-center justify-end min-w-[56px] space-x-1" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="53" data-source-line-end="66" data-v-0b81bb01=""><!--[--><!----><!--]--></div></header><!--astro:end--></astro-island>
+    /* 主内容滚动区 */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+      scrollbar-width: thin;
+    }
+    .page-title { margin-bottom: 1.5rem; }
+    .page-title h2 { font-size: 1.5rem; font-weight: 700; color: #5a3e2b; margin-bottom: 0.5rem; }
+    .page-title p { font-size: 0.9rem; color: #a07a5c; }
 
-    <!-- Main Content Area -->
-    <div data-source-file="src/layouts/MobileMainLayout.astro" data-source-line-start="22" data-source-line-end="24" class="flex-1 overflow-y-auto min-h-0">
-      
-  <astro-island uid="1kiOwe" prefix="s0" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/PlanSelectionContent.BzzpY2L7.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;PlanSelectionContent&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><div class="page-body flex flex-col gap-6 pb-24" data-source-file="src/components/plan-selection/PlanSelectionContent.vue" data-source-line-start="20" data-source-line-end="41"><div class="space-y-2" data-source-file="src/components/plan-selection/PlanSelectionContent.vue" data-source-line-start="22" data-source-line-end="27"><h2 class="text-page-title" data-source-file="src/components/plan-selection/PlanSelectionContent.vue" data-source-line-start="23" data-source-line-end="23">选择你的计划</h2><p class="text-body text-muted-foreground" data-source-file="src/components/plan-selection/PlanSelectionContent.vue" data-source-line-start="24" data-source-line-end="26"> 根据你的生活节奏，选择最适合的饮食习惯养成周期 </p></div><div class="space-y-3" data-source-file="src/components/plan-selection/PlanSelectionContent.vue" data-source-line-start="30" data-source-line-end="37"><!--[--><div class="card-interactive group relative overflow-hidden" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="34" data-source-line-end="106" data-v-8a6220c4=""><div class="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-gradient-to-br from-primary/10 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="39" data-source-line-end="39" data-v-8a6220c4=""></div><div class="relative card-padding space-y-3" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="42" data-source-line-end="105" data-v-8a6220c4=""><div class="flex items-start justify-between gap-3" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="44" data-source-line-end="72" data-v-8a6220c4=""><div class="flex-shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="46" data-source-line-end="53" data-v-8a6220c4=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide text-primary lucide-sparkles-icon lucide-sparkles text-primary" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-8a6220c4=""><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path><path d="M20 2v4"></path><path d="M22 4h-4"></path><circle cx="4" cy="20" r="2"></circle></svg></div><div class="flex-1 flex flex-col gap-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="56" data-source-line-end="66" data-v-8a6220c4=""><h3 class="text-item-title font-semibold" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="57" data-source-line-end="57" data-v-8a6220c4="">3天体验计划</h3><div class="flex items-center gap-2" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="58" data-source-line-end="65" data-v-8a6220c4=""><span class="text-caption text-muted-foreground" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="59" data-source-line-end="61" data-v-8a6220c4="">3天计划 </span><span class="badge-muted text-xs px-2 py-0.5 bg-green-50 text-green-600" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="62" data-source-line-end="64" data-v-8a6220c4="">简单</span></div></div><div class="flex-shrink-0 text-muted-foreground/40 group-hover:text-primary transition-colors" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="69" data-source-line-end="71" data-v-8a6220c4=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-8a6220c4="" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></div></div><p class="text-body text-muted-foreground text-sm leading-relaxed" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="75" data-source-line-end="77" data-v-8a6220c4="">用最轻量的方式重建三餐感知，适合刚开始想调整节奏的用户。</p><div class="flex flex-wrap gap-2 pt-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="80" data-source-line-end="91" data-v-8a6220c4=""><!--[--><span class="badge-primary text-xs py-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="81" data-source-line-end="87" data-v-8a6220c4="">固定早餐时间</span><span class="badge-primary text-xs py-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="81" data-source-line-end="87" data-v-8a6220c4="">午餐不拖延</span><!--]--><span class="badge-muted text-xs py-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="88" data-source-line-end="90" data-v-8a6220c4=""> +1</span></div><div class="pt-2 border-t border-border/50 flex items-start gap-2" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="94" data-source-line-end="104" data-v-8a6220c4=""><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide text-accent flex-shrink-0 mt-0.5 lucide-circle-check-icon lucide-circle-check text-accent flex-shrink-0 mt-0.5" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-8a6220c4=""><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><p class="text-caption text-foreground/80" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="101" data-source-line-end="103" data-v-8a6220c4="">快速建立“先吃饭再忙”的基础习惯。</p></div></div></div><div class="card-interactive group relative overflow-hidden" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="34" data-source-line-end="106" data-v-8a6220c4=""><div class="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-gradient-to-br from-primary/10 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="39" data-source-line-end="39" data-v-8a6220c4=""></div><div class="relative card-padding space-y-3" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="42" data-source-line-end="105" data-v-8a6220c4=""><div class="flex items-start justify-between gap-3" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="44" data-source-line-end="72" data-v-8a6220c4=""><div class="flex-shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="46" data-source-line-end="53" data-v-8a6220c4=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide text-primary lucide-calendar-range-icon lucide-calendar-range text-primary" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-8a6220c4=""><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M16 2v4"></path><path d="M3 10h18"></path><path d="M8 2v4"></path><path d="M17 14h-6"></path><path d="M13 18H7"></path><path d="M7 14h.01"></path><path d="M17 18h.01"></path></svg></div><div class="flex-1 flex flex-col gap-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="56" data-source-line-end="66" data-v-8a6220c4=""><h3 class="text-item-title font-semibold" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="57" data-source-line-end="57" data-v-8a6220c4="">7天巩固计划</h3><div class="flex items-center gap-2" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="58" data-source-line-end="65" data-v-8a6220c4=""><span class="text-caption text-muted-foreground" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="59" data-source-line-end="61" data-v-8a6220c4="">7天计划 </span><span class="badge-muted text-xs px-2 py-0.5 bg-green-50 text-green-600" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="62" data-source-line-end="64" data-v-8a6220c4="">简单</span></div></div><div class="flex-shrink-0 text-muted-foreground/40 group-hover:text-primary transition-colors" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="69" data-source-line-end="71" data-v-8a6220c4=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-8a6220c4="" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></div></div><p class="text-body text-muted-foreground text-sm leading-relaxed" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="75" data-source-line-end="77" data-v-8a6220c4="">通过一周连续打卡，让规律吃饭形成可感知的节奏。</p><div class="flex flex-wrap gap-2 pt-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="80" data-source-line-end="91" data-v-8a6220c4=""><!--[--><span class="badge-primary text-xs py-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="81" data-source-line-end="87" data-v-8a6220c4="">三餐完整记录</span><span class="badge-primary text-xs py-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="81" data-source-line-end="87" data-v-8a6220c4="">避免空腹过久</span><!--]--><span class="badge-muted text-xs py-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="88" data-source-line-end="90" data-v-8a6220c4=""> +1</span></div><div class="pt-2 border-t border-border/50 flex items-start gap-2" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="94" data-source-line-end="104" data-v-8a6220c4=""><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide text-accent flex-shrink-0 mt-0.5 lucide-circle-check-icon lucide-circle-check text-accent flex-shrink-0 mt-0.5" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-8a6220c4=""><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><p class="text-caption text-foreground/80" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="101" data-source-line-end="103" data-v-8a6220c4="">让饮食规律开始稳定下来。</p></div></div></div><div class="card-interactive group relative overflow-hidden" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="34" data-source-line-end="106" data-v-8a6220c4=""><div class="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-gradient-to-br from-primary/10 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="39" data-source-line-end="39" data-v-8a6220c4=""></div><div class="relative card-padding space-y-3" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="42" data-source-line-end="105" data-v-8a6220c4=""><div class="flex items-start justify-between gap-3" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="44" data-source-line-end="72" data-v-8a6220c4=""><div class="flex-shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="46" data-source-line-end="53" data-v-8a6220c4=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide text-primary lucide-scale-icon lucide-scale text-primary" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-8a6220c4=""><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg></div><div class="flex-1 flex flex-col gap-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="56" data-source-line-end="66" data-v-8a6220c4=""><h3 class="text-item-title font-semibold" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="57" data-source-line-end="57" data-v-8a6220c4="">14天平衡计划</h3><div class="flex items-center gap-2" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="58" data-source-line-end="65" data-v-8a6220c4=""><span class="text-caption text-muted-foreground" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="59" data-source-line-end="61" data-v-8a6220c4="">14天计划 </span><span class="badge-muted text-xs px-2 py-0.5 bg-yellow-50 text-yellow-600" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="62" data-source-line-end="64" data-v-8a6220c4="">中等</span></div></div><div class="flex-shrink-0 text-muted-foreground/40 group-hover:text-primary transition-colors" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="69" data-source-line-end="71" data-v-8a6220c4=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-8a6220c4="" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></div></div><p class="text-body text-muted-foreground text-sm leading-relaxed" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="75" data-source-line-end="77" data-v-8a6220c4="">在忙碌与健康之间找到更好的平衡，兼顾工作学习强度。</p><div class="flex flex-wrap gap-2 pt-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="80" data-source-line-end="91" data-v-8a6220c4=""><!--[--><span class="badge-primary text-xs py-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="81" data-source-line-end="87" data-v-8a6220c4="">合理加餐</span><span class="badge-primary text-xs py-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="81" data-source-line-end="87" data-v-8a6220c4="">记录饮食心情</span><!--]--><span class="badge-muted text-xs py-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="88" data-source-line-end="90" data-v-8a6220c4=""> +1</span></div><div class="pt-2 border-t border-border/50 flex items-start gap-2" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="94" data-source-line-end="104" data-v-8a6220c4=""><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide text-accent flex-shrink-0 mt-0.5 lucide-circle-check-icon lucide-circle-check text-accent flex-shrink-0 mt-0.5" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-8a6220c4=""><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><p class="text-caption text-foreground/80" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="101" data-source-line-end="103" data-v-8a6220c4="">建立更适合自己的饮食节律。</p></div></div></div><div class="card-interactive group relative overflow-hidden" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="34" data-source-line-end="106" data-v-8a6220c4=""><div class="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-gradient-to-br from-primary/10 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="39" data-source-line-end="39" data-v-8a6220c4=""></div><div class="relative card-padding space-y-3" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="42" data-source-line-end="105" data-v-8a6220c4=""><div class="flex items-start justify-between gap-3" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="44" data-source-line-end="72" data-v-8a6220c4=""><div class="flex-shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="46" data-source-line-end="53" data-v-8a6220c4=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide text-primary lucide-trophy-icon lucide-trophy text-primary" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-8a6220c4=""><path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"></path><path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"></path><path d="M18 9h1.5a1 1 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"></path><path d="M6 9H4.5a1 1 0 0 1 0-5H6"></path></svg></div><div class="flex-1 flex flex-col gap-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="56" data-source-line-end="66" data-v-8a6220c4=""><h3 class="text-item-title font-semibold" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="57" data-source-line-end="57" data-v-8a6220c4="">21天蜕变计划</h3><div class="flex items-center gap-2" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="58" data-source-line-end="65" data-v-8a6220c4=""><span class="text-caption text-muted-foreground" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="59" data-source-line-end="61" data-v-8a6220c4="">21天计划 </span><span class="badge-muted text-xs px-2 py-0.5 bg-red-50 text-red-600" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="62" data-source-line-end="64" data-v-8a6220c4="">困难</span></div></div><div class="flex-shrink-0 text-muted-foreground/40 group-hover:text-primary transition-colors" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="69" data-source-line-end="71" data-v-8a6220c4=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-8a6220c4="" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></div></div><p class="text-body text-muted-foreground text-sm leading-relaxed" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="75" data-source-line-end="77" data-v-8a6220c4="">面向长期习惯重建，强调持续性与自我管理能力。</p><div class="flex flex-wrap gap-2 pt-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="80" data-source-line-end="91" data-v-8a6220c4=""><!--[--><span class="badge-primary text-xs py-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="81" data-source-line-end="87" data-v-8a6220c4="">精准计划执行</span><span class="badge-primary text-xs py-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="81" data-source-line-end="87" data-v-8a6220c4="">每周复盘</span><!--]--><span class="badge-muted text-xs py-1" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="88" data-source-line-end="90" data-v-8a6220c4=""> +1</span></div><div class="pt-2 border-t border-border/50 flex items-start gap-2" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="94" data-source-line-end="104" data-v-8a6220c4=""><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide text-accent flex-shrink-0 mt-0.5 lucide-circle-check-icon lucide-circle-check text-accent flex-shrink-0 mt-0.5" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-8a6220c4=""><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><p class="text-caption text-foreground/80" data-source-file="src/components/plan-selection/PlanCard.vue" data-source-line-start="101" data-source-line-end="103" data-v-8a6220c4="">帮助用户形成更稳固的饮食惯性。</p></div></div></div><!--]--></div><div class="h-4" data-source-file="src/components/plan-selection/PlanSelectionContent.vue" data-source-line-start="40" data-source-line-end="40"></div></div><!--astro:end--></astro-island>
+    /* 卡片列表 */
+    .cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    /* 卡片样式 */
+    .plan-card {
+      background: white;
+      border-radius: 1rem;
+      border: 2px solid #f0e4d4;
+      padding: 1rem;
+      transition: all 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+    .plan-card.selected {
+      border-color: #e67e22;
+      background: #fff7f0;
+      box-shadow: 0 4px 12px rgba(230,126,34,0.1);
+    }
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .card-icon {
+      width: 3rem;
+      height: 3rem;
+      background: #fdf3e8;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .card-icon svg { width: 1.5rem; height: 1.5rem; stroke: #e67e22; stroke-width: 1.8; }
+    .card-info { flex: 1; }
+    .card-info h3 { font-size: 1.1rem; font-weight: 600; color: #5a3e2b; margin-bottom: 0.25rem; }
+    .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      background: #fdf3e8;
+      color: #e67e22;
+    }
+    .card-desc {
+      font-size: 0.85rem;
+      color: #a07a5c;
+      line-height: 1.4;
+      margin-bottom: 0.75rem;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .tag-primary {
+      background: #fdf3e8;
+      color: #e67e22;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+    }
+    .tag-muted {
+      background: #f0e4d4;
+      color: #a07a5c;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+    }
+    .feature {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+      border-top: 1px solid #f0e4d4;
+      padding-top: 0.75rem;
+      margin-top: 0.25rem;
+    }
+    .feature svg { width: 1rem; height: 1rem; stroke: #e67e22; flex-shrink: 0; margin-top: 0.1rem; }
+    .feature p { font-size: 0.75rem; color: #5a3e2b; }
 
+    /* 底部按钮 */
+    .bottom-btn {
+      position: sticky;
+      bottom: 0;
+      background: linear-gradient(to top, #fef9e8 80%, transparent);
+      padding: 1rem 1.25rem 1.5rem;
+      margin: 0 -1.25rem;
+    }
+    .confirm-btn {
+      width: 100%;
+      background: #d9c8b8;
+      border: none;
+      border-radius: 48px;
+      padding: 0.9rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      cursor: not-allowed;
+      transition: all 0.2s;
+    }
+    .confirm-btn.active {
+      background: #e67e22;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(230,126,34,0.3);
+    }
+    .confirm-btn.active:hover { background: #d4691a; transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" id="backBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="title">选择饮食计划</div>
+    <div class="right-placeholder"></div>
+  </header>
+
+  <main class="main-content">
+    <div class="page-title">
+      <h2>选择你的计划</h2>
+      <p>根据你的生活节奏，选择最适合的饮食习惯养成周期</p>
     </div>
 
-    <!-- Bottom Navigation -->
-    <astro-island uid="VIhWg" prefix="s2" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/MobileBottomNav.CF0jFY6D.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{&amp;quot;currentPath&amp;quot;:[0,&amp;quot;/plan-selection.html&amp;quot;]}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;MobileBottomNav&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><nav class="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-soft bottom-nav-container" aria-label="主要导航" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="60" data-source-line-end="91" data-v-a03ebd51=""><div class="flex items-center justify-around h-[var(--bottom-nav-height)] px-2" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="64" data-source-line-end="90" data-v-a03ebd51=""><!--[--><button class="flex flex-col items-center justify-center flex-1 gap-1 h-full interactive text-muted-foreground" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="65" data-source-line-end="89" data-v-a03ebd51=""><div class="relative flex items-center justify-center" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="74" data-source-line-end="85" data-v-a03ebd51=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-a03ebd51="" class="lucide lucide-layout-dashboard-icon lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg><!----></div><span class="text-[10px] font-medium leading-none" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="86" data-source-line-end="88" data-v-a03ebd51="">首页</span></button><button class="flex flex-col items-center justify-center flex-1 gap-1 h-full interactive text-muted-foreground" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="65" data-source-line-end="89" data-v-a03ebd51=""><div class="relative flex items-center justify-center" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="74" data-source-line-end="85" data-v-a03ebd51=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-a03ebd51="" class="lucide lucide-clipboard-list-icon lucide-clipboard-list"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></svg><!----></div><span class="text-[10px] font-medium leading-none" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="86" data-source-line-end="88" data-v-a03ebd51="">饮食记录</span></button><button class="flex flex-col items-center justify-center flex-1 gap-1 h-full interactive text-muted-foreground" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="65" data-source-line-end="89" data-v-a03ebd51=""><div class="relative flex items-center justify-center" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="74" data-source-line-end="85" data-v-a03ebd51=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-a03ebd51="" class="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg><!----></div><span class="text-[10px] font-medium leading-none" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="86" data-source-line-end="88" data-v-a03ebd51="">亲友空间</span></button><button class="flex flex-col items-center justify-center flex-1 gap-1 h-full interactive text-muted-foreground" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="65" data-source-line-end="89" data-v-a03ebd51=""><div class="relative flex items-center justify-center" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="74" data-source-line-end="85" data-v-a03ebd51=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-a03ebd51="" class="lucide lucide-chart-column-icon lucide-chart-column"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg><!----></div><span class="text-[10px] font-medium leading-none" data-source-file="src/components/common/MobileBottomNav.vue" data-source-line-start="86" data-source-line-end="88" data-v-a03ebd51="">报表</span></button><!--]--></div></nav><!--astro:end--></astro-island>
-  </div>
+    <div class="cards-list" id="cardsList">
+      <!-- 3天体验计划 -->
+      <div class="plan-card" data-plan="3day">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>
+              <path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <h3>3天体验计划</h3>
+            <span class="badge">简单</span>
+          </div>
+        </div>
+        <div class="card-desc">用最轻量的方式重建三餐感知，适合刚开始想调整节奏的用户。</div>
+        <div class="tags">
+          <span class="tag-primary">固定早餐时间</span>
+          <span class="tag-primary">午餐不拖延</span>
+          <span class="tag-muted">+1</span>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <p>快速建立“先吃饭再忙”的基础习惯。</p>
+        </div>
+      </div>
 
-    <astro-island uid="Z1rXJ5e" prefix="s3" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/sonner.BzCgywvZ.js" component-export="Toaster" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;Toaster&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><!--[--><!-- Remove item from normal navigation flow, only available via hotkey --><section aria-label="Notifications alt+T" tabindex="-1" aria-live="polite" aria-relevant="additions text" aria-atomic="false"><!--[--><ol data-sonner-toaster="" data-sonner-theme="light" class="toaster group" dir="ltr" tabindex="-1" data-theme="light" data-rich-colors="false" data-y-position="bottom" data-x-position="right" style="--front-toast-height:0px;--width:356px;--gap:14px;--offset-top:24px;--offset-right:24px;--offset-bottom:24px;--offset-left:24px;--mobile-offset-top:16px;--mobile-offset-right:16px;--mobile-offset-bottom:16px;--mobile-offset-left:16px;" data-source-file="src/components/ui/sonner/Sonner.vue" data-source-line-start="9" data-source-line-end="22"><!--[--><!--]--></ol><!--]--></section><!--]--><!--astro:end--></astro-island>
+      <!-- 7天巩固计划 -->
+      <div class="plan-card" data-plan="7day">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M17 14h-6"/><path d="M13 18H7"/><path d="M7 14h.01"/><path d="M17 18h.01"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <h3>7天巩固计划</h3>
+            <span class="badge">简单</span>
+          </div>
+        </div>
+        <div class="card-desc">通过一周连续打卡，让规律吃饭形成可感知的节奏。</div>
+        <div class="tags">
+          <span class="tag-primary">三餐完整记录</span>
+          <span class="tag-primary">避免空腹过久</span>
+          <span class="tag-muted">+1</span>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <p>让饮食规律开始稳定下来。</p>
+        </div>
+      </div>
+
+      <!-- 14天平衡计划 -->
+      <div class="plan-card" data-plan="14day">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <h3>14天平衡计划</h3>
+            <span class="badge">中等</span>
+          </div>
+        </div>
+        <div class="card-desc">在忙碌与健康之间找到更好的平衡，兼顾工作学习强度。</div>
+        <div class="tags">
+          <span class="tag-primary">合理加餐</span>
+          <span class="tag-primary">记录饮食心情</span>
+          <span class="tag-muted">+1</span>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <p>建立更适合自己的饮食节律。</p>
+        </div>
+      </div>
+
+      <!-- 21天蜕变计划 -->
+      <div class="plan-card" data-plan="21day">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/><path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"/><path d="M18 9h1.5a1 1 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/><path d="M6 9H4.5a1 1 0 0 1 0-5H6"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <h3>21天蜕变计划</h3>
+            <span class="badge">困难</span>
+          </div>
+        </div>
+        <div class="card-desc">面向长期习惯重建，强调持续性与自我管理能力。</div>
+        <div class="tags">
+          <span class="tag-primary">精准计划执行</span>
+          <span class="tag-primary">每周复盘</span>
+          <span class="tag-muted">+1</span>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <p>帮助用户形成更稳固的饮食惯性。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-btn">
+      <button class="confirm-btn" id="confirmBtn" disabled>确认计划</button>
+    </div>
+  </main>
+
   <script>
-    const originalBack = window.history.back
-    const originalForward = window.history.forward
-    const originalGo = window.history.go
-    function isValidNavigation(){
-      if(!window.parent.history.state.back || !window.parent.history.state.back.startsWith(&#39;/designPage&#39;)){
-        return false
+    const cards = document.querySelectorAll('.plan-card');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const backBtn = document.getElementById('backBtn');
+
+    let selectedPlan = null;
+
+    // 从 localStorage 读取已保存的计划
+    function loadSelectedPlan() {
+      const saved = localStorage.getItem('selectedPlan');
+      if (saved) {
+        selectedPlan = saved;
+        cards.forEach(card => {
+          if (card.getAttribute('data-plan') === selectedPlan) {
+            card.classList.add('selected');
+          } else {
+            card.classList.remove('selected');
+          }
+        });
+        if (selectedPlan) {
+          confirmBtn.disabled = false;
+          confirmBtn.classList.add('active');
+        }
       }
-      return true
     }
-    window.history.back = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalBack.apply(this, args);
-    };
 
-    window.history.forward = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalForward.apply(this, args);
-    };
+    // 保存计划
+    function savePlan(plan) {
+      localStorage.setItem('selectedPlan', plan);
+      selectedPlan = plan;
+    }
 
-    window.history.go = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalGo.apply(this, args);
-    };
-  </script></body></html>'></iframe>
-                    </div>
-                  </div>
+    // 卡片点击事件（单选）
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        const planValue = card.getAttribute('data-plan');
+        if (selectedPlan === planValue) {
+          // 如果已经选中，不做任何操作（也可以取消选中，但通常计划是必选的，所以我们保持选中状态不取消）
+          return;
+        }
+        // 移除其他卡片的高亮
+        cards.forEach(c => c.classList.remove('selected'));
+        // 高亮当前卡片
+        card.classList.add('selected');
+        selectedPlan = planValue;
+        savePlan(planValue);
+        confirmBtn.disabled = false;
+        confirmBtn.classList.add('active');
+      });
+    });
 
-                </body>
-                </html>
-            
+    // 确认按钮跳转（例如跳转到计划详情页或首页）
+    confirmBtn.addEventListener('click', () => {
+      if (!selectedPlan) return;
+      // 可根据不同计划跳转到不同详情页，这里统一跳转到“计划详情页.html”
+      // 你也可以在 URL 后附加参数，比如 ?plan=3day
+      window.location.href = '计划详情页.html';
+    });
+
+    // 返回上一页（核心目标设定页）
+    backBtn.addEventListener('click', () => {
+      window.location.href = '核心目标设定页.html';
+    });
+
+    loadSelectedPlan();
+  </script>
+</body>
+</html>
