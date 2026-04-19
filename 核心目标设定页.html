@@ -5,159 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>核心目标设定 - 吃了么</title>
   <style>
-    /* ========== 全局样式 ========== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fef9e8;
       font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
-
-    /* 头部样式 */
     .header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      width: 100%;
-      background: #fff9f0;
-      border-bottom: 1px solid #f0e4d4;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-      padding: 0 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      padding: 1rem;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
     }
     .back-btn {
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 2rem;
+      height: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0.5rem;
       cursor: pointer;
-      transition: background 0.2s;
+      border-radius: 50%;
     }
-    .back-btn:hover {
-      background: #f0e4d4;
+    .back-btn:hover { background: #f0e4d4; }
+    .title { font-size: 1.1rem; font-weight: 600; color: #5a3e2b; }
+    .main { flex: 1; overflow-y: auto; padding: 1rem; }
+    .card {
+      background: white;
+      border-radius: 1rem;
+      border: 1px solid #f0e4d4;
+      padding: 1rem;
+      margin-bottom: 1rem;
     }
-    .back-btn svg {
-      width: 1.5rem;
-      height: 1.5rem;
-      stroke: #5a3e2b;
-      stroke-width: 2.5;
-    }
-    .title {
-      flex: 1;
-      text-align: center;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #5a3e2b;
-      letter-spacing: -0.3px;
-    }
-    .right-placeholder {
-      width: 2.5rem;
-    }
-
-    /* 主内容滚动区域 */
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1.25rem 1.25rem 0;
-      scrollbar-width: thin;
-    }
-
-    /* 页面标题区 */
-    .page-title {
-      margin-bottom: 1.5rem;
-    }
-    .page-title h2 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #5a3e2b;
-      margin-bottom: 0.5rem;
-    }
-    .page-title p {
-      font-size: 0.9rem;
-      color: #a07a5c;
-      line-height: 1.4;
-    }
-
-    /* 卡片列表 */
-    .cards-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    /* 卡片样式 */
+    .page-title h2 { font-size: 1.5rem; font-weight: 700; color: #5a3e2b; margin-bottom: 0.5rem; }
+    .page-title p { font-size: 0.9rem; color: #a07a5c; }
     .goal-card {
       background: white;
       border-radius: 1rem;
       border: 2px solid #f0e4d4;
       padding: 1rem;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
       cursor: pointer;
+      margin-bottom: 1rem;
       position: relative;
     }
     .goal-card.selected {
       border-color: #e67e22;
       background: #fff7f0;
-      box-shadow: 0 4px 12px rgba(230,126,34,0.1);
     }
-    .card-content {
-      display: flex;
-      gap: 1rem;
-      align-items: flex-start;
-    }
-    .card-icon {
-      width: 3rem;
-      height: 3rem;
-      background: #fdf3e8;
-      border-radius: 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #e67e22;
-    }
-    .card-icon svg {
-      width: 1.5rem;
-      height: 1.5rem;
-      stroke: #e67e22;
-      stroke-width: 1.8;
-    }
-    .card-text {
-      flex: 1;
-    }
-    .card-text h3 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #5a3e2b;
-      margin-bottom: 0.25rem;
-    }
-    .card-text p {
-      font-size: 0.85rem;
-      color: #a07a5c;
-      margin-bottom: 0.5rem;
-      line-height: 1.4;
-    }
-    .card-tag {
-      display: inline-block;
-      font-size: 0.7rem;
-      padding: 0.2rem 0.6rem;
-      border-radius: 20px;
-      background: #fdf3e8;
-      color: #e67e22;
-    }
+    .card-content { display: flex; gap: 1rem; align-items: flex-start; }
+    .card-icon { width: 3rem; height: 3rem; background: #fdf3e8; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; }
+    .card-icon svg { width: 1.5rem; height: 1.5rem; stroke: #e67e22; stroke-width: 1.8; }
+    .card-text { flex: 1; }
+    .card-text h3 { font-size: 1.1rem; font-weight: 600; color: #5a3e2b; margin-bottom: 0.25rem; }
+    .card-text p { font-size: 0.85rem; color: #a07a5c; margin-bottom: 0.5rem; line-height: 1.4; }
+    .card-tag { display: inline-block; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 20px; background: #fdf3e8; color: #e67e22; }
     .check-mark {
       position: absolute;
       top: -8px;
@@ -173,25 +78,8 @@
       transform: scale(0.8);
       transition: all 0.2s;
     }
-    .goal-card.selected .check-mark {
-      opacity: 1;
-      transform: scale(1);
-    }
-    .check-mark svg {
-      width: 14px;
-      height: 14px;
-      stroke: white;
-      stroke-width: 3;
-    }
-
-    /* 底部按钮区域 */
-    .bottom-btn {
-      position: sticky;
-      bottom: 0;
-      background: linear-gradient(to top, #fef9e8 80%, transparent);
-      padding: 1rem 1.25rem 1.5rem;
-      margin: 0 -1.25rem;
-    }
+    .goal-card.selected .check-mark { opacity: 1; transform: scale(1); }
+    .check-mark svg { width: 14px; height: 14px; stroke: white; stroke-width: 3; }
     .next-btn {
       width: 100%;
       background: #d9c8b8;
@@ -204,195 +92,126 @@
       cursor: not-allowed;
       transition: all 0.2s;
     }
-    .next-btn.active {
-      background: #e67e22;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(230,126,34,0.3);
-    }
-    .next-btn.active:hover {
-      background: #d4691a;
-      transform: translateY(-1px);
-    }
+    .next-btn.active { background: #e67e22; cursor: pointer; }
   </style>
-</head>
-<body>
-  <header class="header">
-    <div class="back-btn" id="backBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <div class="title">核心目标设定</div>
-    <div class="right-placeholder"></div>
-  </header>
-
-  <main class="main-content">
-    <div class="page-title">
-      <h2>选择你的健康目标</h2>
-      <p>根据你的需求选择最适合的目标，我们将为你定制个性化的饮食方案（可多选）</p>
-    </div>
-
-    <div class="cards-list" id="cardsList">
-      <!-- 卡片1: 改善规律饮食 -->
-      <div class="goal-card" data-goal="regular_eating">
-        <div class="card-content">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 6v6h4" stroke-linecap="round"/>
-              <circle cx="12" cy="12" r="10"/>
-            </svg>
-          </div>
-          <div class="card-text">
-            <h3>改善规律饮食</h3>
-            <p>建立三餐准时打卡习惯，让忙碌也不再忘记吃饭。</p>
-            <span class="card-tag">习惯养成</span>
-          </div>
-        </div>
-        <div class="check-mark">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
-            <path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-      </div>
-
-      <!-- 卡片2: 个性化膳食定制 -->
-      <div class="goal-card" data-goal="personalized_diet">
-        <div class="card-content">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/>
-              <path d="M6 17h12"/>
-            </svg>
-          </div>
-          <div class="card-text">
-            <h3>个性化膳食定制</h3>
-            <p>根据BMI、饮食记录与作息，形成更贴合你的膳食建议。</p>
-            <span class="card-tag">膳食定制</span>
-          </div>
-        </div>
-        <div class="check-mark">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
-            <path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-      </div>
-
-      <!-- 卡片3: 与亲友共享报备 -->
-      <div class="goal-card" data-goal="family_sharing">
-        <div class="card-content">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-              <path d="M16 3.128a4 4 0 0 1 0 7.744"/>
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-              <circle cx="9" cy="7" r="4"/>
-            </svg>
-          </div>
-          <div class="card-text">
-            <h3>与亲友共享报备</h3>
-            <p>向家人朋友同步饮食状态，让关心变成温柔督促。</p>
-            <span class="card-tag">社交分享</span>
-          </div>
-        </div>
-        <div class="check-mark">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
-            <path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <div class="bottom-btn">
-    <button class="next-btn" id="nextBtn" disabled>开启健康之旅</button>
-  </div>
-
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script>
-    // 获取元素
-    const cards = document.querySelectorAll('.goal-card');
-    const nextBtn = document.getElementById('nextBtn');
-    const backBtn = document.getElementById('backBtn');
+    const firebaseConfig = {
+      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
+      authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
+      projectId: "beatricesaturn-6ff7e",
+      storageBucket: "beatricesaturn-6ff7e.firebasestorage.app",
+      messagingSenderId: "607338984635",
+      appId: "1:607338984635:web:a4b3668715462a4d0ca59e",
+      measurementId: "G-L2R10QZZL9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    // 存储选中的目标列表（数组）
+    let currentUser = null;
     let selectedGoals = [];
 
-    // 从 localStorage 读取已保存的目标列表（如果有）
-    function loadSavedGoals() {
-      const saved = localStorage.getItem('userGoals');
-      if (saved) {
-        try {
-          selectedGoals = JSON.parse(saved);
-          // 高亮对应的卡片
-          cards.forEach(card => {
-            const goalValue = card.getAttribute('data-goal');
-            if (selectedGoals.includes(goalValue)) {
-              card.classList.add('selected');
-            } else {
-              card.classList.remove('selected');
-            }
-          });
-          // 更新按钮状态
-          updateButtonState();
-        } catch(e) {}
-      }
-    }
-
-    // 保存目标列表到 localStorage
-    function saveGoals() {
-      localStorage.setItem('userGoals', JSON.stringify(selectedGoals));
-    }
-
-    // 更新底部按钮的启用/禁用状态
-    function updateButtonState() {
-      if (selectedGoals.length > 0) {
-        nextBtn.disabled = false;
-        nextBtn.classList.add('active');
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        loadSavedGoals();
       } else {
-        nextBtn.disabled = true;
-        nextBtn.classList.remove('active');
+        window.location.href = 'index.html';
       }
+    });
+
+    async function loadSavedGoals() {
+      const doc = await db.collection('goals').doc(currentUser.uid).get();
+      if (doc.exists) {
+        selectedGoals = doc.data().goals || [];
+      }
+      renderPage();
     }
 
-    // 处理卡片点击（多选逻辑）
-    cards.forEach(card => {
-      card.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const goalValue = card.getAttribute('data-goal');
-        const index = selectedGoals.indexOf(goalValue);
-        
-        if (index === -1) {
-          // 未选中 → 添加到选中列表
-          selectedGoals.push(goalValue);
+    function renderPage() {
+      const goals = [
+        { id: 'regular_eating', name: '改善规律饮食', desc: '建立三餐准时打卡习惯，让忙碌也不再忘记吃饭。', tag: '习惯养成', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6v6h4" stroke-linecap="round"/><circle cx="12" cy="12" r="10"/></svg>' },
+        { id: 'personalized_diet', name: '个性化膳食定制', desc: '根据BMI、饮食记录与作息，形成更贴合你的膳食建议。', tag: '膳食定制', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/><path d="M6 17h12"/></svg>' },
+        { id: 'family_sharing', name: '与亲友共享报备', desc: '向家人朋友同步饮食状态，让关心变成温柔督促。', tag: '社交分享', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>' }
+      ];
+
+      const cardsHtml = goals.map(goal => `
+        <div class="goal-card" data-goal="${goal.id}">
+          <div class="card-content">
+            <div class="card-icon">${goal.icon}</div>
+            <div class="card-text">
+              <h3>${goal.name}</h3>
+              <p>${goal.desc}</p>
+              <span class="card-tag">${goal.tag}</span>
+            </div>
+          </div>
+          <div class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+      `).join('');
+
+      const html = `
+        <div class="card">
+          <div class="page-title">
+            <h2>选择你的健康目标</h2>
+            <p>根据你的需求选择最适合的目标，我们将为你定制个性化的饮食方案 <strong style="color:#e67e22;">（可多选）</strong></p>
+          </div>
+          ${cardsHtml}
+          <button class="next-btn ${selectedGoals.length > 0 ? 'active' : ''}" id="nextBtn">开启健康之旅</button>
+        </div>
+      `;
+
+      document.getElementById('mainContent').innerHTML = html;
+
+      // 高亮已选中的卡片
+      document.querySelectorAll('.goal-card').forEach(card => {
+        const goalId = card.getAttribute('data-goal');
+        if (selectedGoals.includes(goalId)) {
           card.classList.add('selected');
-        } else {
-          // 已选中 → 从列表中移除
-          selectedGoals.splice(index, 1);
-          card.classList.remove('selected');
         }
-        
-        // 保存到 localStorage
-        saveGoals();
-        // 更新按钮状态
-        updateButtonState();
+        card.addEventListener('click', () => {
+          const id = card.getAttribute('data-goal');
+          if (selectedGoals.includes(id)) {
+            selectedGoals = selectedGoals.filter(g => g !== id);
+            card.classList.remove('selected');
+          } else {
+            selectedGoals.push(id);
+            card.classList.add('selected');
+          }
+          const nextBtn = document.getElementById('nextBtn');
+          if (selectedGoals.length > 0) {
+            nextBtn.classList.add('active');
+            nextBtn.disabled = false;
+          } else {
+            nextBtn.classList.remove('active');
+            nextBtn.disabled = true;
+          }
+        });
       });
-    });
 
-    // 点击下一步：保存目标列表并跳转
-    nextBtn.addEventListener('click', () => {
-      if (selectedGoals.length === 0) return;
-      // 确保最新数据已保存
-      saveGoals();
-      // 跳转到下一个页面（饮食计划选择页）
-      window.location.href = '饮食计划选择页.html';
-    });
+      const nextBtn = document.getElementById('nextBtn');
+      nextBtn.addEventListener('click', async () => {
+        if (selectedGoals.length === 0) return;
+        await db.collection('goals').doc(currentUser.uid).set({ goals: selectedGoals }, { merge: true });
+        window.location.href = '饮食计划选择页.html';
+      });
+    }
 
-    // 返回上一页（基础信息采集页）
-    backBtn.addEventListener('click', () => {
+    document.getElementById('backBtn').addEventListener('click', () => {
       window.location.href = '基础信息采集页.html';
     });
-
-    // 页面加载时读取已保存的目标
-    loadSavedGoals();
   </script>
+</head>
+<body>
+  <div class="header">
+    <div class="back-btn" id="backBtn">←</div>
+    <div class="title">核心目标设定</div>
+    <div style="width:2rem;"></div>
+  </div>
+  <div class="main" id="mainContent">
+    <div style="text-align: center; padding: 2rem;">加载中...</div>
+  </div>
 </body>
 </html>
