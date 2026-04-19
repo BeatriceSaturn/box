@@ -3,445 +3,240 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>关怀互动 - 吃了么</title>
+  <title>互动详情 - 吃了么</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fef9e8;
       font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
-    /* 头部 */
     .header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      width: 100%;
-      background: #fff9f0;
-      border-bottom: 1px solid #f0e4d4;
-      padding: 0 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      padding: 1rem;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
     }
     .back-btn {
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 2rem;
+      height: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0.5rem;
       cursor: pointer;
-      transition: background 0.2s;
+      border-radius: 50%;
     }
     .back-btn:hover { background: #f0e4d4; }
-    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
-    .title {
-      flex: 1;
-      text-align: center;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #5a3e2b;
-    }
-    /* 主内容滚动区 */
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-    }
-    /* 亲友头部卡片 */
-    .profile-card {
-      background: white;
-      padding: 1rem;
-      border-bottom: 1px solid #f0e4d4;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .avatar {
-      width: 3rem;
-      height: 3rem;
-      background: linear-gradient(135deg, #fdf3e8, #ffe6d5);
-      border-radius: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #e67e22;
-    }
-    .profile-info {
-      flex: 1;
-    }
-    .profile-name {
-      font-weight: 700;
-      color: #5a3e2b;
-    }
-    .profile-status {
-      font-size: 0.7rem;
-      color: #a07a5c;
-    }
-    /* 互动记录列表 */
-    .interactions-list {
-      flex: 1;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    .interaction-item {
-      background: white;
-      border-radius: 1rem;
-      border: 1px solid #f0e4d4;
+    .title { font-size: 1rem; font-weight: 600; color: #5a3e2b; flex: 1; text-align: center; }
+    .main { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .message {
+      max-width: 80%;
       padding: 0.75rem;
-    }
-    .item-header {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      border-radius: 1rem;
       margin-bottom: 0.5rem;
     }
-    .item-icon {
-      width: 1.8rem;
-      height: 1.8rem;
-      background: #fdf3e8;
-      border-radius: 0.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .item-icon svg { width: 1rem; height: 1rem; stroke: #e67e22; stroke-width: 2.5; }
-    .item-title {
-      flex: 1;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #5a3e2b;
-    }
-    .item-date {
-      font-size: 0.6rem;
-      color: #c0a080;
-    }
-    .item-message {
-      font-size: 0.8rem;
-      color: #5a3e2b;
-      margin-bottom: 0.25rem;
-      line-height: 1.4;
-    }
-    .item-from {
-      font-size: 0.65rem;
-      color: #a07a5c;
-      text-align: right;
-    }
-    /* 空状态 */
-    .empty-state {
-      text-align: center;
-      padding: 2rem;
-      color: #c0a080;
-    }
-    /* 底部操作栏 */
-    .action-bar {
-      background: #fff9f0;
-      border-top: 1px solid #f0e4d4;
-      padding: 0.75rem 1rem;
-      display: flex;
-      gap: 0.75rem;
-    }
-    .action-btn {
-      flex: 1;
+    .message-out { background: #e67e22; color: white; align-self: flex-end; border-bottom-right-radius: 0.25rem; }
+    .message-in { background: white; border: 1px solid #f0e4d4; align-self: flex-start; border-bottom-left-radius: 0.25rem; }
+    .message-text { font-size: 0.85rem; }
+    .message-time { font-size: 0.6rem; margin-top: 0.25rem; opacity: 0.7; text-align: right; }
+    .input-area {
       background: white;
+      border-top: 1px solid #f0e4d4;
+      padding: 0.75rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .input-area input {
+      flex: 1;
+      padding: 0.7rem;
       border: 1px solid #e2d4c8;
       border-radius: 2rem;
-      padding: 0.6rem;
+      font-size: 0.9rem;
+      background: #fffbf5;
+    }
+    .send-btn {
+      background: #e67e22;
+      border: none;
+      border-radius: 2rem;
+      padding: 0.7rem 1rem;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .quick-actions {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background: white;
+      border-bottom: 1px solid #f0e4d4;
+    }
+    .quick-btn {
+      flex: 1;
+      background: #fffbf5;
+      border: 1px solid #f0e4d4;
+      border-radius: 2rem;
+      padding: 0.5rem;
       font-size: 0.8rem;
-      font-weight: 500;
-      color: #e67e22;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
+      gap: 0.25rem;
       cursor: pointer;
-      transition: all 0.2s;
     }
-    .action-btn:active { transform: scale(0.98); background: #fff7f0; }
-    .action-btn svg { width: 1.2rem; height: 1.2rem; stroke: currentColor; stroke-width: 2; }
-    .action-btn.primary {
-      background: #e67e22;
-      color: white;
-      border: none;
-    }
-    .action-btn.primary:active { background: #d4691a; }
-    /* 底部导航栏 */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #fff9f0;
-      border-top: 1px solid #f0e4d4;
-      display: flex;
-      justify-content: space-around;
-      padding: 0.5rem 1rem 1rem;
-      z-index: 20;
-    }
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.2rem;
-      cursor: pointer;
-      color: #c0a080;
-      transition: color 0.2s;
-    }
-    .nav-item.active { color: #e67e22; }
-    .nav-icon { width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2; }
-    .nav-label { font-size: 0.7rem; font-weight: 500; }
+    .quick-btn:active { background: #fff7f0; }
   </style>
-</head>
-<body>
-  <header class="header">
-    <div class="back-btn" id="backBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <div class="title">关怀互动</div>
-    <div class="right-placeholder" style="width:2.5rem;"></div>
-  </header>
-
-  <main class="main-content" id="mainContent">
-    <!-- 动态渲染 -->
-    <div style="text-align: center; padding: 2rem;">加载中...</div>
-  </main>
-
-  <div class="bottom-nav">
-    <div class="nav-item" data-nav="home">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/>
-        <rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
-      </svg>
-      <span class="nav-label">首页</span>
-    </div>
-    <div class="nav-item" data-nav="record">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
-      </svg>
-      <span class="nav-label">饮食记录</span>
-    </div>
-    <div class="nav-item" data-nav="friends">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>
-      </svg>
-      <span class="nav-label">亲友空间</span>
-    </div>
-    <div class="nav-item" data-nav="report">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
-      </svg>
-      <span class="nav-label">报表</span>
-    </div>
-  </div>
-
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script>
-    // 获取亲友列表（与亲友空间共享数据）
-    function getFriends() {
-      const stored = localStorage.getItem('friendsList');
-      if (stored) {
-        try { return JSON.parse(stored); } catch(e) {}
-      }
-      return [
-        { id: '1', name: '爸爸', relation: '家人', status: 'checked', statusText: '已按时吃饭' },
-        { id: '2', name: '同学', relation: '朋友', status: 'busy', statusText: '正在忙碌中' },
-        { id: '3', name: '女儿', relation: '家人', status: 'online', statusText: '在线' }
-      ];
-    }
+    const firebaseConfig = {
+      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
+      authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
+      projectId: "beatricesaturn-6ff7e",
+      storageBucket: "beatricesaturn-6ff7e.firebasestorage.app",
+      messagingSenderId: "607338984635",
+      appId: "1:607338984635:web:a4b3668715462a4d0ca59e",
+      measurementId: "G-L2R10QZZL9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    // 获取互动记录（按亲友ID存储）
-    function getInteractions(friendId) {
-      const key = `interactions_${friendId}`;
-      const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : [];
-    }
+    let currentUser = null;
+    let friendId = null;
+    let friendName = '好友';
 
-    // 保存互动记录
-    function saveInteractions(friendId, interactions) {
-      const key = `interactions_${friendId}`;
-      localStorage.setItem(key, JSON.stringify(interactions));
-    }
-
-    // 添加新互动
-    function addInteraction(friendId, type, message, fromMe = true) {
-      const interactions = getInteractions(friendId);
-      const newItem = {
-        id: Date.now(),
-        type: type, // 'remind', 'reply', 'emotion'
-        title: type === 'remind' ? '催饭提醒' : (type === 'reply' ? '回复消息' : '表情互动'),
-        message: message,
-        from: fromMe ? '我' : (getFriends().find(f => f.id === friendId)?.name || '亲友'),
-        timestamp: new Date().toISOString(),
-        dateStr: new Date().toLocaleDateString('zh-CN')
-      };
-      interactions.unshift(newItem);
-      saveInteractions(friendId, interactions);
-    }
-
-    // 渲染当前页面（默认使用第一个亲友，或者通过URL参数指定）
-    function renderPage() {
-      const friends = getFriends();
-      if (friends.length === 0) {
-        document.getElementById('mainContent').innerHTML = `
-          <div class="empty-state">
-            <p>暂无亲友，请先添加亲友</p>
-            <button class="action-btn primary" style="margin-top:1rem;" id="goToFriendsBtn">去亲友空间</button>
-          </div>
-        `;
-        const goBtn = document.getElementById('goToFriendsBtn');
-        if (goBtn) goBtn.addEventListener('click', () => {
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        const urlParams = new URLSearchParams(window.location.search);
+        friendId = urlParams.get('friendId');
+        if (!friendId) {
+          alert('参数错误');
           window.location.href = '亲友共享空间主页.html';
-        });
+          return;
+        }
+        loadFriendInfo();
+        loadMessages();
+        setupRealtime();
+      } else {
+        window.location.href = 'index.html';
+      }
+    });
+
+    async function loadFriendInfo() {
+      const doc = await db.collection('profiles').doc(friendId).get();
+      if (doc.exists) {
+        friendName = doc.data().nickname || friendId.slice(0,6);
+      }
+      document.getElementById('friendTitle').innerText = `与 ${friendName} 的互动`;
+    }
+
+    async function loadMessages() {
+      const snapshot = await db.collection('interactions')
+        .where('fromUid', 'in', [currentUser.uid, friendId])
+        .where('toUid', 'in', [currentUser.uid, friendId])
+        .orderBy('timestamp', 'asc')
+        .get();
+      const messages = snapshot.docs.map(doc => doc.data());
+      renderMessages(messages);
+    }
+
+    function renderMessages(messages) {
+      const container = document.getElementById('messagesContainer');
+      if (messages.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:2rem;">暂无互动记录，发送一条消息吧～</div>';
         return;
       }
-
-      // 取第一个亲友作为当前互动对象（可扩展选择逻辑）
-      const currentFriend = friends[0];
-      const interactions = getInteractions(currentFriend.id);
-
-      // 生成互动列表HTML
-      let interactionsHtml = '';
-      if (interactions.length === 0) {
-        interactionsHtml = `<div class="empty-state">暂无互动记录，点击下方按钮发起关怀~</div>`;
-      } else {
-        interactionsHtml = interactions.map(item => `
-          <div class="interaction-item">
-            <div class="item-header">
-              <div class="item-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  ${item.type === 'remind' ? '<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>' : 
-                    (item.type === 'reply' ? '<path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>' :
-                    '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/>')}
-                </svg>
-              </div>
-              <div class="item-title">${escapeHtml(item.title)}</div>
-              <div class="item-date">${item.dateStr}</div>
-            </div>
-            <div class="item-message">${escapeHtml(item.message)}</div>
-            <div class="item-from">来自 ${escapeHtml(item.from)}</div>
+      const html = messages.map(msg => {
+        const isOut = msg.fromUid === currentUser.uid;
+        return `
+          <div class="message ${isOut ? 'message-out' : 'message-in'}">
+            <div class="message-text">${escapeHtml(msg.message)}</div>
+            <div class="message-time">${formatTime(msg.timestamp)}</div>
           </div>
-        `).join('');
-      }
-
-      const fullHtml = `
-        <div class="profile-card">
-          <div class="avatar">${currentFriend.name.charAt(0)}</div>
-          <div class="profile-info">
-            <div class="profile-name">${escapeHtml(currentFriend.name)}</div>
-            <div class="profile-status">${currentFriend.statusText || '在线'}</div>
-          </div>
-        </div>
-        <div class="interactions-list" id="interactionsList">
-          ${interactionsHtml}
-        </div>
-      `;
-      document.getElementById('mainContent').innerHTML = fullHtml;
-
-      // 绑定操作栏（因为操作栏是固定的，不需要重新渲染，但需要确保按钮事件有效）
-      // 操作栏已经在页面底部存在，但可能因为重新渲染被覆盖？不会，操作栏独立于mainContent。
-      // 绑定事件需要在页面加载时执行一次。
+        `;
+      }).join('');
+      container.innerHTML = html;
+      container.scrollTop = container.scrollHeight;
     }
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
+    function formatTime(timestamp) {
+      if (!timestamp) return '';
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      return `${date.getMonth()+1}/${date.getDate()} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+    }
+
+    async function sendMessage(message) {
+      if (!message.trim()) return;
+      await db.collection('interactions').add({
+        fromUid: currentUser.uid,
+        toUid: friendId,
+        message: message,
+        type: 'text',
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
+      document.getElementById('messageInput').value = '';
+      loadMessages();
     }
 
-    // 初始化操作栏按钮事件
-    function initActionButtons() {
-      const friends = getFriends();
-      if (friends.length === 0) return;
-      const currentFriend = friends[0];
-
-      const remindBtn = document.getElementById('remindBtn');
-      const emotionBtn = document.getElementById('emotionBtn');
-      if (remindBtn) {
-        remindBtn.onclick = () => {
-          const msg = prompt('发送催饭提醒内容：', '记得准时吃饭哦，别太忙啦。');
-          if (msg && msg.trim()) {
-            addInteraction(currentFriend.id, 'remind', msg.trim(), true);
-            renderPage(); // 刷新页面显示新记录
-          }
-        };
-      }
-      if (emotionBtn) {
-        emotionBtn.onclick = () => {
-          const emojis = ['😊 加油', '💪 按时吃饭', '🌸 照顾好自己', '❤️ 关心你', '🍚 记得吃饭'];
-          const selected = prompt('选择或输入表情/问候语：\n' + emojis.join('\n'), emojis[0]);
-          if (selected && selected.trim()) {
-            addInteraction(currentFriend.id, 'emotion', selected.trim(), true);
-            renderPage();
-          }
-        };
-      }
+    async function sendQuickAction(action) {
+      let msg = '';
+      if (action === 'remind') msg = '⏰ 提醒你该吃饭啦！记得按时吃饭哦～';
+      else if (action === 'flower') msg = '🌸 送你一朵小花，愿你心情美丽！';
+      else if (action === 'greet') msg = '👋 打个招呼，今天也要好好吃饭！';
+      await sendMessage(msg);
     }
 
-    // 底部导航栏
-    function initBottomNav() {
-      const navItems = document.querySelectorAll('.nav-item');
-      navItems.forEach(item => {
-        item.addEventListener('click', () => {
-          const navTo = item.getAttribute('data-nav');
-          if (navTo === 'home') window.location.href = '饮食管理首页.html';
-          else if (navTo === 'record') window.location.href = '打卡详情页.html';
-          else if (navTo === 'friends') window.location.href = '亲友共享空间主页.html';
-          else if (navTo === 'report') window.location.href = '饮食趋势报表.html';
+    function setupRealtime() {
+      db.collection('interactions')
+        .where('fromUid', 'in', [currentUser.uid, friendId])
+        .where('toUid', 'in', [currentUser.uid, friendId])
+        .orderBy('timestamp', 'asc')
+        .onSnapshot(() => {
+          loadMessages();
         });
-      });
     }
 
-    // 返回按钮
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
     document.getElementById('backBtn').addEventListener('click', () => {
       window.location.href = '亲友共享空间主页.html';
     });
-
-    // 渲染页面和操作栏（操作栏需要先存在于DOM中）
-    // 由于操作栏在HTML中已经写好，但需要确保ID存在
-    // 我们可以在页面加载后动态创建操作栏（或者使用固定HTML）
-    // 注意：上面HTML中已经包含了.action-bar，但为了方便，我们在JS中动态追加一下，确保兼容性
-    function ensureActionBar() {
-      let actionBar = document.querySelector('.action-bar');
-      if (!actionBar) {
-        const bar = document.createElement('div');
-        bar.className = 'action-bar';
-        bar.innerHTML = `
-          <button class="action-btn primary" id="remindBtn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
-            一键催饭
-          </button>
-          <button class="action-btn" id="emotionBtn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>
-            发送表情
-          </button>
-        `;
-        document.body.appendChild(bar);
-      }
-    }
-
-    ensureActionBar();
-    renderPage();
-    initActionButtons();
-    initBottomNav();
+    document.getElementById('sendBtn').addEventListener('click', () => {
+      const input = document.getElementById('messageInput');
+      sendMessage(input.value);
+    });
+    document.getElementById('remindBtn').addEventListener('click', () => sendQuickAction('remind'));
+    document.getElementById('flowerBtn').addEventListener('click', () => sendQuickAction('flower'));
+    document.getElementById('greetBtn').addEventListener('click', () => sendQuickAction('greet'));
+    document.getElementById('messageInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage(e.target.value);
+    });
   </script>
+</head>
+<body>
+  <div class="header">
+    <div class="back-btn" id="backBtn">←</div>
+    <div class="title" id="friendTitle">加载中...</div>
+    <div style="width:2rem;"></div>
+  </div>
+  <div class="quick-actions">
+    <button class="quick-btn" id="remindBtn">⏰ 催饭</button>
+    <button class="quick-btn" id="flowerBtn">🌸 送花</button>
+    <button class="quick-btn" id="greetBtn">👋 打招呼</button>
+  </div>
+  <div class="main" id="messagesContainer">
+    <div style="text-align: center; padding: 2rem;">加载中...</div>
+  </div>
+  <div class="input-area">
+    <input type="text" id="messageInput" placeholder="输入消息...">
+    <button class="send-btn" id="sendBtn">发送</button>
+  </div>
 </body>
 </html>
