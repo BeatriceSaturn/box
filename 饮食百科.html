@@ -1,467 +1,182 @@
-
-   <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>饮食百科 - 吃了么</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fef9e8;
       font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
-    /* 头部 */
     .header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      width: 100%;
-      background: #fff9f0;
-      border-bottom: 1px solid #f0e4d4;
-      padding: 0 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      padding: 1rem;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
     }
     .back-btn {
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 2rem;
+      height: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0.5rem;
       cursor: pointer;
-      transition: background 0.2s;
+      border-radius: 50%;
     }
     .back-btn:hover { background: #f0e4d4; }
-    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
-    .title {
-      flex: 1;
-      text-align: center;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #5a3e2b;
-    }
-    /* 主内容滚动区 */
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem;
-      padding-bottom: 80px;
-      scrollbar-width: thin;
-    }
-    /* 搜索栏 */
+    .title { font-size: 1.1rem; font-weight: 600; color: #5a3e2b; }
+    .main { flex: 1; overflow-y: auto; padding: 1rem; }
     .search-bar {
       position: sticky;
       top: 0;
-      background: #fff9f0;
+      background: #fef9e8;
       padding-bottom: 0.75rem;
-      margin-bottom: 0.5rem;
       z-index: 10;
-    }
-    .search-input-wrapper {
-      position: relative;
-      width: 100%;
-    }
-    .search-icon {
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 1rem;
-      height: 1rem;
-      stroke: #c0a080;
-      stroke-width: 2;
     }
     .search-input {
       width: 100%;
-      background: #fffbf5;
+      background: white;
       border: 1px solid #f0e4d4;
       border-radius: 2rem;
-      padding: 0.7rem 1rem 0.7rem 2.5rem;
-      font-size: 0.85rem;
-      color: #5a3e2b;
-      outline: none;
+      padding: 0.7rem 1rem;
+      font-size: 0.9rem;
     }
-    .search-input:focus {
-      border-color: #e67e22;
-    }
-    /* 分类标签滚动区 */
     .categories {
       display: flex;
       gap: 0.5rem;
       overflow-x: auto;
-      padding-bottom: 0.5rem;
+      padding: 0.5rem 0;
       margin-bottom: 1rem;
-      scrollbar-width: thin;
-      -webkit-overflow-scrolling: touch;
     }
     .category-btn {
-      flex-shrink: 0;
       padding: 0.4rem 1rem;
       border-radius: 2rem;
-      font-size: 0.8rem;
-      font-weight: 500;
-      background: #fffbf5;
+      background: white;
       border: 1px solid #f0e4d4;
-      color: #a07a5c;
+      font-size: 0.8rem;
+      white-space: nowrap;
       cursor: pointer;
-      transition: all 0.2s;
     }
     .category-btn.active {
       background: #e67e22;
-      border-color: #e67e22;
       color: white;
-      box-shadow: 0 2px 6px rgba(230,126,34,0.2);
+      border-color: #e67e22;
     }
-    /* 文章卡片 */
     .article-card {
       background: white;
       border-radius: 1rem;
       border: 1px solid #f0e4d4;
+      padding: 1rem;
       margin-bottom: 1rem;
-      overflow: hidden;
-      transition: all 0.2s;
-      cursor: pointer;
-    }
-    .article-card:active {
-      transform: scale(0.98);
-      background: #fffbf5;
-    }
-    .card-content {
       display: flex;
       gap: 1rem;
-      padding: 1rem;
-    }
-    .card-img {
-      width: 5rem;
-      height: 5rem;
-      border-radius: 0.75rem;
-      background: #fdf3e8;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-    .card-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .card-info {
-      flex: 1;
-    }
-    .card-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #5a3e2b;
-      margin-bottom: 0.25rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-    .star {
-      color: #fbbf24;
-      font-size: 0.8rem;
-    }
-    .card-desc {
-      font-size: 0.75rem;
-      color: #a07a5c;
-      line-height: 1.4;
-      margin-bottom: 0.5rem;
-    }
-    .card-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.65rem;
-    }
-    .badge {
-      background: #fdf3e8;
-      padding: 0.2rem 0.6rem;
-      border-radius: 1rem;
-      color: #e67e22;
-    }
-    .read-time {
-      color: #c0a080;
-    }
-    .tags {
-      padding: 0 1rem 0.75rem 1rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-    .tag {
-      font-size: 0.6rem;
-      background: #fdf3e8;
-      padding: 0.2rem 0.5rem;
-      border-radius: 1rem;
-      color: #a07a5c;
-    }
-    /* 空状态 */
-    .empty-state {
-      text-align: center;
-      padding: 2rem;
-      color: #c0a080;
-    }
-    /* 底部导航栏 */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #fff9f0;
-      border-top: 1px solid #f0e4d4;
-      display: flex;
-      justify-content: space-around;
-      padding: 0.5rem 1rem 1rem;
-      z-index: 20;
-    }
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.2rem;
       cursor: pointer;
-      color: #c0a080;
-      transition: color 0.2s;
     }
-    .nav-item.active { color: #e67e22; }
-    .nav-icon { width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2; }
-    .nav-label { font-size: 0.7rem; font-weight: 500; }
+    .article-img {
+      width: 4rem;
+      height: 4rem;
+      background: #fdf3e8;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+    .article-info { flex: 1; }
+    .article-title { font-weight: 600; margin-bottom: 0.25rem; }
+    .article-desc { font-size: 0.75rem; color: #a07a5c; }
+    .article-meta { display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.7rem; color: #c0a080; }
   </style>
 </head>
 <body>
-  <header class="header">
-    <div class="back-btn" id="backBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
+  <div class="header">
+    <div class="back-btn" id="backBtn">←</div>
     <div class="title">饮食百科</div>
-    <div class="right-placeholder" style="width:2.5rem;"></div>
-  </header>
-
-  <main class="main-content">
-    <!-- 搜索栏 -->
+    <div style="width:2rem;"></div>
+  </div>
+  <div class="main">
     <div class="search-bar">
-      <div class="search-input-wrapper">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input type="text" class="search-input" id="searchInput" placeholder="搜索文章、食谱、科普...">
-      </div>
+      <input type="text" class="search-input" id="searchInput" placeholder="搜索文章、食谱、科普...">
     </div>
-
-    <!-- 分类标签 -->
     <div class="categories" id="categories">
-      <button class="category-btn active" data-cat="all">📚 全部</button>
-      <button class="category-btn" data-cat="tip">💡 小贴士</button>
-      <button class="category-btn" data-cat="recipe">🍽️ 食谱</button>
-      <button class="category-btn" data-cat="science">🔬 科普</button>
+      <button class="category-btn active" data-cat="all">全部</button>
+      <button class="category-btn" data-cat="tip">小贴士</button>
+      <button class="category-btn" data-cat="recipe">食谱</button>
+      <button class="category-btn" data-cat="science">科普</button>
     </div>
-
-    <!-- 文章列表容器 -->
     <div id="articlesContainer"></div>
-  </main>
-
-  <div class="bottom-nav">
-    <div class="nav-item" data-nav="home">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/>
-        <rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
-      </svg>
-      <span class="nav-label">首页</span>
-    </div>
-    <div class="nav-item" data-nav="record">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
-      </svg>
-      <span class="nav-label">饮食记录</span>
-    </div>
-    <div class="nav-item" data-nav="friends">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>
-      </svg>
-      <span class="nav-label">亲友空间</span>
-    </div>
-    <div class="nav-item" data-nav="report">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
-      </svg>
-      <span class="nav-label">报表</span>
-    </div>
   </div>
 
   <script>
-    // 文章数据（与原始示例一致，可扩展）
-    const articlesData = [
-      {
-        id: 1,
-        title: "忙碌日也要准时吃饭的三个小技巧",
-        description: "帮助上班族和上学族在高压环境里保住三餐节奏。",
-        category: "tip",
-        catName: "小贴士",
-        image: "https://spark-builder.s3.cn-north-1.amazonaws.com.cn/image/2026/3/29/b4fc02a6-4d2a-406b-a286-36dc44d33196.png",
-        readTime: "4 分钟阅读",
-        tags: ["#规律饮食", "#提醒"],
-        star: true
-      },
-      {
-        id: 2,
-        title: "五分钟能完成的均衡早餐",
-        description: "适合早晨时间紧张的人群，快速完成并保持能量。",
-        category: "recipe",
-        catName: "食谱",
-        image: "https://spark-builder.s3.cn-north-1.amazonaws.com.cn/image/2026/3/29/230a30fd-247b-44ff-aa78-e2af2f9fbee7.png",
-        readTime: "5 分钟阅读",
-        tags: ["#早餐", "#食谱"],
-        star: true
-      },
-      {
-        id: 3,
-        title: "为什么情绪会影响食欲",
-        description: "从压力、疲劳和作息角度解释饮食波动。",
-        category: "science",
-        catName: "科普",
-        image: "https://spark-builder.s3.cn-north-1.amazonaws.com.cn/image/2026/3/29/dbc77fb2-53bc-41de-ad4c-2b6f1fd156e1.png",
-        readTime: "6 分钟阅读",
-        tags: ["#压力", "#食欲"],
-        star: false
-      },
-      {
-        id: 4,
-        title: "适合晚餐的轻负担搭配指南",
-        description: "减少晚间负担感，同时保证营养完整。",
-        category: "tip",
-        catName: "小贴士",
-        image: "https://spark-builder.s3.cn-north-1.amazonaws.com.cn/image/2026/3/29/4674b282-e683-4346-b6dd-5f2f40d03589.png",
-        readTime: "5 分钟阅读",
-        tags: ["#晚餐", "#搭配"],
-        star: false
-      }
+    const articles = [
+      { id: 1, title: "忙碌日也要准时吃饭的三个小技巧", desc: "帮助上班族和上学族在高压环境里保住三餐节奏。", category: "tip", catName: "小贴士", emoji: "⏰", readTime: "4 分钟阅读" },
+      { id: 2, title: "五分钟能完成的均衡早餐", desc: "适合早晨时间紧张的人群，快速完成并保持能量。", category: "recipe", catName: "食谱", emoji: "🥣", readTime: "5 分钟阅读" },
+      { id: 3, title: "为什么情绪会影响食欲", desc: "从压力、疲劳和作息角度解释饮食波动。", category: "science", catName: "科普", emoji: "🧠", readTime: "6 分钟阅读" },
+      { id: 4, title: "适合晚餐的轻负担搭配指南", desc: "减少晚间负担感，同时保证营养完整。", category: "tip", catName: "小贴士", emoji: "🌙", readTime: "5 分钟阅读" }
     ];
 
     let currentCategory = "all";
     let searchKeyword = "";
 
-    // 渲染文章列表
     function renderArticles() {
-      const container = document.getElementById("articlesContainer");
-      let filtered = articlesData.filter(article => {
-        // 分类筛选
-        if (currentCategory !== "all" && article.category !== currentCategory) return false;
-        // 搜索筛选
+      let filtered = articles.filter(a => {
+        if (currentCategory !== "all" && a.category !== currentCategory) return false;
         if (searchKeyword.trim() !== "") {
-          const kw = searchKeyword.trim().toLowerCase();
-          return article.title.toLowerCase().includes(kw) || 
-                 article.description.toLowerCase().includes(kw) ||
-                 article.tags.some(tag => tag.toLowerCase().includes(kw));
+          const kw = searchKeyword.toLowerCase();
+          return a.title.toLowerCase().includes(kw) || a.desc.toLowerCase().includes(kw);
         }
         return true;
       });
-
+      const container = document.getElementById('articlesContainer');
       if (filtered.length === 0) {
-        container.innerHTML = `<div class="empty-state">📭 没有找到相关文章，试试其他关键词吧～</div>`;
+        container.innerHTML = '<div style="text-align:center; padding:2rem;">没有找到相关文章</div>';
         return;
       }
-
-      const html = filtered.map(article => `
-        <div class="article-card" data-id="${article.id}">
-          <div class="card-content">
-            <div class="card-img">
-              <img src="${article.image}" alt="${article.title}" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2280%22%20height%3D%2280%22%20viewBox%3D%220%200%2080%2080%22%3E%3Crect%20width%3D%2280%22%20height%3D%2280%22%20fill%3D%22%23fdf3e8%22%2F%3E%3Ctext%20x%3D%2240%22%20y%3D%2245%22%20text-anchor%3D%22middle%22%20fill%3D%22%23e67e22%22%20font-size%3D%2212%22%3E📖%3C%2Ftext%3E%3C%2Fsvg%3E'">
-            </div>
-            <div class="card-info">
-              <div class="card-title">
-                <span>${escapeHtml(article.title)}</span>
-                ${article.star ? '<span class="star">⭐</span>' : ''}
-              </div>
-              <div class="card-desc">${escapeHtml(article.description)}</div>
-              <div class="card-meta">
-                <span class="badge">${article.catName}</span>
-                <span class="read-time">${article.readTime}</span>
-              </div>
-            </div>
-          </div>
-          <div class="tags">
-            ${article.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+      const html = filtered.map(a => `
+        <div class="article-card" data-id="${a.id}">
+          <div class="article-img">${a.emoji}</div>
+          <div class="article-info">
+            <div class="article-title">${escapeHtml(a.title)}</div>
+            <div class="article-desc">${escapeHtml(a.desc)}</div>
+            <div class="article-meta"><span>${a.catName}</span><span>${a.readTime}</span></div>
           </div>
         </div>
       `).join('');
       container.innerHTML = html;
-
-      // 绑定卡片点击事件
       document.querySelectorAll('.article-card').forEach(card => {
-        card.addEventListener('click', (e) => {
+        card.addEventListener('click', () => {
           const id = card.getAttribute('data-id');
-          const article = articlesData.find(a => a.id == id);
-          if (article) {
-            alert(`《${article.title}》\n\n${article.description}\n\n阅读时间：${article.readTime}\n标签：${article.tags.join(' ')}`);
-            // 可扩展为跳转到详情页
-          }
+          const article = articles.find(a => a.id == id);
+          alert(`《${article.title}》\n\n${article.desc}\n\n阅读时间：${article.readTime}`);
         });
       });
     }
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-      });
-    }
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
 
-    // 监听搜索输入
-    const searchInput = document.getElementById('searchInput');
-    searchInput.addEventListener('input', (e) => {
+    document.getElementById('searchInput').addEventListener('input', (e) => {
       searchKeyword = e.target.value;
       renderArticles();
     });
-
-    // 分类按钮切换
-    const categoryBtns = document.querySelectorAll('.category-btn');
-    categoryBtns.forEach(btn => {
+    document.querySelectorAll('.category-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        categoryBtns.forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentCategory = btn.getAttribute('data-cat');
         renderArticles();
       });
     });
-
-    // 底部导航栏跳转
-    function initBottomNav() {
-      const navItems = document.querySelectorAll('.nav-item');
-      navItems.forEach(item => {
-        item.addEventListener('click', () => {
-          const navTo = item.getAttribute('data-nav');
-          if (navTo === 'home') window.location.href = '饮食管理首页.html';
-          else if (navTo === 'record') window.location.href = '打卡详情页.html';
-          else if (navTo === 'friends') window.location.href = '亲友共享空间主页.html';
-          else if (navTo === 'report') window.location.href = '饮食趋势报表.html';
-        });
-      });
-    }
-
-    // 返回按钮
     document.getElementById('backBtn').addEventListener('click', () => {
       window.location.href = '饮食管理首页.html';
     });
-
-    // 初始化渲染
     renderArticles();
-    initBottomNav();
   </script>
 </body>
-</html>         
+</html>
