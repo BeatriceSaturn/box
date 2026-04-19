@@ -5,215 +5,118 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>亲友共享空间 - 吃了么</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fef9e8;
       font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
-    /* 头部 */
     .header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      width: 100%;
-      background: #fff9f0;
-      border-bottom: 1px solid #f0e4d4;
-      padding: 0 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      padding: 1rem;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
     }
     .back-btn {
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 2rem;
+      height: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0.5rem;
       cursor: pointer;
-      transition: background 0.2s;
+      border-radius: 50%;
     }
     .back-btn:hover { background: #f0e4d4; }
-    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
-    .title {
-      flex: 1;
-      text-align: center;
+    .title { font-size: 1.1rem; font-weight: 600; color: #5a3e2b; }
+    .main { flex: 1; overflow-y: auto; padding: 1rem; }
+    .card {
+      background: white;
+      border-radius: 1rem;
+      border: 1px solid #f0e4d4;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .section-title {
       font-size: 1rem;
       font-weight: 600;
       color: #5a3e2b;
-    }
-    /* 主内容滚动区 */
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem;
-      padding-bottom: 80px;
-      scrollbar-width: thin;
-    }
-    /* 顶部标题区 */
-    .hero {
+      margin-bottom: 0.75rem;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1.5rem;
+      align-items: center;
     }
-    .hero-text h2 {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #5a3e2b;
-      letter-spacing: -0.5px;
-    }
-    .hero-text p {
-      font-size: 0.7rem;
-      color: #c0a080;
+    .friend-item {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
-      margin-top: 0.25rem;
-    }
-    .add-friend-btn {
-      width: 2.75rem;
-      height: 2.75rem;
-      background: white;
-      border-radius: 1.25rem;
-      border: 2px solid white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .add-friend-btn:active { transform: scale(0.94); background: #fff7f0; }
-    .add-friend-btn svg { width: 1.5rem; height: 1.5rem; stroke: #e67e22; stroke-width: 2.5; }
-    /* 亲友卡片 */
-    .friend-card {
-      background: rgba(255,255,240,0.8);
-      backdrop-filter: blur(4px);
-      border: 2px solid rgba(255,255,255,0.6);
-      border-radius: 2rem;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.02);
-      transition: all 0.2s;
-      cursor: pointer;
-    }
-    .friend-card:active { transform: scale(0.98); background: #fff7f0; }
-    .avatar {
-      position: relative;
-      flex-shrink: 0;
-    }
-    .avatar-bg {
-      width: 4rem;
-      height: 4rem;
-      border-radius: 1.5rem;
-      background: linear-gradient(135deg, #fce4d6, #ffd9b5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid white;
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
-    }
-    .avatar-bg svg { width: 2rem; height: 2rem; stroke: #e67e22; stroke-width: 2; }
-    .status-dot {
-      position: absolute;
-      bottom: -0.25rem;
-      right: -0.25rem;
-      width: 1.5rem;
-      height: 1.5rem;
-      border-radius: 50%;
-      border: 3px solid white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #e67e22;
-    }
-    .status-dot svg { width: 0.8rem; height: 0.8rem; stroke: white; stroke-width: 3; }
-    .friend-info {
-      flex: 1;
-    }
-    .friend-name-row {
-      display: flex;
-      align-items: baseline;
-      gap: 0.5rem;
-      margin-bottom: 0.25rem;
-    }
-    .friend-name {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #5a3e2b;
-    }
-    .friend-tag {
-      font-size: 0.6rem;
-      padding: 0.2rem 0.5rem;
-      border-radius: 20px;
-      font-weight: 600;
-      background: #fee2e2;
-      color: #e67e22;
-    }
-    .friend-quote {
-      font-size: 0.7rem;
-      color: #a07a5c;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: #fffbf5;
+      border-radius: 0.75rem;
       margin-bottom: 0.5rem;
-      display: flex;
-      gap: 0.25rem;
-      align-items: flex-start;
     }
-    .friend-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: rgba(255,255,255,0.5);
-      border-radius: 30px;
-      padding: 0.2rem 0.75rem;
-      font-size: 0.7rem;
-      font-weight: 600;
-    }
-    .action-buttons {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 0.5rem;
-    }
-    .action-btn {
-      padding: 0.4rem 0.8rem;
-      border-radius: 1rem;
-      background: #fef5ea;
-      border: 1px solid white;
-      font-size: 0.7rem;
-      font-weight: 600;
+    .friend-avatar {
+      width: 2.5rem;
+      height: 2.5rem;
+      background: #fdf3e8;
+      border-radius: 50%;
       display: flex;
       align-items: center;
-      gap: 0.3rem;
-      cursor: pointer;
-      transition: all 0.2s;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: bold;
       color: #e67e22;
     }
-    .action-btn:active { transform: scale(0.92); background: #fff0e0; }
-    .action-btn svg { width: 1rem; height: 1rem; stroke: currentColor; stroke-width: 2.5; }
-    .arrow-icon {
-      color: #d9c8b8;
-      margin-top: 0.25rem;
+    .friend-info { flex: 1; }
+    .friend-name { font-weight: 600; color: #5a3e2b; }
+    .friend-email { font-size: 0.7rem; color: #a07a5c; }
+    .friend-status {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
     }
-    /* 空状态 */
+    .status-icon {
+      width: 1.5rem;
+      text-align: center;
+      font-size: 1rem;
+    }
+    .status-icon.checked { color: #e67e22; }
+    .add-friend-btn {
+      background: #e67e22;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .search-box {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .search-box input {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid #e2d4c8;
+      border-radius: 2rem;
+      background: white;
+    }
+    .search-box button {
+      background: #fdf3e8;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      cursor: pointer;
+    }
     .empty-state {
       text-align: center;
-      padding: 3rem 1rem;
+      padding: 2rem;
       color: #c0a080;
     }
-    /* 底部导航栏 */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -224,7 +127,7 @@
       display: flex;
       justify-content: space-around;
       padding: 0.5rem 1rem 1rem;
-      z-index: 20;
+      z-index: 10;
     }
     .nav-item {
       display: flex;
@@ -233,280 +136,204 @@
       gap: 0.2rem;
       cursor: pointer;
       color: #c0a080;
-      transition: color 0.2s;
     }
     .nav-item.active { color: #e67e22; }
     .nav-icon { width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2; }
-    .nav-label { font-size: 0.7rem; font-weight: 500; }
   </style>
-</head>
-<body>
-  <header class="header">
-    <div class="back-btn" id="backBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <div class="title">亲友共享空间</div>
-    <div class="right-placeholder" style="width:2.5rem;"></div>
-  </header>
-
-  <main class="main-content" id="mainContent">
-    <!-- 动态渲染亲友列表 -->
-    <div id="friendsList"></div>
-  </main>
-
-  <div class="bottom-nav">
-    <div class="nav-item" data-nav="home">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/>
-        <rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
-      </svg>
-      <span class="nav-label">首页</span>
-    </div>
-    <div class="nav-item" data-nav="record">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
-      </svg>
-      <span class="nav-label">饮食记录</span>
-    </div>
-    <div class="nav-item active" data-nav="friends">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>
-      </svg>
-      <span class="nav-label">亲友空间</span>
-    </div>
-    <div class="nav-item" data-nav="report">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
-      </svg>
-      <span class="nav-label">报表</span>
-    </div>
-  </div>
-
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script>
-    // ---------- 数据模型 ----------
-    // 默认亲友数据
-    const defaultFriends = [
-      {
-        id: '1',
-        name: '爸爸',
-        relation: '家人',
-        quote: '再忙也要记得补充能量呀！',
-        status: 'checked', // checked, busy, online
-        statusText: '已按时吃饭',
-        statusColor: 'emerald',
-        actionType: 'flower',
-        actionLabel: '送朵花',
-        actionIcon: 'flower'
-      },
-      {
-        id: '2',
-        name: '同学',
-        relation: '朋友',
-        quote: '干饭人，干饭魂，吃饭才有精气神！',
-        status: 'busy',
-        statusText: '正在忙碌中',
-        statusColor: 'amber',
-        actionType: 'remind',
-        actionLabel: '催吃饭',
-        actionIcon: 'bell'
-      },
-      {
-        id: '3',
-        name: '女儿',
-        relation: '家人',
-        quote: '按时吃饭，照顾好自己喔~',
-        status: 'online',
-        statusText: '在线',
-        statusColor: 'sky',
-        actionType: 'greet',
-        actionLabel: '打招呼',
-        actionIcon: 'hand'
-      }
-    ];
+    const firebaseConfig = {
+      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
+      authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
+      projectId: "beatricesaturn-6ff7e",
+      storageBucket: "beatricesaturn-6ff7e.firebasestorage.app",
+      messagingSenderId: "607338984635",
+      appId: "1:607338984635:web:a4b3668715462a4d0ca59e",
+      measurementId: "G-L2R10QZZL9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    // 获取亲友列表
-    function getFriends() {
-      const stored = localStorage.getItem('friendsList');
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch(e) {}
-      }
-      return defaultFriends;
-    }
+    let currentUser = null;
+    auth.onAuthStateChanged(user => {
+      currentUser = user;
+      if (user) loadFriends();
+      else window.location.href = 'index.html';
+    });
 
-    // 保存亲友列表
-    function saveFriends(friends) {
-      localStorage.setItem('friendsList', JSON.stringify(friends));
-    }
-
-    // 添加亲友（模拟）
-    function addFriend() {
-      const name = prompt('请输入亲友昵称：');
-      if (!name) return;
-      const relation = prompt('关系（例如：家人、朋友、同事）：', '朋友');
-      const newFriend = {
-        id: Date.now().toString(),
-        name: name,
-        relation: relation || '朋友',
-        quote: '一起好好吃饭！',
-        status: 'online',
-        statusText: '在线',
-        statusColor: 'sky',
-        actionType: 'greet',
-        actionLabel: '打招呼',
-        actionIcon: 'hand'
-      };
-      const friends = getFriends();
-      friends.push(newFriend);
-      saveFriends(friends);
-      renderFriendsList();
-      alert(`已添加 ${name} 到亲友空间`);
-    }
-
-    // 互动动作
-    function interact(friendId, actionType) {
-      const friend = getFriends().find(f => f.id === friendId);
-      if (!friend) return;
-      let msg = '';
-      if (actionType === 'flower') msg = `🌸 你送了一朵花给 ${friend.name}，ta会感受到你的关心~`;
-      else if (actionType === 'remind') msg = `⏰ 已提醒 ${friend.name} 记得吃饭！`;
-      else if (actionType === 'greet') msg = `👋 向 ${friend.name} 打了个招呼！`;
-      alert(msg);
-      // 可以记录互动日志到 localStorage，此处简化
-    }
-
-    // 渲染亲友列表
-    function renderFriendsList() {
-      const friends = getFriends();
-      const container = document.getElementById('friendsList');
-      if (!friends.length) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <p>还没有亲友，点击右上角 + 添加</p>
-          </div>
-        `;
+    async function loadFriends() {
+      // 获取好友列表
+      const friendshipsSnap = await db.collection('friendships')
+        .where('uid', '==', currentUser.uid)
+        .where('status', '==', 'accepted')
+        .get();
+      const friendIds = friendshipsSnap.docs.map(doc => doc.data().friendId);
+      if (friendIds.length === 0) {
+        document.getElementById('friendsList').innerHTML = '<div class="empty-state">暂无亲友，点击上方搜索添加～</div>';
         return;
       }
+      // 获取好友资料和今日打卡状态
+      const today = new Date().toISOString().slice(0,10);
+      const friendsData = [];
+      for (const fid of friendIds) {
+        const profileSnap = await db.collection('profiles').doc(fid).get();
+        const profile = profileSnap.exists ? profileSnap.data() : {};
+        const checkinSnap = await db.collection('checkins').doc(`${fid}_${today}`).get();
+        const checkin = checkinSnap.exists ? checkinSnap.data() : {};
+        // 获取用户邮箱（需要从 auth 获取，但 auth 无法直接通过 uid 查邮箱，这里简化：从 profiles 中存储 email）
+        const email = profile.email || fid.slice(0,8);
+        friendsData.push({
+          uid: fid,
+          nickname: profile.nickname || email.split('@')[0] || '好友',
+          email: email,
+          checkin: checkin
+        });
+      }
+      renderFriendsList(friendsData);
+    }
 
-      const heroHtml = `
-        <div class="hero">
-          <div class="hero-text">
-            <h2>我的亲友</h2>
-            <p><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg> 唯有爱和美食不可辜负</p>
-          </div>
-          <div class="add-friend-btn" id="addFriendBtn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5v14"/></svg>
-          </div>
-        </div>
-      `;
-
-      const cardsHtml = friends.map(friend => {
-        // 根据 statusColor 设置颜色类（用于小圆点和标签）
-        const colorMap = {
-          emerald: '#10b981',
-          amber: '#f59e0b',
-          sky: '#0ea5e9'
-        };
-        const dotColor = colorMap[friend.statusColor] || '#e67e22';
-        // 状态图标
-        let statusIcon = '';
-        if (friend.status === 'checked') statusIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>';
-        else if (friend.status === 'busy') statusIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/></svg>';
-        else statusIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4"><circle cx="12" cy="12" r="10"/></svg>';
-        
-        // 动作按钮图标
-        let actionSvg = '';
-        if (friend.actionIcon === 'flower') actionSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>';
-        else if (friend.actionIcon === 'bell') actionSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M22 8c0-2.3-.8-4.3-2-6"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/><path d="M4 2C2.8 3.7 2 5.7 2 8"/></svg>';
-        else actionSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>';
-        
+    function renderFriendsList(friends) {
+      const container = document.getElementById('friendsList');
+      const html = friends.map(f => {
+        const meals = ['breakfast', 'lunch', 'dinner'];
+        const statusIcons = meals.map(meal => ({
+          meal,
+          done: f.checkin[meal] === true
+        }));
         return `
-          <div class="friend-card" data-id="${friend.id}">
-            <div class="avatar">
-              <div class="avatar-bg">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              </div>
-              <div class="status-dot" style="background:${dotColor};">${statusIcon}</div>
-            </div>
+          <div class="friend-item" data-uid="${f.uid}">
+            <div class="friend-avatar">${f.nickname.charAt(0).toUpperCase()}</div>
             <div class="friend-info">
-              <div class="friend-name-row">
-                <span class="friend-name">${friend.name}</span>
-                <span class="friend-tag">${friend.relation}</span>
-              </div>
-              <div class="friend-quote">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
-                <span style="font-size:0.7rem; color:#a07a5c; font-style:italic;">${friend.quote}</span>
-              </div>
-              <div class="friend-status" style="background:${dotColor}10; color:${dotColor};">
-                <div style="width:0.5rem; height:0.5rem; background:${dotColor}; border-radius:50%;"></div>
-                <span>${friend.statusText}</span>
+              <div class="friend-name">${escapeHtml(f.nickname)}</div>
+              <div class="friend-email">${escapeHtml(f.email)}</div>
+              <div class="friend-status">
+                ${statusIcons.map(s => `<span class="status-icon ${s.done ? 'checked' : ''}">${s.done ? '✓' : '○'}</span>`).join('')}
               </div>
             </div>
-            <div class="action-buttons">
-              <button class="action-btn" data-action="${friend.actionType}" data-id="${friend.id}">
-                ${actionSvg}
-                <span>${friend.actionLabel}</span>
-              </button>
-              <div class="arrow-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
-              </div>
-            </div>
+            <button class="add-friend-btn" style="background:#f0e4d4; color:#a07a5c;" data-action="delete" data-uid="${f.uid}">删除</button>
           </div>
         `;
       }).join('');
-
-      container.innerHTML = heroHtml + cardsHtml;
-      
-      // 绑定添加按钮
-      document.getElementById('addFriendBtn')?.addEventListener('click', addFriend);
-      
-      // 绑定卡片点击（查看详情）
-      document.querySelectorAll('.friend-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-          // 防止点击内部按钮时冒泡触发卡片详情
-          if (e.target.closest('.action-btn')) return;
-          const id = card.getAttribute('data-id');
-          // 跳转到详情页或弹出信息，这里简单 alert
-          alert(`点击查看 ${friends.find(f => f.id === id)?.name} 的饮食记录`);
-          // 可改为 window.location.href = '关怀互动页.html?id=' + id;
-        });
-      });
-      
-      // 绑定动作按钮
-      document.querySelectorAll('.action-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+      container.innerHTML = html;
+      // 绑定删除按钮
+      document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
           e.stopPropagation();
-          const action = btn.getAttribute('data-action');
-          const id = btn.getAttribute('data-id');
-          interact(id, action);
+          const friendId = btn.getAttribute('data-uid');
+          if (confirm('确定要删除这位亲友吗？')) {
+            await db.collection('friendships')
+              .where('uid', '==', currentUser.uid)
+              .where('friendId', '==', friendId)
+              .get()
+              .then(snap => snap.forEach(doc => doc.ref.delete()));
+            await db.collection('friendships')
+              .where('uid', '==', friendId)
+              .where('friendId', '==', currentUser.uid)
+              .get()
+              .then(snap => snap.forEach(doc => doc.ref.delete()));
+            loadFriends();
+          }
         });
       });
     }
 
-    // 底部导航栏跳转
-    function initBottomNav() {
-      const navs = document.querySelectorAll('.nav-item');
-      navs.forEach(nav => {
-        nav.addEventListener('click', () => {
-          const navTo = nav.getAttribute('data-nav');
-          if (navTo === 'home') window.location.href = '饮食管理首页.html';
-          else if (navTo === 'record') window.location.href = '打卡详情页.html';
-          else if (navTo === 'friends') window.location.href = '亲友共享空间主页.html';
-          else if (navTo === 'report') window.location.href = '饮食趋势报表.html';
-        });
+    async function searchAndAddFriend() {
+      const email = document.getElementById('searchEmail').value.trim();
+      if (!email) return;
+      // 查找用户：通过 email 在 profiles 中查找（需要 profiles 存储 email）
+      const usersSnap = await db.collection('profiles').where('email', '==', email).get();
+      if (usersSnap.empty) {
+        alert('未找到该用户，请确保对方已注册并填写档案');
+        return;
+      }
+      const targetUser = usersSnap.docs[0];
+      const targetUid = targetUser.id;
+      if (targetUid === currentUser.uid) {
+        alert('不能添加自己为好友');
+        return;
+      }
+      // 检查是否已是好友
+      const existing = await db.collection('friendships')
+        .where('uid', '==', currentUser.uid)
+        .where('friendId', '==', targetUid)
+        .get();
+      if (!existing.empty) {
+        alert('已经是好友了');
+        return;
+      }
+      // 添加双向好友关系
+      await db.collection('friendships').add({
+        uid: currentUser.uid,
+        friendId: targetUid,
+        status: 'accepted',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
+      await db.collection('friendships').add({
+        uid: targetUid,
+        friendId: currentUser.uid,
+        status: 'accepted',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      alert('添加成功');
+      document.getElementById('searchEmail').value = '';
+      loadFriends();
     }
 
-    // 返回按钮
-    document.getElementById('backBtn').addEventListener('click', () => {
-      window.location.href = '饮食管理首页.html';
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+  </script>
+</head>
+<body>
+  <div class="header">
+    <div class="back-btn" id="backBtn">←</div>
+    <div class="title">亲友共享空间</div>
+    <div style="width:2rem;"></div>
+  </div>
+  <div class="main">
+    <div class="card">
+      <div class="section-title">
+        我的亲友
+        <button class="add-friend-btn" id="addFriendBtn">+ 添加亲友</button>
+      </div>
+      <div id="friendsList" class="empty-state">加载中...</div>
+      <div id="addFriendPanel" style="display:none; margin-top:1rem;">
+        <div class="search-box">
+          <input type="email" id="searchEmail" placeholder="输入好友的注册邮箱">
+          <button id="confirmAddBtn">搜索并添加</button>
+        </div>
+        <button id="cancelAddBtn" style="background:transparent; border:none; color:#a07a5c; width:100%;">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item" data-nav="home"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>首页</span></div>
+    <div class="nav-item" data-nav="record"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg><span>饮食记录</span></div>
+    <div class="nav-item active" data-nav="friends"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><span>亲友空间</span></div>
+    <div class="nav-item" data-nav="report"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span>报表</span></div>
+  </div>
+
+  <script>
+    document.getElementById('backBtn').addEventListener('click', () => { window.location.href = '饮食管理首页.html'; });
+    document.getElementById('addFriendBtn').addEventListener('click', () => {
+      document.getElementById('addFriendPanel').style.display = 'block';
     });
-
-    renderFriendsList();
-    initBottomNav();
+    document.getElementById('cancelAddBtn').addEventListener('click', () => {
+      document.getElementById('addFriendPanel').style.display = 'none';
+    });
+    document.getElementById('confirmAddBtn').addEventListener('click', searchAndAddFriend);
+    // 底部导航
+    document.querySelectorAll('.nav-item').forEach(nav => {
+      nav.addEventListener('click', () => {
+        const to = nav.getAttribute('data-nav');
+        if (to === 'home') window.location.href = '饮食管理首页.html';
+        else if (to === 'record') window.location.href = '打卡详情页.html';
+        else if (to === 'friends') window.location.href = '亲友共享空间主页.html';
+        else if (to === 'report') window.location.href = '饮食趋势报表.html';
+      });
+    });
   </script>
 </body>
 </html>
