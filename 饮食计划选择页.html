@@ -5,159 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>选择饮食计划 - 吃了么</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fef9e8;
       font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
-    /* 头部样式 */
     .header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      width: 100%;
-      background: #fff9f0;
-      border-bottom: 1px solid #f0e4d4;
-      padding: 0 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      padding: 1rem;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
     }
     .back-btn {
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 2rem;
+      height: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0.5rem;
       cursor: pointer;
-      transition: background 0.2s;
+      border-radius: 50%;
     }
     .back-btn:hover { background: #f0e4d4; }
-    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
-    .title {
-      flex: 1;
-      text-align: center;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #5a3e2b;
-    }
-    .right-placeholder { width: 2.5rem; }
-
-    /* 主内容滚动区 */
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1.25rem;
-      scrollbar-width: thin;
-    }
-    .page-title { margin-bottom: 1.5rem; }
+    .title { font-size: 1.1rem; font-weight: 600; color: #5a3e2b; }
+    .main { flex: 1; overflow-y: auto; padding: 1rem; }
     .page-title h2 { font-size: 1.5rem; font-weight: 700; color: #5a3e2b; margin-bottom: 0.5rem; }
     .page-title p { font-size: 0.9rem; color: #a07a5c; }
-
-    /* 卡片列表 */
-    .cards-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    /* 卡片样式 */
     .plan-card {
       background: white;
       border-radius: 1rem;
       border: 2px solid #f0e4d4;
       padding: 1rem;
-      transition: all 0.2s;
+      margin-bottom: 1rem;
       cursor: pointer;
-      position: relative;
+      transition: all 0.2s;
     }
     .plan-card.selected {
       border-color: #e67e22;
       background: #fff7f0;
-      box-shadow: 0 4px 12px rgba(230,126,34,0.1);
     }
-    .card-header {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
-    }
-    .card-icon {
-      width: 3rem;
-      height: 3rem;
-      background: #fdf3e8;
-      border-radius: 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
+    .card-header { display: flex; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .card-icon { width: 3rem; height: 3rem; background: #fdf3e8; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; }
     .card-icon svg { width: 1.5rem; height: 1.5rem; stroke: #e67e22; stroke-width: 1.8; }
-    .card-info { flex: 1; }
-    .card-info h3 { font-size: 1.1rem; font-weight: 600; color: #5a3e2b; margin-bottom: 0.25rem; }
-    .badge {
-      display: inline-block;
-      font-size: 0.7rem;
-      padding: 0.2rem 0.6rem;
-      border-radius: 20px;
-      background: #fdf3e8;
-      color: #e67e22;
-    }
-    .card-desc {
-      font-size: 0.85rem;
-      color: #a07a5c;
-      line-height: 1.4;
-      margin-bottom: 0.75rem;
-    }
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 0.75rem;
-    }
-    .tag-primary {
-      background: #fdf3e8;
-      color: #e67e22;
-      padding: 0.2rem 0.6rem;
-      border-radius: 20px;
-      font-size: 0.7rem;
-    }
-    .tag-muted {
-      background: #f0e4d4;
-      color: #a07a5c;
-      padding: 0.2rem 0.6rem;
-      border-radius: 20px;
-      font-size: 0.7rem;
-    }
-    .feature {
-      display: flex;
-      gap: 0.5rem;
-      align-items: flex-start;
-      border-top: 1px solid #f0e4d4;
-      padding-top: 0.75rem;
-      margin-top: 0.25rem;
-    }
-    .feature svg { width: 1rem; height: 1rem; stroke: #e67e22; flex-shrink: 0; margin-top: 0.1rem; }
-    .feature p { font-size: 0.75rem; color: #5a3e2b; }
-
-    /* 底部按钮 */
-    .bottom-btn {
-      position: sticky;
-      bottom: 0;
-      background: linear-gradient(to top, #fef9e8 80%, transparent);
-      padding: 1rem 1.25rem 1.5rem;
-      margin: 0 -1.25rem;
-    }
+    .card-info h3 { font-size: 1rem; font-weight: 600; color: #5a3e2b; }
+    .badge { display: inline-block; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 20px; background: #fdf3e8; color: #e67e22; margin-top: 0.25rem; }
+    .card-desc { font-size: 0.85rem; color: #a07a5c; margin: 0.5rem 0; }
+    .tags { display: flex; gap: 0.5rem; margin: 0.5rem 0; flex-wrap: wrap; }
+    .tag { background: #fdf3e8; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; }
+    .feature { display: flex; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.75rem; color: #5a3e2b; border-top: 1px solid #f0e4d4; padding-top: 0.5rem; }
     .confirm-btn {
       width: 100%;
       background: #d9c8b8;
@@ -169,205 +68,117 @@
       color: white;
       cursor: not-allowed;
       transition: all 0.2s;
+      margin-top: 1rem;
     }
-    .confirm-btn.active {
-      background: #e67e22;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(230,126,34,0.3);
-    }
-    .confirm-btn.active:hover { background: #d4691a; transform: translateY(-1px); }
+    .confirm-btn.active { background: #e67e22; cursor: pointer; }
   </style>
-</head>
-<body>
-  <header class="header">
-    <div class="back-btn" id="backBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <div class="title">选择饮食计划</div>
-    <div class="right-placeholder"></div>
-  </header>
-
-  <main class="main-content">
-    <div class="page-title">
-      <h2>选择你的计划</h2>
-      <p>根据你的生活节奏，选择最适合的饮食习惯养成周期</p>
-    </div>
-
-    <div class="cards-list" id="cardsList">
-      <!-- 3天体验计划 -->
-      <div class="plan-card" data-plan="3day">
-        <div class="card-header">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>
-              <path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>
-            </svg>
-          </div>
-          <div class="card-info">
-            <h3>3天体验计划</h3>
-            <span class="badge">简单</span>
-          </div>
-        </div>
-        <div class="card-desc">用最轻量的方式重建三餐感知，适合刚开始想调整节奏的用户。</div>
-        <div class="tags">
-          <span class="tag-primary">固定早餐时间</span>
-          <span class="tag-primary">午餐不拖延</span>
-          <span class="tag-muted">+1</span>
-        </div>
-        <div class="feature">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-          <p>快速建立“先吃饭再忙”的基础习惯。</p>
-        </div>
-      </div>
-
-      <!-- 7天巩固计划 -->
-      <div class="plan-card" data-plan="7day">
-        <div class="card-header">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M17 14h-6"/><path d="M13 18H7"/><path d="M7 14h.01"/><path d="M17 18h.01"/>
-            </svg>
-          </div>
-          <div class="card-info">
-            <h3>7天巩固计划</h3>
-            <span class="badge">简单</span>
-          </div>
-        </div>
-        <div class="card-desc">通过一周连续打卡，让规律吃饭形成可感知的节奏。</div>
-        <div class="tags">
-          <span class="tag-primary">三餐完整记录</span>
-          <span class="tag-primary">避免空腹过久</span>
-          <span class="tag-muted">+1</span>
-        </div>
-        <div class="feature">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-          <p>让饮食规律开始稳定下来。</p>
-        </div>
-      </div>
-
-      <!-- 14天平衡计划 -->
-      <div class="plan-card" data-plan="14day">
-        <div class="card-header">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>
-            </svg>
-          </div>
-          <div class="card-info">
-            <h3>14天平衡计划</h3>
-            <span class="badge">中等</span>
-          </div>
-        </div>
-        <div class="card-desc">在忙碌与健康之间找到更好的平衡，兼顾工作学习强度。</div>
-        <div class="tags">
-          <span class="tag-primary">合理加餐</span>
-          <span class="tag-primary">记录饮食心情</span>
-          <span class="tag-muted">+1</span>
-        </div>
-        <div class="feature">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-          <p>建立更适合自己的饮食节律。</p>
-        </div>
-      </div>
-
-      <!-- 21天蜕变计划 -->
-      <div class="plan-card" data-plan="21day">
-        <div class="card-header">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/><path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"/><path d="M18 9h1.5a1 1 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/><path d="M6 9H4.5a1 1 0 0 1 0-5H6"/>
-            </svg>
-          </div>
-          <div class="card-info">
-            <h3>21天蜕变计划</h3>
-            <span class="badge">困难</span>
-          </div>
-        </div>
-        <div class="card-desc">面向长期习惯重建，强调持续性与自我管理能力。</div>
-        <div class="tags">
-          <span class="tag-primary">精准计划执行</span>
-          <span class="tag-primary">每周复盘</span>
-          <span class="tag-muted">+1</span>
-        </div>
-        <div class="feature">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-          <p>帮助用户形成更稳固的饮食惯性。</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="bottom-btn">
-      <button class="confirm-btn" id="confirmBtn" disabled>确认计划</button>
-    </div>
-  </main>
-
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script>
-    const cards = document.querySelectorAll('.plan-card');
-    const confirmBtn = document.getElementById('confirmBtn');
-    const backBtn = document.getElementById('backBtn');
+    const firebaseConfig = {
+      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
+      authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
+      projectId: "beatricesaturn-6ff7e",
+      storageBucket: "beatricesaturn-6ff7e.firebasestorage.app",
+      messagingSenderId: "607338984635",
+      appId: "1:607338984635:web:a4b3668715462a4d0ca59e",
+      measurementId: "G-L2R10QZZL9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
+    let currentUser = null;
     let selectedPlan = null;
 
-    // 从 localStorage 读取已保存的计划
-    function loadSelectedPlan() {
-      const saved = localStorage.getItem('selectedPlan');
-      if (saved) {
-        selectedPlan = saved;
-        cards.forEach(card => {
-          if (card.getAttribute('data-plan') === selectedPlan) {
-            card.classList.add('selected');
-          } else {
-            card.classList.remove('selected');
-          }
-        });
-        if (selectedPlan) {
-          confirmBtn.disabled = false;
-          confirmBtn.classList.add('active');
-        }
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        loadSavedPlan();
+      } else {
+        window.location.href = 'index.html';
       }
+    });
+
+    async function loadSavedPlan() {
+      const doc = await db.collection('plans').doc(currentUser.uid).get();
+      if (doc.exists) {
+        selectedPlan = doc.data().selectedPlan;
+      }
+      renderPage();
     }
 
-    // 保存计划
-    function savePlan(plan) {
-      localStorage.setItem('selectedPlan', plan);
-      selectedPlan = plan;
-    }
+    function renderPage() {
+      const plans = [
+        { id: '3day', name: '3天体验计划', duration: '3天', difficulty: '简单', desc: '用最轻量的方式重建三餐感知，适合刚开始想调整节奏的用户。', tags: ['固定早餐时间', '午餐不拖延'], feature: '快速建立“先吃饭再忙”的基础习惯。' },
+        { id: '7day', name: '7天巩固计划', duration: '7天', difficulty: '简单', desc: '通过一周连续打卡，让规律吃饭形成可感知的节奏。', tags: ['三餐完整记录', '避免空腹过久'], feature: '让饮食规律开始稳定下来。' },
+        { id: '14day', name: '14天平衡计划', duration: '14天', difficulty: '中等', desc: '在忙碌与健康之间找到更好的平衡，兼顾工作学习强度。', tags: ['合理加餐', '记录饮食心情'], feature: '建立更适合自己的饮食节律。' },
+        { id: '21day', name: '21天蜕变计划', duration: '21天', difficulty: '困难', desc: '面向长期习惯重建，强调持续性与自我管理能力。', tags: ['精准计划执行', '每周复盘'], feature: '帮助用户形成更稳固的饮食惯性。' }
+      ];
 
-    // 卡片点击事件（单选）
-    cards.forEach(card => {
-      card.addEventListener('click', () => {
-        const planValue = card.getAttribute('data-plan');
-        if (selectedPlan === planValue) {
-          // 如果已经选中，不做任何操作（也可以取消选中，但通常计划是必选的，所以我们保持选中状态不取消）
-          return;
+      const cardsHtml = plans.map(plan => `
+        <div class="plan-card" data-plan="${plan.id}">
+          <div class="card-header">
+            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M17 14h-6"/><path d="M13 18H7"/><path d="M7 14h.01"/><path d="M17 18h.01"/></svg></div>
+            <div class="card-info"><h3>${plan.name}</h3><div class="badge">${plan.duration} · ${plan.difficulty}</div></div>
+          </div>
+          <div class="card-desc">${plan.desc}</div>
+          <div class="tags">${plan.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+          <div class="feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg> ${plan.feature}</div>
+        </div>
+      `).join('');
+
+      const html = `
+        <div class="card">
+          <div class="page-title">
+            <h2>选择你的计划</h2>
+            <p>根据你的生活节奏，选择最适合的饮食习惯养成周期</p>
+          </div>
+          ${cardsHtml}
+          <button class="confirm-btn ${selectedPlan ? 'active' : ''}" id="confirmBtn">确认计划</button>
+        </div>
+      `;
+
+      document.getElementById('mainContent').innerHTML = html;
+
+      // 高亮已选中的计划
+      document.querySelectorAll('.plan-card').forEach(card => {
+        const planId = card.getAttribute('data-plan');
+        if (selectedPlan === planId) {
+          card.classList.add('selected');
         }
-        // 移除其他卡片的高亮
-        cards.forEach(c => c.classList.remove('selected'));
-        // 高亮当前卡片
-        card.classList.add('selected');
-        selectedPlan = planValue;
-        savePlan(planValue);
-        confirmBtn.disabled = false;
-        confirmBtn.classList.add('active');
+        card.addEventListener('click', () => {
+          document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          selectedPlan = planId;
+          const btn = document.getElementById('confirmBtn');
+          btn.classList.add('active');
+          btn.disabled = false;
+        });
       });
-    });
 
-    // 确认按钮跳转（例如跳转到计划详情页或首页）
-    confirmBtn.addEventListener('click', () => {
-      if (!selectedPlan) return;
-      // 可根据不同计划跳转到不同详情页，这里统一跳转到“计划详情页.html”
-      // 你也可以在 URL 后附加参数，比如 ?plan=3day
-      window.location.href = '计划详情页.html';
-    });
+      const confirmBtn = document.getElementById('confirmBtn');
+      confirmBtn.addEventListener('click', async () => {
+        if (!selectedPlan) return;
+        await db.collection('plans').doc(currentUser.uid).set({ selectedPlan }, { merge: true });
+        window.location.href = '计划详情页.html';
+      });
+    }
 
-    // 返回上一页（核心目标设定页）
-    backBtn.addEventListener('click', () => {
+    document.getElementById('backBtn').addEventListener('click', () => {
       window.location.href = '核心目标设定页.html';
     });
-
-    loadSelectedPlan();
   </script>
+</head>
+<body>
+  <div class="header">
+    <div class="back-btn" id="backBtn">←</div>
+    <div class="title">选择饮食计划</div>
+    <div style="width:2rem;"></div>
+  </div>
+  <div class="main" id="mainContent">
+    <div style="text-align: center; padding: 2rem;">加载中...</div>
+  </div>
 </body>
 </html>
