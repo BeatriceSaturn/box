@@ -40,15 +40,6 @@
       padding: 1rem;
       margin-bottom: 1rem;
     }
-    .section-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #5a3e2b;
-      margin-bottom: 0.75rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
     .friend-item {
       display: flex;
       align-items: center;
@@ -66,51 +57,48 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
+      font-size: 1rem;
       font-weight: bold;
       color: #e67e22;
     }
     .friend-info { flex: 1; }
     .friend-name { font-weight: 600; color: #5a3e2b; }
     .friend-email { font-size: 0.7rem; color: #a07a5c; }
-    .friend-status {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-    .status-icon {
-      width: 1.5rem;
-      text-align: center;
-      font-size: 1rem;
-    }
+    .friend-status { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.25rem; }
+    .status-icon { width: 1.2rem; text-align: center; font-size: 0.8rem; }
     .status-icon.checked { color: #e67e22; }
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .action-btn {
+      background: #fef5ea;
+      border: 1px solid #f0e4d4;
+      border-radius: 1.5rem;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.7rem;
+      cursor: pointer;
+      text-align: center;
+    }
     .add-friend-btn {
       background: #e67e22;
       color: white;
       border: none;
-      padding: 0.5rem 1rem;
+      padding: 0.4rem 1rem;
       border-radius: 2rem;
       cursor: pointer;
-      font-size: 0.8rem;
     }
     .search-box {
       display: flex;
       gap: 0.5rem;
-      margin-bottom: 1rem;
+      margin-top: 1rem;
     }
     .search-box input {
       flex: 1;
       padding: 0.5rem;
       border: 1px solid #e2d4c8;
       border-radius: 2rem;
-      background: white;
-    }
-    .search-box button {
-      background: #fdf3e8;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 2rem;
-      cursor: pointer;
     }
     .empty-state {
       text-align: center;
@@ -158,71 +146,81 @@
     const db = firebase.firestore();
 
     let currentUser = null;
+
     auth.onAuthStateChanged(user => {
-      currentUser = user;
-      if (user) loadFriends();
-      else window.location.href = 'index.html';
+      if (user) {
+        currentUser = user;
+        loadFriends();
+      } else {
+        window.location.href = 'index.html';
+      }
     });
 
     async function loadFriends() {
-      // 获取好友列表
-      const friendshipsSnap = await db.collection('friendships')
+      const friendships = await db.collection('friendships')
         .where('uid', '==', currentUser.uid)
         .where('status', '==', 'accepted')
         .get();
-      const friendIds = friendshipsSnap.docs.map(doc => doc.data().friendId);
+      const friendIds = friendships.docs.map(doc => doc.data().friendId);
       if (friendIds.length === 0) {
-        document.getElementById('friendsList').innerHTML = '<div class="empty-state">暂无亲友，点击上方搜索添加～</div>';
+        document.getElementById('friendsList').innerHTML = '<div class="empty-state">暂无亲友，点击上方“添加亲友”添加～</div>';
         return;
       }
-      // 获取好友资料和今日打卡状态
-      const today = new Date().toISOString().slice(0,10);
-      const friendsData = [];
+      const friends = [];
       for (const fid of friendIds) {
-        const profileSnap = await db.collection('profiles').doc(fid).get();
-        const profile = profileSnap.exists ? profileSnap.data() : {};
-        const checkinSnap = await db.collection('checkins').doc(`${fid}_${today}`).get();
-        const checkin = checkinSnap.exists ? checkinSnap.data() : {};
-        // 获取用户邮箱（需要从 auth 获取，但 auth 无法直接通过 uid 查邮箱，这里简化：从 profiles 中存储 email）
-        const email = profile.email || fid.slice(0,8);
-        friendsData.push({
-          uid: fid,
-          nickname: profile.nickname || email.split('@')[0] || '好友',
-          email: email,
-          checkin: checkin
-        });
+        const profileDoc = await db.collection('profiles').doc(fid).get();
+        if (profileDoc.exists) {
+          const profile = profileDoc.data();
+          const today = new Date().toISOString().slice(0,10);
+          const checkinDoc = await db.collection('checkins').doc(`${fid}_${today}`).get();
+          const checkin = checkinDoc.exists ? checkinDoc.data() : {};
+          const meals = ['breakfast', 'lunch', 'dinner'];
+          const statusIcons = meals.map(meal => ({
+            meal,
+            done: checkin[meal] === true
+          }));
+          friends.push({
+            uid: fid,
+            nickname: profile.nickname || fid.slice(0,6),
+            email: profile.email || '',
+            statusIcons
+          });
+        }
       }
-      renderFriendsList(friendsData);
+      renderFriendsList(friends);
     }
 
     function renderFriendsList(friends) {
       const container = document.getElementById('friendsList');
-      const html = friends.map(f => {
-        const meals = ['breakfast', 'lunch', 'dinner'];
-        const statusIcons = meals.map(meal => ({
-          meal,
-          done: f.checkin[meal] === true
-        }));
-        return `
-          <div class="friend-item" data-uid="${f.uid}">
-            <div class="friend-avatar">${f.nickname.charAt(0).toUpperCase()}</div>
-            <div class="friend-info">
-              <div class="friend-name">${escapeHtml(f.nickname)}</div>
-              <div class="friend-email">${escapeHtml(f.email)}</div>
-              <div class="friend-status">
-                ${statusIcons.map(s => `<span class="status-icon ${s.done ? 'checked' : ''}">${s.done ? '✓' : '○'}</span>`).join('')}
-              </div>
+      const html = friends.map(f => `
+        <div class="friend-item" data-uid="${f.uid}">
+          <div class="friend-avatar">${f.nickname.charAt(0).toUpperCase()}</div>
+          <div class="friend-info">
+            <div class="friend-name">${escapeHtml(f.nickname)}</div>
+            <div class="friend-email">${escapeHtml(f.email)}</div>
+            <div class="friend-status">
+              ${f.statusIcons.map(s => `<span class="status-icon ${s.done ? 'checked' : ''}">${s.done ? '✓' : '○'}</span>`).join('')}
             </div>
-            <button class="add-friend-btn" style="background:#f0e4d4; color:#a07a5c;" data-action="delete" data-uid="${f.uid}">删除</button>
           </div>
-        `;
-      }).join('');
+          <div class="action-buttons">
+            <button class="action-btn" data-action="chat" data-id="${f.uid}">💬 聊天</button>
+            <button class="action-btn" data-action="delete" data-id="${f.uid}">删除</button>
+          </div>
+        </div>
+      `).join('');
       container.innerHTML = html;
-      // 绑定删除按钮
+
+      document.querySelectorAll('[data-action="chat"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const friendId = btn.getAttribute('data-id');
+          window.location.href = `关怀互动详情页.html?friendId=${friendId}`;
+        });
+      });
       document.querySelectorAll('[data-action="delete"]').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           e.stopPropagation();
-          const friendId = btn.getAttribute('data-uid');
+          const friendId = btn.getAttribute('data-id');
           if (confirm('确定要删除这位亲友吗？')) {
             await db.collection('friendships')
               .where('uid', '==', currentUser.uid)
@@ -243,7 +241,6 @@
     async function searchAndAddFriend() {
       const email = document.getElementById('searchEmail').value.trim();
       if (!email) return;
-      // 查找用户：通过 email 在 profiles 中查找（需要 profiles 存储 email）
       const usersSnap = await db.collection('profiles').where('email', '==', email).get();
       if (usersSnap.empty) {
         alert('未找到该用户，请确保对方已注册并填写档案');
@@ -255,7 +252,6 @@
         alert('不能添加自己为好友');
         return;
       }
-      // 检查是否已是好友
       const existing = await db.collection('friendships')
         .where('uid', '==', currentUser.uid)
         .where('friendId', '==', targetUid)
@@ -264,7 +260,6 @@
         alert('已经是好友了');
         return;
       }
-      // 添加双向好友关系
       await db.collection('friendships').add({
         uid: currentUser.uid,
         friendId: targetUid,
@@ -282,7 +277,21 @@
       loadFriends();
     }
 
-    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    let showAddPanel = false;
+    document.getElementById('addFriendBtn').addEventListener('click', () => {
+      showAddPanel = !showAddPanel;
+      document.getElementById('addFriendPanel').style.display = showAddPanel ? 'block' : 'none';
+    });
+    document.getElementById('confirmAddBtn').addEventListener('click', searchAndAddFriend);
+    document.getElementById('cancelAddBtn').addEventListener('click', () => {
+      document.getElementById('addFriendPanel').style.display = 'none';
+      showAddPanel = false;
+    });
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.location.href = '饮食管理首页.html';
+    });
   </script>
 </head>
 <body>
@@ -293,8 +302,8 @@
   </div>
   <div class="main">
     <div class="card">
-      <div class="section-title">
-        我的亲友
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>我的亲友</h3>
         <button class="add-friend-btn" id="addFriendBtn">+ 添加亲友</button>
       </div>
       <div id="friendsList" class="empty-state">加载中...</div>
@@ -307,24 +316,13 @@
       </div>
     </div>
   </div>
-
   <div class="bottom-nav">
     <div class="nav-item" data-nav="home"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>首页</span></div>
     <div class="nav-item" data-nav="record"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg><span>饮食记录</span></div>
     <div class="nav-item active" data-nav="friends"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><span>亲友空间</span></div>
     <div class="nav-item" data-nav="report"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span>报表</span></div>
   </div>
-
   <script>
-    document.getElementById('backBtn').addEventListener('click', () => { window.location.href = '饮食管理首页.html'; });
-    document.getElementById('addFriendBtn').addEventListener('click', () => {
-      document.getElementById('addFriendPanel').style.display = 'block';
-    });
-    document.getElementById('cancelAddBtn').addEventListener('click', () => {
-      document.getElementById('addFriendPanel').style.display = 'none';
-    });
-    document.getElementById('confirmAddBtn').addEventListener('click', searchAndAddFriend);
-    // 底部导航
     document.querySelectorAll('.nav-item').forEach(nav => {
       nav.addEventListener('click', () => {
         const to = nav.getAttribute('data-nav');
