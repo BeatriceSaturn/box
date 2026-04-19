@@ -5,170 +5,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>饮食管理首页 - 吃了么</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fef9e8;
       font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
-    /* 头部 */
     .header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      width: 100%;
-      background: #fff9f0;
-      border-bottom: 1px solid #f0e4d4;
-      padding: 0 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      padding: 1rem;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
     }
-    .title {
-      flex: 1;
-      text-align: center;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #5a3e2b;
+    .back-btn {
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 50%;
     }
-    /* 主内容滚动区 */
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem 1rem 80px;
-      scrollbar-width: thin;
-    }
-    /* 卡片通用样式 */
+    .title { font-size: 1.1rem; font-weight: 600; color: #5a3e2b; }
+    .main { flex: 1; overflow-y: auto; padding: 1rem; padding-bottom: 80px; }
     .card {
       background: white;
       border-radius: 1rem;
       border: 1px solid #f0e4d4;
       padding: 1rem;
       margin-bottom: 1rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
     }
-    .section-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #5a3e2b;
-      margin-bottom: 0.75rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .progress-bar {
-      background: #f0e4d4;
-      border-radius: 20px;
-      height: 0.5rem;
-      overflow: hidden;
-      margin: 0.5rem 0;
-    }
-    .progress-fill {
-      background: linear-gradient(90deg, #e67e22, #f0a55a);
-      width: 0%;
-      height: 100%;
-      border-radius: 20px;
-      transition: width 0.3s;
-    }
-    /* 三餐卡片 */
+    .section-title { font-size: 1rem; font-weight: 600; color: #5a3e2b; margin-bottom: 0.5rem; display: flex; justify-content: space-between; }
+    .progress-bar { background: #f0e4d4; border-radius: 1rem; height: 0.5rem; overflow: hidden; margin: 0.5rem 0; }
+    .progress-fill { background: #e67e22; width: 0%; height: 100%; border-radius: 1rem; }
     .meal-item {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      background: #fffbf5;
-      border-radius: 1rem;
+      gap: 0.75rem;
       padding: 0.75rem;
-      margin-bottom: 0.75rem;
-      border: 1px solid #f0e4d4;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .meal-item:active { transform: scale(0.98); background: #fff7f0; }
-    .meal-icon {
-      width: 3rem;
-      height: 3rem;
-      background: #fdf3e8;
+      background: #fffbf5;
       border-radius: 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
     }
+    .meal-item:active { background: #fff7f0; }
+    .meal-icon { font-size: 1.5rem; width: 2.5rem; text-align: center; }
     .meal-info { flex: 1; }
-    .meal-name { font-weight: 600; color: #5a3e2b; }
+    .meal-name { font-weight: 600; }
     .meal-time { font-size: 0.7rem; color: #a07a5c; }
-    .check-badge {
-      width: 1.5rem;
-      height: 1.5rem;
-      background: #e67e22;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 0.8rem;
-    }
+    .check-badge { width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #e2d4c8; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
     .check-badge.done { background: #e67e22; }
-    .check-badge.miss { background: #d9c8b8; }
-    /* 快捷入口网格 */
-    .quick-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.75rem;
-      margin: 1rem 0;
-    }
-    .quick-item {
-      background: white;
-      border: 1px solid #f0e4d4;
-      border-radius: 0.75rem;
-      padding: 0.75rem 0.25rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .quick-item:active { transform: scale(0.96); background: #fff7f0; }
-    .quick-icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
-    .quick-label { font-size: 0.7rem; color: #5a3e2b; }
-    /* 最近记录列表 */
-    .recent-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid #f0e4d4;
-    }
-    .recent-icon { width: 2.5rem; height: 2.5rem; background: #fdf3e8; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-    .recent-detail { flex: 1; }
-    .recent-name { font-weight: 500; font-size: 0.85rem; }
-    .recent-time { font-size: 0.7rem; color: #a07a5c; }
-    /* 悬浮按钮 */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 0.5rem 0; }
+    .stat-card { background: #fffbf5; padding: 0.5rem; border-radius: 0.75rem; text-align: center; }
+    .stat-value { font-size: 1.2rem; font-weight: bold; color: #e67e22; }
+    .quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin: 1rem 0; }
+    .quick-item { background: white; border: 1px solid #f0e4d4; border-radius: 0.75rem; padding: 0.5rem; text-align: center; cursor: pointer; }
     .fab {
       position: fixed;
       bottom: 5rem;
       right: 1rem;
       width: 3.5rem;
       height: 3.5rem;
-      background: linear-gradient(135deg, #e67e22, #f0a55a);
+      background: #e67e22;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px rgba(230,126,34,0.4);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       cursor: pointer;
-      z-index: 20;
-      transition: all 0.2s;
+      z-index: 10;
     }
-    .fab:active { transform: scale(0.92); }
     .fab svg { width: 1.8rem; height: 1.8rem; stroke: white; stroke-width: 2.5; }
-    /* 底部导航栏 */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -179,7 +90,7 @@
       display: flex;
       justify-content: space-around;
       padding: 0.5rem 1rem 1rem;
-      z-index: 20;
+      z-index: 10;
     }
     .nav-item {
       display: flex;
@@ -188,306 +99,165 @@
       gap: 0.2rem;
       cursor: pointer;
       color: #c0a080;
-      transition: color 0.2s;
     }
     .nav-item.active { color: #e67e22; }
     .nav-icon { width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2; }
-    .nav-label { font-size: 0.7rem; font-weight: 500; }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
+      authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
+      projectId: "beatricesaturn-6ff7e",
+      storageBucket: "beatricesaturn-6ff7e.firebasestorage.app",
+      messagingSenderId: "607338984635",
+      appId: "1:607338984635:web:a4b3668715462a4d0ca59e",
+      measurementId: "G-L2R10QZZL9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null;
+    auth.onAuthStateChanged(user => {
+      currentUser = user;
+      if (user) loadDashboard();
+      else window.location.href = 'index.html';
+    });
+
+    async function loadDashboard() {
+      // 获取用户档案
+      const profileDoc = await db.collection('profiles').doc(currentUser.uid).get();
+      const profile = profileDoc.exists ? profileDoc.data() : null;
+      if (profile) {
+        document.getElementById('bmiValue').innerText = profile.bmi || '--';
+        document.getElementById('bmiStatus').innerText = profile.bmi ? (profile.bmi < 18.5 ? '偏瘦' : profile.bmi < 24 ? '健康' : profile.bmi < 28 ? '超重' : '肥胖') : '未知';
+      }
+
+      // 获取今日打卡状态
+      const today = new Date().toISOString().slice(0,10);
+      const checkinDoc = await db.collection('checkins').doc(`${currentUser.uid}_${today}`).get();
+      const checkin = checkinDoc.exists ? checkinDoc.data() : {};
+      const meals = ['breakfast', 'lunch', 'dinner'];
+      meals.forEach(meal => {
+        const element = document.getElementById(`${meal}-badge`);
+        if (checkin[meal]) {
+          element.classList.add('done');
+          element.innerText = '✓';
+        } else {
+          element.classList.remove('done');
+          element.innerText = '○';
+        }
+      });
+
+      // 获取最近7天打卡次数计算完成度
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - 6);
+      const weekStartStr = weekStart.toISOString().slice(0,10);
+      const checkinsSnapshot = await db.collection('checkins')
+        .where('__name__', '>=', `${currentUser.uid}_${weekStartStr}`)
+        .where('__name__', '<=', `${currentUser.uid}_${today}`)
+        .get();
+      let completedDays = 0;
+      checkinsSnapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.breakfast || data.lunch || data.dinner) completedDays++;
+      });
+      const percent = Math.round((completedDays / 7) * 100);
+      document.getElementById('progressFill').style.width = `${percent}%`;
+      document.getElementById('progressPercent').innerText = `${percent}%`;
+    }
+
+    function goToRecord() { window.location.href = '打卡详情页.html'; }
+  </script>
 </head>
 <body>
-  <header class="header">
+  <div class="header">
+    <div class="back-btn" id="backBtn">←</div>
     <div class="title">饮食管理首页</div>
-  </header>
+    <div style="width:2rem;"></div>
+  </div>
+  <div class="main" id="mainContent">
+    <div class="card">
+      <div class="section-title">早上好，准备好今天的饮食计划了吗？</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div style="font-size:0.8rem; text-align:right;">本周完成度 <span id="progressPercent">0%</span></div>
+    </div>
 
-  <main class="main-content" id="mainContent">
-    <!-- 动态内容由 js 渲染 -->
-    <div style="text-align: center; padding: 2rem;">加载中...</div>
-  </main>
+    <div class="card">
+      <div class="section-title">今日三餐</div>
+      <div class="meal-item" data-meal="breakfast">
+        <div class="meal-icon">☕</div>
+        <div class="meal-info"><div class="meal-name">早餐</div><div class="meal-time">建议 07:00-09:00</div></div>
+        <div class="check-badge" id="breakfast-badge">○</div>
+      </div>
+      <div class="meal-item" data-meal="lunch">
+        <div class="meal-icon">🍱</div>
+        <div class="meal-info"><div class="meal-name">午餐</div><div class="meal-time">建议 11:30-13:30</div></div>
+        <div class="check-badge" id="lunch-badge">○</div>
+      </div>
+      <div class="meal-item" data-meal="dinner">
+        <div class="meal-icon">🍲</div>
+        <div class="meal-info"><div class="meal-name">晚餐</div><div class="meal-time">建议 17:30-19:30</div></div>
+        <div class="check-badge" id="dinner-badge">○</div>
+      </div>
+    </div>
 
-  <div class="fab" id="fabBtn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-      <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
-    </svg>
+    <div class="card">
+      <div class="section-title">健康指标</div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value" id="bmiValue">--</div><div>BMI</div></div>
+        <div class="stat-card"><div class="stat-value" id="bmiStatus">--</div><div>状态</div></div>
+      </div>
+    </div>
+
+    <div class="quick-grid">
+      <div class="quick-item" data-action="tips">💡<div>饮食Tips</div></div>
+      <div class="quick-item" data-action="health">📊<div>健康指标</div></div>
+      <div class="quick-item" data-action="friends">👥<div>亲友空间</div></div>
+      <div class="quick-item" data-action="report">📈<div>报表</div></div>
+    </div>
+
+    <div class="fab" id="fabBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
+    </div>
   </div>
 
   <div class="bottom-nav">
-    <div class="nav-item active" data-nav="home">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/>
-        <rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
-      </svg>
-      <span class="nav-label">首页</span>
-    </div>
-    <div class="nav-item" data-nav="record">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
-      </svg>
-      <span class="nav-label">饮食记录</span>
-    </div>
-    <div class="nav-item" data-nav="friends">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>
-      </svg>
-      <span class="nav-label">亲友空间</span>
-    </div>
-    <div class="nav-item" data-nav="report">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
-      </svg>
-      <span class="nav-label">报表</span>
-    </div>
+    <div class="nav-item active" data-nav="home"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>首页</span></div>
+    <div class="nav-item" data-nav="record"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg><span>饮食记录</span></div>
+    <div class="nav-item" data-nav="friends"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><span>亲友空间</span></div>
+    <div class="nav-item" data-nav="report"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span>报表</span></div>
   </div>
 
   <script>
-    // ---------- 辅助函数 ----------
-    function getToday() {
-      return new Date().toISOString().slice(0,10);
-    }
-
-    // 获取打卡记录
-    function getCheckins() {
-      const userId = localStorage.getItem('currentUserId') || 'guest';
-      const key = `checkins_${userId}`;
-      const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : {};
-    }
-
-    // 获取用户资料
-    function getUserProfile() {
-      const profile = localStorage.getItem('userProfile');
-      if (profile) {
-        try { return JSON.parse(profile); } catch(e) { return null; }
-      }
-      return null;
-    }
-
-    // 计算BMI
-    function calculateBMI(weight, height) {
-      if (!weight || !height) return null;
-      const h = height / 100;
-      return (weight / (h * h)).toFixed(1);
-    }
-
-    // 获取计划名称
-    function getPlanName() {
-      const plan = localStorage.getItem('selectedPlan');
-      const planMap = { '3day': '3天体验计划', '7day': '7天巩固计划', '14day': '14天平衡计划', '21day': '21天蜕变计划' };
-      return planMap[plan] || '未选择计划';
-    }
-
-    // 获取计划进度（模拟：根据打卡天数 / 计划总天数）
-    function getPlanProgress() {
-      const plan = localStorage.getItem('selectedPlan');
-      const daysMap = { '3day': 3, '7day': 7, '14day': 14, '21day': 21 };
-      const totalDays = daysMap[plan] || 7;
-      // 统计所有打卡天数（去重）
-      const checkins = getCheckins();
-      const uniqueDates = Object.keys(checkins).filter(date => {
-        // 只统计有至少一餐打卡的日期
-        return Object.values(checkins[date]).some(v => v === true);
-      });
-      const completedDays = uniqueDates.length;
-      let percent = (completedDays / totalDays) * 100;
-      percent = Math.min(100, percent);
-      return { completedDays, totalDays, percent: Math.floor(percent) };
-    }
-
-    // 获取今日三餐打卡状态
-    function getTodayMeals() {
-      const today = getToday();
-      const checkins = getCheckins();
-      const meals = checkins[today] || {};
-      return {
-        breakfast: meals.breakfast || false,
-        lunch: meals.lunch || false,
-        dinner: meals.dinner || false
-      };
-    }
-
-    // 获取最近几条饮食记录（从 localStorage 读取 mealsLog，如果没有则用示例）
-    function getRecentMeals() {
-      const mealsLog = localStorage.getItem('mealsLog');
-      if (mealsLog) {
-        try {
-          let logs = JSON.parse(mealsLog);
-          logs.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-          return logs.slice(0, 3);
-        } catch(e) {}
-      }
-      // 示例数据
-      return [
-        { name: '香蕉坚果酸奶', time: '07:30', kcal: 210, mood: '😴', type: '加餐' },
-        { name: '坚果能量杯', time: '02:20', kcal: 180, mood: '😤', type: '加餐' },
-        { name: '番茄牛腩面', time: '12:30', kcal: 640, mood: '😤', type: '晚餐' }
-      ];
-    }
-
-    // 渲染主页面
-    function renderDashboard() {
-      const profile = getUserProfile();
-      const bmi = profile && profile.weight && profile.height ? calculateBMI(profile.weight, profile.height) : null;
-      const bmiStatus = bmi ? (bmi < 18.5 ? '偏瘦' : bmi < 24 ? '健康' : bmi < 28 ? '超重' : '肥胖') : '未知';
-      const planName = getPlanName();
-      const progress = getPlanProgress();
-      const meals = getTodayMeals();
-      const recentMeals = getRecentMeals();
-
-      const greeting = (() => {
-        const hour = new Date().getHours();
-        if (hour < 12) return '早上好';
-        if (hour < 18) return '下午好';
-        return '晚上好';
-      })();
-
-      const html = `
-        <div class="card">
-          <div class="section-title">
-            <span>${greeting}，准备好今天的饮食计划了吗？</span>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="section-title">
-            <span>${planName}</span>
-            <span style="font-size:0.8rem; color:#e67e22;">${progress.completedDays}/${progress.totalDays}天</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: ${progress.percent}%;"></div>
-          </div>
-          <div style="font-size:0.75rem; color:#a07a5c; margin-top:0.25rem;">完成度 ${progress.percent}%</div>
-        </div>
-
-        <div class="card">
-          <div class="section-title">今日三餐</div>
-          <div class="meal-item" data-meal="breakfast">
-            <div class="meal-icon">🍳</div>
-            <div class="meal-info">
-              <div class="meal-name">早餐</div>
-              <div class="meal-time">建议 07:00-09:00</div>
-            </div>
-            <div class="check-badge ${meals.breakfast ? 'done' : 'miss'}">${meals.breakfast ? '✓' : '○'}</div>
-          </div>
-          <div class="meal-item" data-meal="lunch">
-            <div class="meal-icon">🍱</div>
-            <div class="meal-info">
-              <div class="meal-name">午餐</div>
-              <div class="meal-time">建议 11:30-13:30</div>
-            </div>
-            <div class="check-badge ${meals.lunch ? 'done' : 'miss'}">${meals.lunch ? '✓' : '○'}</div>
-          </div>
-          <div class="meal-item" data-meal="dinner">
-            <div class="meal-icon">🍲</div>
-            <div class="meal-info">
-              <div class="meal-name">晚餐</div>
-              <div class="meal-time">建议 17:30-19:30</div>
-            </div>
-            <div class="check-badge ${meals.dinner ? 'done' : 'miss'}">${meals.dinner ? '✓' : '○'}</div>
-          </div>
-        </div>
-
-        <div class="card" id="healthCard" style="cursor:pointer;">
-          <div class="section-title">健康指标</div>
-          <div style="display: flex; align-items: center; gap: 1rem;">
-            <div style="background:#eef5e8; width:4rem; height:4rem; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-              <span style="font-size:1.5rem; font-weight:bold; color:#e67e22;">${bmi || '--'}</span>
-              <span style="font-size:0.7rem;">BMI</span>
-            </div>
-            <div>
-              <div style="font-weight:600;">身体状态</div>
-              <div style="color:${bmiStatus === '健康' ? '#2e7d32' : '#e67e22'};">${bmiStatus}</div>
-              <div style="font-size:0.7rem; color:#a07a5c;">点击查看详细建议</div>
-            </div>
-          </div>
-          <div style="margin-top:0.75rem; background:#fef5ea; border-radius:0.75rem; padding:0.5rem; font-size:0.75rem; display:flex; align-items:center; gap:0.5rem;">
-            <span>⚡</span> 能量指数 <strong>${Math.floor(Math.random() * 30 + 70)}/100</strong>
-          </div>
-        </div>
-
-        <div class="quick-grid">
-          <div class="quick-item" data-action="tips">
-            <div class="quick-icon">💡</div>
-            <div class="quick-label">饮食Tips</div>
-          </div>
-          <div class="quick-item" data-action="health">
-            <div class="quick-icon">📊</div>
-            <div class="quick-label">健康指标</div>
-          </div>
-          <div class="quick-item" data-action="friends">
-            <div class="quick-icon">👥</div>
-            <div class="quick-label">亲友空间</div>
-          </div>
-          <div class="quick-item" data-action="report">
-            <div class="quick-icon">📈</div>
-            <div class="quick-label">查看报表</div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="section-title">
-            <span>最近打卡</span>
-            <span style="font-size:0.7rem; color:#e67e22; cursor:pointer;" id="viewAllRecent">查看全部 →</span>
-          </div>
-          ${recentMeals.map(meal => `
-            <div class="recent-item">
-              <div class="recent-icon">${meal.type === '晚餐' ? '🍜' : (meal.type === '加餐' ? '🥜' : '🍎')}</div>
-              <div class="recent-detail">
-                <div class="recent-name">${meal.name}</div>
-                <div class="recent-time">${meal.time} · ${meal.kcal} kcal</div>
-              </div>
-              <div>${meal.mood || '😊'}</div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-      document.getElementById('mainContent').innerHTML = html;
-
-      // 绑定事件
-      document.querySelectorAll('.meal-item').forEach(el => {
-        const meal = el.getAttribute('data-meal');
-        el.addEventListener('click', () => {
-          // 跳转到打卡详情页，可携带餐别参数，这里简单跳转
-          window.location.href = '打卡详情页.html';
-        });
-      });
-      document.getElementById('healthCard')?.addEventListener('click', () => {
-        window.location.href = '健康指标测试.html';
-      });
-      document.querySelectorAll('.quick-item').forEach(el => {
-        const action = el.getAttribute('data-action');
-        el.addEventListener('click', () => {
-          if (action === 'tips') window.location.href = '饮食百科.html';
-          else if (action === 'health') window.location.href = '健康指标测试.html';
-          else if (action === 'friends') window.location.href = '亲友共享空间主页.html';
-          else if (action === 'report') window.location.href = '饮食趋势报表.html';
-        });
-      });
-      document.getElementById('viewAllRecent')?.addEventListener('click', () => {
-        window.location.href = '饮食趋势报表.html';
-      });
-    }
-
-    // 底部导航栏点击
-    function initBottomNav() {
-      const navItems = document.querySelectorAll('.nav-item');
-      navItems.forEach(item => {
-        item.addEventListener('click', () => {
-          const nav = item.getAttribute('data-nav');
-          if (nav === 'home') window.location.href = '饮食管理首页.html';
-          else if (nav === 'record') window.location.href = '打卡详情页.html';
-          else if (nav === 'friends') window.location.href = '亲友共享空间主页.html';
-          else if (nav === 'report') window.location.href = '饮食趋势报表.html';
-        });
-      });
-    }
-
-    // 悬浮按钮
-    document.getElementById('fabBtn').addEventListener('click', () => {
-      window.location.href = '打卡详情页.html';
+    // 绑定交互事件
+    document.querySelectorAll('.meal-item').forEach(item => {
+      item.addEventListener('click', () => { window.location.href = '打卡详情页.html'; });
     });
-
-    renderDashboard();
-    initBottomNav();
+    document.querySelectorAll('.quick-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        const action = item.getAttribute('data-action');
+        if (action === 'tips') window.location.href = '饮食百科.html';
+        else if (action === 'health') window.location.href = '健康指标测试.html';
+        else if (action === 'friends') window.location.href = '亲友共享空间主页.html';
+        else if (action === 'report') window.location.href = '饮食趋势报表.html';
+      });
+    });
+    document.getElementById('fabBtn').addEventListener('click', goToRecord);
+    document.getElementById('backBtn').addEventListener('click', () => { window.location.href = 'index.html'; });
+    // 底部导航
+    document.querySelectorAll('.nav-item').forEach(nav => {
+      nav.addEventListener('click', () => {
+        const to = nav.getAttribute('data-nav');
+        if (to === 'home') window.location.href = '饮食管理首页.html';
+        else if (to === 'record') window.location.href = '打卡详情页.html';
+        else if (to === 'friends') window.location.href = '亲友共享空间主页.html';
+        else if (to === 'report') window.location.href = '饮食趋势报表.html';
+      });
+    });
   </script>
 </body>
 </html>
