@@ -82,11 +82,12 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // 已替换为你的实际值
+    // 你的 Supabase 配置
     const SUPABASE_URL = 'https://akxuloriodjnhgujonsr.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFreHVsb3Jpb2RqbmhndWpvbnNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1ODM1ODIsImV4cCI6MjA5MjE1OTU4Mn0.Lb43TKoqLKAHab65Oyr9hFUFGygb9gofu05lkihw60w';
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // 创建客户端并挂载到 window 上，避免重复声明
+    window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   </script>
 </head>
 <body>
@@ -152,8 +153,8 @@
       }
       const bmiData = calculateBMI();
 
-      // 获取当前匿名登录的用户
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      // 使用 window.supabase 客户端
+      const { data: { user }, error: userError } = await window.supabase.auth.getUser();
       if (userError || !user) {
         alert('请先登录（页面会自动登录，若失败请刷新重试）');
         return;
@@ -169,8 +170,7 @@
         updated_at: new Date()
       };
 
-      // 保存到 Supabase profiles 表（upsert 方式）
-      const { error } = await supabase
+      const { error } = await window.supabase
         .from('profiles')
         .upsert(profileData);
 
