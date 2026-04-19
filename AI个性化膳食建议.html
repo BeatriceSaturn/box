@@ -1,327 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>膳食建议 - 吃了么</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #fef9e8;
+      font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    /* 头部 */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      width: 100%;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
+      padding: 0 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+    .back-btn {
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: #f0e4d4; }
+    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
+    .title {
+      flex: 1;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #5a3e2b;
+    }
+    /* 主内容滚动区 */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      padding-bottom: 80px;
+      scrollbar-width: thin;
+    }
+    /* 卡片样式 */
+    .card {
+      background: white;
+      border-radius: 1rem;
+      border: 1px solid #f0e4d4;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #5a3e2b;
+      margin-bottom: 0.75rem;
+    }
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    /* 指标卡片 */
+    .metrics-row {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #f0e4d4;
+    }
+    .metric-item {
+      flex: 1;
+      text-align: center;
+    }
+    .metric-label {
+      font-size: 0.7rem;
+      color: #a07a5c;
+    }
+    .metric-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #e67e22;
+    }
+    /* 建议条目 */
+    .advice-item {
+      display: flex;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: #fffbf5;
+      border-radius: 0.75rem;
+      margin-bottom: 0.75rem;
+      border-left: 3px solid #e67e22;
+    }
+    .advice-icon svg { width: 1.2rem; height: 1.2rem; stroke: #e67e22; }
+    .advice-content { flex: 1; }
+    .advice-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.2rem; }
+    .advice-desc { font-size: 0.75rem; color: #5a3e2b; line-height: 1.4; }
+    /* 营养卡片 */
+    .nutrition-card {
+      background: #fffbf5;
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .nutrition-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    .nutrition-name {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .nutrition-percent {
+      font-weight: 600;
+      color: #e67e22;
+    }
+    .progress-bar {
+      height: 0.4rem;
+      background: #f0e4d4;
+      border-radius: 1rem;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 1rem;
+      width: 0%;
+    }
+    .nutrition-tip {
+      font-size: 0.7rem;
+      color: #a07a5c;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid #f0e4d4;
+    }
+    /* 折叠区域 */
+    .collapsible {
+      margin-bottom: 1rem;
+    }
+    .collapsible-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+    .collapsible-content {
+      display: none;
+      margin-top: 0.5rem;
+    }
+    .collapsible-content.open {
+      display: block;
+    }
+    .recipe-item, .tip-item {
+      background: #fffbf5;
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .recipe-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    /* 底部按钮 */
+    .action-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, #fef9e8 80%, transparent);
+      padding: 1rem;
+      display: flex;
+      gap: 0.75rem;
+      z-index: 20;
+    }
+    .btn-outline {
+      flex: 1;
+      background: white;
+      border: 1px solid #e2d4c8;
+      border-radius: 2rem;
+      padding: 0.7rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #a07a5c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+    .btn-primary {
+      flex: 1;
+      background: #e67e22;
+      border: none;
+      border-radius: 2rem;
+      padding: 0.7rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+    .btn-outline:active, .btn-primary:active { transform: scale(0.98); }
+    /* 底部导航栏 */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff9f0;
+      border-top: 1px solid #f0e4d4;
+      display: flex;
+      justify-content: space-around;
+      padding: 0.5rem 1rem 1rem;
+      z-index: 20;
+      transform: translateY(100%);
+      pointer-events: none;
+    }
+    /* 为了不遮挡底部按钮，实际页面不使用底部导航栏（因为已有固定操作栏），但保留样式以防万一 */
+    .hide-nav { display: none; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" id="backBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="title">膳食建议</div>
+    <div class="right-placeholder" style="width:2.5rem;"></div>
+  </header>
 
-                <!DOCTYPE html>
-                <html lang="zh">
-                <head>
-                  <meta charset="UTF-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <meta name="color-scheme" content="light">
-                  <meta name="supported-color-schemes" content="light">
-                  <title>AI个性化膳食建议</title>
-                  <style>
-                    *,
-                    *::before,
-                    *::after {
-                      box-sizing: border-box;
-                      margin: 0;
-                    }
-                    .iframe-outer {
-                      position: fixed;
-                      top: 0;
-                      left: 0;
-                      bottom: 0;
-                      right: 0;
-                      display: flex;
-                      justify-content: center;
-                      background-color: #E0E0E0;
-                    }
-                    .iframe-wrapper {
-                      width: 100%;
-                      height: 100%;
-                      margin: 0 auto;
-                      transform-origin: center top;
-                      flex-shrink: 0;
-                    }
-                    #dynamicIframe {
-                      border: none;
-                      width: 100%;
-                      height: 100%;
-                    }
-                  </style>
-                  <script>
-                const width = 402
-                const height = 874
-                const resolutionRatio = width && height ? width / height : 1
-                const pageNameMap = {
-                  'login_screen': '登录注册页',
-    'user_profile_setup': '基础信息采集页',
-    'goal_setting': '核心目标设定页',
-    'plan_selection': '饮食计划选择页',
-    'plan_details': '计划详情页',
-    'plan_tracking': '我的计划进度页',
-    'home_dashboard': '饮食管理首页',
-    'diet_logging_detail': '打卡详情页',
-    'logging_success_feedback': '打卡反馈页',
-    'social_circles_main': '亲友共享空间主页',
-    'invite_connection': '邀请关注页',
-    'interaction_hub': '关怀互动页',
-    'diet_encyclopedia': '饮食百科',
-    'health_metrics_test': '健康指标测试',
-    'ai_diet_recommendation': 'AI个性化膳食建议',
-    'dietary_statistics_report': '饮食趋势报表',
-    'habit_milestone_badges': '习惯里程碑成就'
-                }
-                const allPageIds = ["login_screen","user_profile_setup","goal_setting","plan_selection","plan_details","plan_tracking","home_dashboard","diet_logging_detail","logging_success_feedback","social_circles_main","invite_connection","interaction_hub","diet_encyclopedia","health_metrics_test","ai_diet_recommendation","dietary_statistics_report","habit_milestone_badges"]
-                const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-                const IFRAME_MESSAGE_TYPE = {
-                  iframeNavigation: 'iframeNavigation',
-                }
-                const safeAddEventListener = function Tc(e,t,r,n=!1){e.removeEventListener(t,r,n),e.addEventListener(t,r,n)}
-                const processOnclick = (e,t,r)=>{if(r){const n=zw(t);if(n.methodName&&Rp(n.methodName,r))return;e.preventDefault(),e.stopPropagation();const s=n.args||[],i=(s==null?void 0:s.find(u=>u))||"";i&&jp(i)}}
-                const checkIframeMethod = (e,t)=>{try{return typeof t[e]=="function"||typeof t[e]=="function"}catch(r){return!1}}
-                const postIframeMessage = (targetPageId) => {
-                  window.parent.postMessage({
-                    type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                    targetPageId,
-                  })
-                }
-                const handleIframeLinkClick = (event) => {
-                  const dynamicIframe = document.querySelector('#dynamicIframe')
-                  if (!dynamicIframe?.contentWindow) {
-                    return
-                  }
-                  const link = event.target.closest('a')
-                  const target = event.target
-                  if (link) {
-                    const href = link.getAttribute('href')
-                    const onclick = link.getAttribute('onclick')
-                    if (href && href !== '#' && !href.startsWith('javascript:')) {
-                      event.preventDefault()
-                      event.stopPropagation()
-                      const targetPageId = getKeyByValueObj(allFormatPageIdsMap, href)
-                      if (targetPageId) {
-                        postIframeMessage(targetPageId)
-                      }
-                      return
-                    }
-                    if (onclick) {
-                      processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                    } else {
-                      event.preventDefault()
-                      event.stopPropagation()
-                    }
-                    return
-                  }
-                  const onclick = target.getAttribute('onclick')
-                  if (onclick) {
-                    processOnclick(event, onclick, iframe.contentWindow, allFormatPageIdsMap)
-                  }
-                }
-                function stringExt(link) {
-                  let s = String(link || '')
-                  s = (s.split('#')[0] || '')
-                  s = (s.split('?')[0] || '')
-                  s = s.trim()
-                  s = s.split('/').filter(Boolean).pop() || ''
-                  const lower = s.toLowerCase()
-                  if (lower.endsWith('.html') || lower.endsWith('.php') || lower.endsWith('.aspx')) {
-                    s = s.slice(0, s.lastIndexOf('.'))
-                  }
-                  return s
-                }
-                function formatHref(href) {
-                  if (!href) {
-                    return ''
-                  }
-                  try {
-                    const url = new URL(href, window.location.href)
-                    const pathname = url.pathname || ''
-                    return stringExt(pathname)
-                  } catch {
-                    return stringExt(href)
-                  }
-                }
-                function getKeyByValueObj(obj, value) {
-                  const newValue = formatHref(value)
-                  const keyFind = Object.keys(obj).find(k => k === newValue)
-                  if (keyFind) {
-                    return keyFind
-                  }
-                  return Object.keys(obj).find(k => obj[k] === newValue)
-                }
-                function setIframeSize(w, h) {
-                  const currentContainerRadio = w / h
-                  let widthValue = w
-                  let heightValue = h
-                  let zoom = 1
-                  if (currentContainerRadio > resolutionRatio) {
-                    widthValue = h * resolutionRatio
-                    heightValue = h
-                  } else {
-                    widthValue = w
-                    heightValue = w / resolutionRatio
-                  }
-                  zoom = width ? widthValue / width : 1
-                  return {
-                    width: widthValue / zoom + 'px',
-                    height: heightValue / zoom + 'px',
-                    zoom,
-                  }
-                }
-                function adjustIframeSize() {
-                  const iframeWrapper = document.querySelector(".iframe-wrapper")
-                  const { width, height, zoom } = setIframeSize(window.innerWidth, window.innerHeight)
-                  iframeWrapper.style.height = height
-                  iframeWrapper.style.width = width
-                  iframeWrapper.style.transform = 'scale(' + zoom + ')'
-                }
-                function sanitizeFilename(name) {
-                  return name.replace(/[\/:*?"<>|]/g, '_')
-                }
-                function handlePostMessage(event) {
-                  if (!event.data) {
-                    return
-                  }
-                  const { type, targetPageId } = event.data
-                  const targetPageName = pageNameMap[targetPageId]
-                  if (type === "iframeNavigation" && targetPageId && targetPageName) {
-                    window.location.href = targetPageName + '.html'
-                  }
-                }
-                function setupIframeEvents() {
-                  const iframe = document.getElementById('dynamicIframe')
-                  if (iframe && iframe.contentWindow && iframe.contentWindow.document) {
-                    safeAddEventListener(iframe.contentWindow.document, 'click', handleIframeLinkClick, true)
-                  } else {
-                    setTimeout(setupIframeEvents, 100)
-                  }
-                }
-                window.addEventListener('message', handlePostMessage)
-                window.onload = function() {
-                  adjustIframeSize()
-                  setupIframeEvents()
-                }
-                window.onresize = adjustIframeSize
-                window.onunload = () => {
-                  window.removeEventListener('message', handlePostMessage)
-                }
-              </script>
-                </head>
-                <body>
-                  <div class="iframe-outer">
-                    <div class="iframe-wrapper">
-                      <iframe id="dynamicIframe" srcdoc='<html data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="14" data-source-line-end="25" lang="en"><head data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="15" data-source-line-end="20"><script>(function(){
-      function stringExt(link) {
-        let s = String(link || &#39;&#39;)
-        s = (s.split(&#39;#&#39;)[0] || &#39;&#39;)
-        s = (s.split(&#39;?&#39;)[0] || &#39;&#39;)
-        s = s.trim()
-        s = s.split(&#39;/&#39;).filter(Boolean).pop() || &#39;&#39;
-        const lower = s.toLowerCase()
-        if (lower.endsWith(&#39;.html&#39;) || lower.endsWith(&#39;.php&#39;) || lower.endsWith(&#39;.aspx&#39;)) {
-          s = s.slice(0, s.lastIndexOf(&#39;.&#39;))
-        }
-        return s
-      }
-      function formatHref(href) {
-        if (!href) {
-          return &#39;&#39;
-        }
-        try {
-          const url = new URL(href, window.location.href)
-          const pathname = url.pathname || &#39;&#39;
-          return stringExt(pathname)
-        } catch {
-          return stringExt(href)
-        }
-      }
-      function getKeyByValueObj(obj, value) {
-        const newValue = formatHref(value)
-        const keyFind = Object.keys(obj).find(k => k === newValue)
-        if (keyFind) {
-          return keyFind
-        }
-        return Object.keys(obj).find(k => obj[k] === newValue)
-      }
-      function emit(to, source){
-        try {
-          if (window.parent) {
-            const allFormatPageIdsMap = {"login_screen":"login-screen","user_profile_setup":"user-profile-setup","goal_setting":"goal-setting","plan_selection":"plan-selection","plan_details":"plan-details","plan_tracking":"plan-tracking","home_dashboard":"home-dashboard","diet_logging_detail":"diet-logging-detail","logging_success_feedback":"logging-success-feedback","social_circles_main":"social-circles-main","invite_connection":"invite-connection","interaction_hub":"interaction-hub","diet_encyclopedia":"diet-encyclopedia","health_metrics_test":"health-metrics-test","ai_diet_recommendation":"ai-diet-recommendation","dietary_statistics_report":"dietary-statistics-report","habit_milestone_badges":"habit-milestone-badges"}
-            const IFRAME_MESSAGE_TYPE = {
-              iframeNavigation: &#39;iframeNavigation&#39;,
-            }
-            const targetPageId = getKeyByValueObj(allFormatPageIdsMap, String(to || &#39;&#39;))
-            if (targetPageId) {
-              window.parent.postMessage({
-                type: IFRAME_MESSAGE_TYPE.iframeNavigation,
-                targetPageId,
-              }, &#39;*&#39;)
-            }
-          }
-        } catch(e) {}
-      }
-      try{
-        if (&#39;navigation&#39; in window &amp;&amp; window.navigation &amp;&amp; typeof window.navigation.addEventListener===&#39;function&#39;){
-          window.navigation.addEventListener(&#39;navigate&#39;, function(e){
-            try{
-              var url = (e.destination &amp;&amp; e.destination.url) || &#39;&#39;;
-              if (e.canIntercept &amp;&amp; typeof e.intercept===&#39;function&#39;){ e.intercept({ handler:function(){} }) }
-              else if (e.preventDefault){ e.preventDefault() }
-              emit(url)
-            }catch(_){}
-          })
-        }
-      }catch(_){}
-    })();</script><meta name="supported-color-schemes" content="light"><meta name="color-scheme" content="light"><style>
-      :root, html, body { color-scheme: light; }
-      html { forced-color-adjust: none; }
-    </style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AI个性化膳食建议">
-    <title data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="19" data-source-line-end="19">膳食建议</title>
-  <link rel="stylesheet" href="./assets/html/113216/ai-diet-recommendation.CyT-fR9B.css">
-<style>header[data-v-0b81bb01]{height:56px;backdrop-filter:blur(8px);background-color:hsl(var(--card) / .95)}.truncate[data-v-0b81bb01]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.h-full[data-v-de9bc3c2]{transition:width .5s cubic-bezier(.4,0,.2,1)}.surface-raised[data-v-ec7a8147]{position:relative}img[data-v-ec7a8147]{transition:transform .3s ease}.surface-raised:hover img[data-v-ec7a8147]{transform:scale(1.05)}.space-y-3[data-v-3e3f7df4]{animation:slideDown-3e3f7df4 .3s ease-out}@keyframes slideDown-3e3f7df4{0%{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-</style><script src="./assets/static/uxbot/25_6/holder.js"></script></head>
-  <body data-source-file="src/layouts/BaseLayout.astro" data-source-line-start="21" data-source-line-end="24">
-    
-  <div data-source-file="src/layouts/MobileFlowLayout.astro" data-source-line-start="15" data-source-line-end="23" class="h-screen overflow-hidden flex flex-col bg-background">
-    <!-- Header with back button -->
-    <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&amp;&amp;s.isSameNode(this)&amp;&amp;(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&amp;&amp;s.isSameNode(this)&amp;&amp;(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&amp;&amp;(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&amp;&amp;this.lastChild.nodeValue==="astro:end"&amp;&amp;(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&amp;&amp;await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="2nfTIN" prefix="s1" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/MobileHeader.DIYhopFc.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{&amp;quot;title&amp;quot;:[0,&amp;quot;膳食建议&amp;quot;],&amp;quot;showBack&amp;quot;:[0,true]}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;MobileHeader&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><header class="sticky top-0 z-50 w-full bg-card border-b border-border shadow-sm px-4 flex items-center justify-between" style="height:var(--header-height);" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="30" data-source-line-end="67" data-v-0b81bb01=""><div class="flex items-center min-w-[56px]" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="35" data-source-line-end="45" data-v-0b81bb01=""><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 hover:bg-accent h-10 w-10 tap-target -ml-2 text-foreground/80 hover:text-primary transition-colors" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-0b81bb01=""><!--[--><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-0b81bb01="" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg><!--]--></button></div><h1 class="flex-1 text-center truncate px-2 text-base font-semibold tracking-tight text-foreground" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="48" data-source-line-end="50" data-v-0b81bb01="">膳食建议</h1><div class="flex items-center justify-end min-w-[56px] space-x-1" data-source-file="src/components/common/MobileHeader.vue" data-source-line-start="53" data-source-line-end="66" data-v-0b81bb01=""><!--[--><!----><!--]--></div></header><!--astro:end--></astro-island>
-    
-    <!-- Main content area - scrollable -->
-    <main data-source-file="src/layouts/MobileFlowLayout.astro" data-source-line-start="20" data-source-line-end="22" class="flex-1 overflow-y-auto min-h-0 mobile-content-scroll">
-      
-  <astro-island uid="ZcSQIe" prefix="s0" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/RecommendationContent.CaIBrEiJ.js" component-export="default" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;RecommendationContent&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><div class="page-body pb-24 space-y-6" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="184" data-source-line-end="359" data-v-3e3f7df4=""><div class="surface-raised card-padding space-y-3" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="186" data-source-line-end="210" data-v-3e3f7df4=""><div class="flex items-start gap-3" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="187" data-source-line-end="197" data-v-3e3f7df4=""><div class="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="188" data-source-line-end="190" data-v-3e3f7df4=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-primary lucide-sparkles-icon lucide-sparkles text-primary" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-3e3f7df4=""><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path><path d="M20 2v4"></path><path d="M22 4h-4"></path><circle cx="4" cy="20" r="2"></circle></svg></div><div class="flex-1 min-w-0" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="191" data-source-line-end="196" data-v-3e3f7df4=""><h2 class="text-section-title mb-2" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="192" data-source-line-end="192" data-v-3e3f7df4="">您的个性化膳食建议</h2><p class="text-body text-foreground/80 leading-relaxed" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="193" data-source-line-end="195" data-v-3e3f7df4="">您的体重指标健康，建议保持规律饮食习惯，均衡营养摄入。</p></div></div><div class="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-border/50" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="200" data-source-line-end="209" data-v-3e3f7df4=""><div class="text-center" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="201" data-source-line-end="204" data-v-3e3f7df4=""><p class="text-caption text-muted-foreground mb-1" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="202" data-source-line-end="202" data-v-3e3f7df4="">当前平均热量</p><p class="text-lg font-bold text-primary" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="203" data-source-line-end="203" data-v-3e3f7df4="">413 kcal</p></div><div class="text-center" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="205" data-source-line-end="208" data-v-3e3f7df4=""><p class="text-caption text-muted-foreground mb-1" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="206" data-source-line-end="206" data-v-3e3f7df4="">建议目标热量</p><p class="text-lg font-bold text-accent" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="207" data-source-line-end="207" data-v-3e3f7df4="">2000 kcal</p></div></div></div><div class="grid grid-cols-1 gap-3" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="213" data-source-line-end="233" data-v-3e3f7df4=""><div class="surface-base card-padding border-l-4 border-primary/50" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="214" data-source-line-end="222" data-v-3e3f7df4=""><div class="flex items-start gap-2" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="215" data-source-line-end="221" data-v-3e3f7df4=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-primary flex-shrink-0 mt-0.5 lucide-zap-icon lucide-zap text-primary flex-shrink-0 mt-0.5" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-3e3f7df4=""><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg><div class="flex-1 min-w-0" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="217" data-source-line-end="220" data-v-3e3f7df4=""><p class="text-label text-foreground mb-1" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="218" data-source-line-end="218" data-v-3e3f7df4="">能量提升建议</p><p class="text-caption text-foreground/70" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="219" data-source-line-end="219" data-v-3e3f7df4="">您的能量指数良好，继续保持规律的三餐节奏。</p></div></div></div><div class="surface-base card-padding border-l-4 border-secondary/50" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="224" data-source-line-end="232" data-v-3e3f7df4=""><div class="flex items-start gap-2" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="225" data-source-line-end="231" data-v-3e3f7df4=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-secondary flex-shrink-0 mt-0.5 lucide-circle-check-big-icon lucide-circle-check-big text-secondary flex-shrink-0 mt-0.5" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-3e3f7df4=""><path d="M21.801 10A10 10 0 1 1 17 3.335"></path><path d="m9 11 3 3L22 4"></path></svg><div class="flex-1 min-w-0" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="227" data-source-line-end="230" data-v-3e3f7df4=""><p class="text-label text-foreground mb-1" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="228" data-source-line-end="228" data-v-3e3f7df4="">日常习惯建议</p><p class="text-caption text-foreground/70" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="229" data-source-line-end="229" data-v-3e3f7df4="">建议每日饮水1.5-2L，并在午餐和晚餐达到七分饱时及时停止进食，有助于长期保持健康体态。</p></div></div></div></div><div data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="236" data-source-line-end="262" data-v-3e3f7df4=""><button class="w-full flex items-center justify-between mb-3 group" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="237" data-source-line-end="250" data-v-3e3f7df4=""><h3 class="text-section-title" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="241" data-source-line-end="241" data-v-3e3f7df4="">营养摄入分析</h3><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-muted-foreground transition-transform duration-300 rotate-180 lucide-chevron-down-icon lucide-chevron-down text-muted-foreground transition-transform duration-300 rotate-180" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-3e3f7df4=""><path d="m6 9 6 6 6-6"></path></svg></button><div class="space-y-3" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="252" data-source-line-end="261" data-v-3e3f7df4=""><!--[--><div class="surface-base card-padding" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="44" data-source-line-end="85" data-v-3e3f7df4="" data-v-de9bc3c2=""><div class="flex items-center justify-between mb-3" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="46" data-source-line-end="56" data-v-de9bc3c2=""><div class="flex items-center gap-2" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="47" data-source-line-end="54" data-v-de9bc3c2=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-yellow-600 lucide-circle-alert-icon lucide-circle-alert text-yellow-600" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-de9bc3c2=""><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg><h4 class="text-item-title" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="53" data-source-line-end="53" data-v-de9bc3c2="">蛋白质</h4></div><span class="text-label text-primary font-semibold" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="55" data-source-line-end="55" data-v-de9bc3c2="">87%</span></div><div class="mb-3" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="59" data-source-line-end="77" data-v-de9bc3c2=""><div class="flex items-center gap-2 mb-2" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="60" data-source-line-end="76" data-v-de9bc3c2=""><span class="text-caption text-muted-foreground" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="61" data-source-line-end="61" data-v-de9bc3c2="">65g</span><div class="flex-1 h-2 bg-muted rounded-full overflow-hidden" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="62" data-source-line-end="74" data-v-de9bc3c2=""><div class="h-full rounded-full transition-all duration-500" style="width:87%;background-color:hsl(var(--warning));" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="63" data-source-line-end="73" data-v-de9bc3c2=""></div></div><span class="text-caption text-muted-foreground" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="75" data-source-line-end="75" data-v-de9bc3c2="">75g</span></div></div><div class="p-2 rounded-lg bg-yellow-50" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="80" data-source-line-end="84" data-v-de9bc3c2=""><p class="text-xs text-foreground/80 leading-relaxed" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="81" data-source-line-end="83" data-v-de9bc3c2=""> 💡 建议每餐补充优质蛋白，如鸡蛋、鱼类、豆制品。</p></div></div><div class="surface-base card-padding" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="44" data-source-line-end="85" data-v-3e3f7df4="" data-v-de9bc3c2=""><div class="flex items-center justify-between mb-3" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="46" data-source-line-end="56" data-v-de9bc3c2=""><div class="flex items-center gap-2" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="47" data-source-line-end="54" data-v-de9bc3c2=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-yellow-600 lucide-circle-alert-icon lucide-circle-alert text-yellow-600" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-de9bc3c2=""><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg><h4 class="text-item-title" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="53" data-source-line-end="53" data-v-de9bc3c2="">膳食纤维</h4></div><span class="text-label text-primary font-semibold" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="55" data-source-line-end="55" data-v-de9bc3c2="">72%</span></div><div class="mb-3" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="59" data-source-line-end="77" data-v-de9bc3c2=""><div class="flex items-center gap-2 mb-2" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="60" data-source-line-end="76" data-v-de9bc3c2=""><span class="text-caption text-muted-foreground" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="61" data-source-line-end="61" data-v-de9bc3c2="">18g</span><div class="flex-1 h-2 bg-muted rounded-full overflow-hidden" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="62" data-source-line-end="74" data-v-de9bc3c2=""><div class="h-full rounded-full transition-all duration-500" style="width:72%;background-color:hsl(var(--warning));" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="63" data-source-line-end="73" data-v-de9bc3c2=""></div></div><span class="text-caption text-muted-foreground" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="75" data-source-line-end="75" data-v-de9bc3c2="">25g</span></div></div><div class="p-2 rounded-lg bg-yellow-50" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="80" data-source-line-end="84" data-v-de9bc3c2=""><p class="text-xs text-foreground/80 leading-relaxed" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="81" data-source-line-end="83" data-v-de9bc3c2=""> 💡 增加蔬菜和全谷物摄入，促进消化健康。</p></div></div><div class="surface-base card-padding" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="44" data-source-line-end="85" data-v-3e3f7df4="" data-v-de9bc3c2=""><div class="flex items-center justify-between mb-3" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="46" data-source-line-end="56" data-v-de9bc3c2=""><div class="flex items-center gap-2" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="47" data-source-line-end="54" data-v-de9bc3c2=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-red-600 lucide-triangle-alert-icon lucide-triangle-alert text-red-600" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-de9bc3c2=""><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg><h4 class="text-item-title" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="53" data-source-line-end="53" data-v-de9bc3c2="">钙</h4></div><span class="text-label text-primary font-semibold" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="55" data-source-line-end="55" data-v-de9bc3c2="">65%</span></div><div class="mb-3" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="59" data-source-line-end="77" data-v-de9bc3c2=""><div class="flex items-center gap-2 mb-2" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="60" data-source-line-end="76" data-v-de9bc3c2=""><span class="text-caption text-muted-foreground" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="61" data-source-line-end="61" data-v-de9bc3c2="">520mg</span><div class="flex-1 h-2 bg-muted rounded-full overflow-hidden" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="62" data-source-line-end="74" data-v-de9bc3c2=""><div class="h-full rounded-full transition-all duration-500" style="width:65%;background-color:hsl(var(--destructive));" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="63" data-source-line-end="73" data-v-de9bc3c2=""></div></div><span class="text-caption text-muted-foreground" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="75" data-source-line-end="75" data-v-de9bc3c2="">800mg</span></div></div><div class="p-2 rounded-lg bg-red-50" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="80" data-source-line-end="84" data-v-de9bc3c2=""><p class="text-xs text-foreground/80 leading-relaxed" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="81" data-source-line-end="83" data-v-de9bc3c2=""> 💡 建议每天补充乳制品或钙强化食品。</p></div></div><div class="surface-base card-padding" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="44" data-source-line-end="85" data-v-3e3f7df4="" data-v-de9bc3c2=""><div class="flex items-center justify-between mb-3" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="46" data-source-line-end="56" data-v-de9bc3c2=""><div class="flex items-center gap-2" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="47" data-source-line-end="54" data-v-de9bc3c2=""><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-green-600 lucide-circle-check-icon lucide-circle-check text-green-600" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-de9bc3c2=""><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><h4 class="text-item-title" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="53" data-source-line-end="53" data-v-de9bc3c2="">铁</h4></div><span class="text-label text-primary font-semibold" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="55" data-source-line-end="55" data-v-de9bc3c2="">80%</span></div><div class="mb-3" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="59" data-source-line-end="77" data-v-de9bc3c2=""><div class="flex items-center gap-2 mb-2" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="60" data-source-line-end="76" data-v-de9bc3c2=""><span class="text-caption text-muted-foreground" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="61" data-source-line-end="61" data-v-de9bc3c2="">12mg</span><div class="flex-1 h-2 bg-muted rounded-full overflow-hidden" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="62" data-source-line-end="74" data-v-de9bc3c2=""><div class="h-full rounded-full transition-all duration-500" style="width:80%;background-color:hsl(var(--success));" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="63" data-source-line-end="73" data-v-de9bc3c2=""></div></div><span class="text-caption text-muted-foreground" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="75" data-source-line-end="75" data-v-de9bc3c2="">15mg</span></div></div><div class="p-2 rounded-lg bg-green-50" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="80" data-source-line-end="84" data-v-de9bc3c2=""><p class="text-xs text-foreground/80 leading-relaxed" data-source-file="src/components/ai-diet-recommendation/NutritionCard.vue" data-source-line-start="81" data-source-line-end="83" data-v-de9bc3c2=""> 💡 保持当前摄入水平，继续食用红肉和绿叶蔬菜。</p></div></div><!--]--></div></div><div data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="265" data-source-line-end="291" data-v-3e3f7df4=""><button class="w-full flex items-center justify-between mb-3 group" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="266" data-source-line-end="279" data-v-3e3f7df4=""><h3 class="text-section-title" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="270" data-source-line-end="270" data-v-3e3f7df4="">推荐食谱</h3><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-muted-foreground transition-transform duration-300 lucide-chevron-down-icon lucide-chevron-down text-muted-foreground transition-transform duration-300" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-3e3f7df4=""><path d="m6 9 6 6 6-6"></path></svg></button><!----></div><div data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="294" data-source-line-end="328" data-v-3e3f7df4=""><button class="w-full flex items-center justify-between mb-3 group" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="295" data-source-line-end="308" data-v-3e3f7df4=""><h3 class="text-section-title" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="299" data-source-line-end="299" data-v-3e3f7df4="">饮食小贴士</h3><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide text-muted-foreground transition-transform duration-300 lucide-chevron-down-icon lucide-chevron-down text-muted-foreground transition-transform duration-300" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-3e3f7df4=""><path d="m6 9 6 6 6-6"></path></svg></button><!----></div><div class="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background to-transparent pt-4 pb-6 px-5 flex gap-3 bottom-nav-container" data-source-file="src/components/ai-diet-recommendation/RecommendationContent.vue" data-source-line-start="331" data-source-line-end="358" data-v-3e3f7df4=""><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 border border-input bg-transparent hover:bg-accent hover:text-accent-foreground h-11 rounded-md px-8 flex-1" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-3e3f7df4=""><!--[--><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide mr-2 lucide-bookmark-icon lucide-bookmark mr-2" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-3e3f7df4=""><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg> 收藏 <!--]--></button><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 border border-input bg-transparent hover:bg-accent hover:text-accent-foreground h-11 rounded-md px-8 flex-1" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-3e3f7df4=""><!--[--><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide mr-2 lucide-share2-icon lucide-share-2 mr-2" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-3e3f7df4=""><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line></svg> 分享 <!--]--></button><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;amp;_svg]:pointer-events-none [&amp;amp;_svg]:size-4 [&amp;amp;_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 h-11 rounded-md px-8 flex-1" data-source-file="src/components/ui/button/Button.vue" data-source-line-start="21" data-source-line-end="27" data-v-3e3f7df4=""><!--[--><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide mr-2 lucide-plus-icon lucide-plus mr-2" data-source-file="src/components/common/SafeIcon.vue" data-source-line-start="27" data-source-line-end="33" data-v-3e3f7df4=""><path d="M5 12h14"></path><path d="M12 5v14"></path></svg> 记录下一餐 <!--]--></button></div></div><!--astro:end--></astro-island>
+  <main class="main-content" id="mainContent">
+    <div style="text-align: center; padding: 2rem;">加载中...</div>
+  </main>
 
-    </main>
+  <div class="action-buttons">
+    <button class="btn-outline" id="favoriteBtn">⭐ 收藏</button>
+    <button class="btn-outline" id="shareBtn">📤 分享</button>
+    <button class="btn-primary" id="nextMealBtn">➕ 记录下一餐</button>
   </div>
 
-    <astro-island uid="Z1rXJ5e" prefix="s2" component-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/sonner.BzCgywvZ.js" component-export="Toaster" renderer-url="https://uxbot-prod-public.s3.cn-north-1.amazonaws.com.cn/html/113216/client.BiwA6WFI.js" props="{}" ssr="" client="load" opts="{&amp;quot;name&amp;quot;:&amp;quot;Toaster&amp;quot;,&amp;quot;value&amp;quot;:true}" await-children=""><!--[--><!-- Remove item from normal navigation flow, only available via hotkey --><section aria-label="Notifications alt+T" tabindex="-1" aria-live="polite" aria-relevant="additions text" aria-atomic="false"><!--[--><ol data-sonner-toaster="" data-sonner-theme="light" class="toaster group" dir="ltr" tabindex="-1" data-theme="light" data-rich-colors="false" data-y-position="bottom" data-x-position="right" style="--front-toast-height:0px;--width:356px;--gap:14px;--offset-top:24px;--offset-right:24px;--offset-bottom:24px;--offset-left:24px;--mobile-offset-top:16px;--mobile-offset-right:16px;--mobile-offset-bottom:16px;--mobile-offset-left:16px;" data-source-file="src/components/ui/sonner/Sonner.vue" data-source-line-start="9" data-source-line-end="22"><!--[--><!--]--></ol><!--]--></section><!--]--><!--astro:end--></astro-island>
   <script>
-    const originalBack = window.history.back
-    const originalForward = window.history.forward
-    const originalGo = window.history.go
-    function isValidNavigation(){
-      if(!window.parent.history.state.back || !window.parent.history.state.back.startsWith(&#39;/designPage&#39;)){
-        return false
+    // ---------- 辅助函数 ----------
+    function getUserId() {
+      let userId = localStorage.getItem('currentUserId');
+      if (!userId) {
+        userId = 'guest_' + Date.now();
+        localStorage.setItem('currentUserId', userId);
       }
-      return true
+      return userId;
     }
-    window.history.back = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalBack.apply(this, args);
-    };
 
-    window.history.forward = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalForward.apply(this, args);
-    };
+    function getCheckins() {
+      const userId = getUserId();
+      const key = `checkins_${userId}`;
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : {};
+    }
 
-    window.history.go = function(...args) {
-      if(!isValidNavigation()){
-        return
-      }
-      return originalGo.apply(this, args);
-    };
-  </script></body></html>'></iframe>
-                    </div>
-                  </div>
+    function getMealsLog() {
+      const data = localStorage.getItem('mealsLog');
+      return data ? JSON.parse(data) : [];
+    }
 
-                </body>
-                </html>
-            
+    function getUserProfile() {
+      const profile = localStorage.getItem('userProfile');
+      return profile ? JSON.parse(profile) : null;
+    }
+
+    // 计算平均热量（最近7天）
+    function getAverageCalories() {
+      const meals = getMealsLog();
+      const last7Days = new Date();
+      last7Days.setDate(last7Days.getDate() - 7);
+      let total = 0;
+      let count = 0;
+      for (const meal of meals) {
+        const mealDate = meal.date || meal.timestamp?.slice(0,10);
+        if (mealDate && new Date(mealDate) >= last7Days) {
+          const kcal = parseInt(meal.kcal);
+          if (!isNaN(kcal)) {
+            total += kcal;
+            count++;
+          }
+        }
+      }
+      return count > 0 ? Math.round(total / count) : 0;
+    }
+
+    // 获取BMI状态
+    function getBMIStatus() {
+      const profile = getUserProfile();
+      if (!profile || !profile.height || !profile.weight) return 'unknown';
+      const heightM = profile.height / 100;
+      const bmi = profile.weight / (heightM * heightM);
+      if (bmi < 18.5) return '偏瘦';
+      if (bmi < 24) return '健康';
+      if (bmi < 28) return '超重';
+      return '肥胖';
+    }
+
+    // 模拟营养数据（基于用户打卡和饮食记录，可动态调整）
+    function getNutritionData() {
+      // 实际中可根据饮食记录计算，这里使用模拟数据并稍作随机变化
+      const mealsLog = getMealsLog();
+      const totalMeals = mealsLog.length;
+      // 基础值，随记录数增加而改善
+      const protein = Math.min(95, 65 + Math.floor(totalMeals / 5));
+      const fiber = Math.min(90, 50 + Math.floor(totalMeals / 6));
+      const calcium = Math.min(85, 55 + Math.floor(totalMeals / 8));
+      const iron = Math.min(95, 70 + Math.floor(totalMeals / 4));
+      return {
+        protein: { current: Math.floor(protein * 0.75), target: 75, percent: Math.floor(protein * 0.75 / 75 * 100) },
+        fiber: { current: Math.floor(fiber * 0.28), target: 25, percent: Math.floor(fiber * 0.28 / 25 * 100) },
+        calcium: { current: Math.floor(calcium * 7.5), target: 800, percent: Math.floor(calcium * 7.5 / 800 * 100) },
+        iron: { current: Math.floor(iron * 0.16), target: 15, percent: Math.floor(iron * 0.16 / 15 * 100) }
+      };
+    }
+
+    // 推荐食谱
+    const recipes = [
+      { name: '燕麦酸奶碗', desc: '即食燕麦+无糖酸奶+蓝莓+核桃，5分钟搞定', kcal: 320 },
+      { name: '番茄鸡蛋荞麦面', desc: '荞麦面+番茄炒蛋+青菜，均衡一餐', kcal: 480 },
+      { name: '鸡胸肉沙拉', desc: '生菜+鸡胸肉+牛油果+油醋汁', kcal: 390 }
+    ];
+
+    // 饮食小贴士
+    const tips = [
+      '吃饭时细嚼慢咽，每口咀嚼20次以上',
+      '餐前喝一杯水，增加饱腹感',
+      '晚餐尽量在睡前3小时完成',
+      '每周吃2次深海鱼，补充Omega-3'
+    ];
+
+    // 渲染主页面
+    function renderPage() {
+      const profile = getUserProfile();
+      const avgCalories = getAverageCalories();
+      const bmiStatus = getBMIStatus();
+      const nutrition = getNutritionData();
+
+      // 根据BMI状态生成个性化建议
+      let mainAdvice = '';
+      let energyAdvice = '';
+      let habitAdvice = '';
+      if (bmiStatus === '健康') {
+        mainAdvice = '您的体重指标健康，建议保持规律饮食习惯，均衡营养摄入。';
+        energyAdvice = '您的能量指数良好，继续保持规律的三餐节奏。';
+        habitAdvice = '建议每日饮水1.5-2L，并在午餐和晚餐达到七分饱时及时停止进食，有助于长期保持健康体态。';
+      } else if (bmiStatus === '偏瘦') {
+        mainAdvice = '您的体重偏轻，建议适当增加优质蛋白和健康脂肪的摄入。';
+        energyAdvice = '能量摄入略低，可适当增加加餐（如坚果、酸奶）。';
+        habitAdvice = '建议少食多餐，每天增加1-2次健康加餐，避免空腹过久。';
+      } else if (bmiStatus === '超重') {
+        mainAdvice = '您的体重超标，建议控制总热量摄入，增加蔬菜和运动。';
+        energyAdvice = '能量摄入偏高，注意减少高糖高脂食物。';
+        habitAdvice = '建议每餐先吃蔬菜再吃主食，晚餐减少碳水比例。';
+      } else {
+        mainAdvice = '您的体重偏高，建议制定科学减重计划，咨询营养师。';
+        energyAdvice = '能量摄入过多，需调整饮食结构。';
+        habitAdvice = '建议戒掉含糖饮料，每周至少150分钟中等强度运动。';
+      }
+
+      // 建议目标热量（基于BMI状态）
+      let targetCalories = 2000;
+      if (bmiStatus === '偏瘦') targetCalories = 2200;
+      else if (bmiStatus === '超重' || bmiStatus === '肥胖') targetCalories = 1800;
+
+      // 构建营养卡片HTML
+      const nutritionHtml = `
+        <div class="nutrition-card">
+          <div class="nutrition-header">
+            <div class="nutrition-name">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+              蛋白质
+            </div>
+            <div class="nutrition-percent">${nutrition.protein.percent}%</div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${nutrition.protein.percent}%; background:#f59e0b;"></div></div>
+          <div class="flex-between"><span class="metric-label">${nutrition.protein.current}g</span><span class="metric-label">目标 ${nutrition.protein.target}g</span></div>
+          <div class="nutrition-tip">💡 建议每餐补充优质蛋白，如鸡蛋、鱼类、豆制品。</div>
+        </div>
+        <div class="nutrition-card">
+          <div class="nutrition-header">
+            <div class="nutrition-name">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+              膳食纤维
+            </div>
+            <div class="nutrition-percent">${nutrition.fiber.percent}%</div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${nutrition.fiber.percent}%; background:#f59e0b;"></div></div>
+          <div class="flex-between"><span class="metric-label">${nutrition.fiber.current}g</span><span class="metric-label">目标 ${nutrition.fiber.target}g</span></div>
+          <div class="nutrition-tip">💡 增加蔬菜和全谷物摄入，促进消化健康。</div>
+        </div>
+        <div class="nutrition-card">
+          <div class="nutrition-header">
+            <div class="nutrition-name">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              钙
+            </div>
+            <div class="nutrition-percent">${nutrition.calcium.percent}%</div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${nutrition.calcium.percent}%; background:#ef4444;"></div></div>
+          <div class="flex-between"><span class="metric-label">${nutrition.calcium.current}mg</span><span class="metric-label">目标 ${nutrition.calcium.target}mg</span></div>
+          <div class="nutrition-tip">💡 建议每天补充乳制品或钙强化食品。</div>
+        </div>
+        <div class="nutrition-card">
+          <div class="nutrition-header">
+            <div class="nutrition-name">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+              铁
+            </div>
+            <div class="nutrition-percent">${nutrition.iron.percent}%</div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${nutrition.iron.percent}%; background:#10b981;"></div></div>
+          <div class="flex-between"><span class="metric-label">${nutrition.iron.current}mg</span><span class="metric-label">目标 ${nutrition.iron.target}mg</span></div>
+          <div class="nutrition-tip">💡 保持当前摄入水平，继续食用红肉和绿叶蔬菜。</div>
+        </div>
+      `;
+
+      // 推荐食谱折叠内容
+      const recipesHtml = recipes.map(r => `
+        <div class="recipe-item">
+          <div class="recipe-title">🍽️ ${r.name}</div>
+          <div style="font-size:0.75rem; color:#a07a5c;">${r.desc} · ${r.kcal}kcal</div>
+        </div>
+      `).join('');
+
+      // 小贴士折叠内容
+      const tipsHtml = tips.map(t => `
+        <div class="tip-item">💡 ${t}</div>
+      `).join('');
+
+      const fullHtml = `
+        <div class="card">
+          <div class="flex-between">
+            <div class="flex-between" style="gap:0.5rem;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg>
+              <h2 class="section-title" style="margin-bottom:0;">您的个性化膳食建议</h2>
+            </div>
+          </div>
+          <p class="advice-desc" style="margin-top:0.5rem;">${mainAdvice}</p>
+          <div class="metrics-row">
+            <div class="metric-item"><div class="metric-label">当前平均热量</div><div class="metric-value">${avgCalories || '--'} kcal</div></div>
+            <div class="metric-item"><div class="metric-label">建议目标热量</div><div class="metric-value">${targetCalories} kcal</div></div>
+          </div>
+        </div>
+
+        <div class="advice-item">
+          <div class="advice-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></div>
+          <div class="advice-content"><div class="advice-title">能量提升建议</div><div class="advice-desc">${energyAdvice}</div></div>
+        </div>
+        <div class="advice-item">
+          <div class="advice-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg></div>
+          <div class="advice-content"><div class="advice-title">日常习惯建议</div><div class="advice-desc">${habitAdvice}</div></div>
+        </div>
+
+        <div class="card">
+          <div class="collapsible-header" id="nutritionHeader">
+            <h3 class="section-title" style="margin-bottom:0;">营养摄入分析</h3>
+            <svg id="nutritionArrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a07a5c" stroke-width="2" style="transform:rotate(180deg); transition:0.2s;"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div id="nutritionContent" class="collapsible-content open">
+            ${nutritionHtml}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="collapsible-header" id="recipeHeader">
+            <h3 class="section-title" style="margin-bottom:0;">推荐食谱</h3>
+            <svg id="recipeArrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a07a5c" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div id="recipeContent" class="collapsible-content">
+            ${recipesHtml}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="collapsible-header" id="tipsHeader">
+            <h3 class="section-title" style="margin-bottom:0;">饮食小贴士</h3>
+            <svg id="tipsArrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a07a5c" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div id="tipsContent" class="collapsible-content">
+            ${tipsHtml}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('mainContent').innerHTML = fullHtml;
+
+      // 折叠功能
+      function toggleCollapse(headerId, contentId, arrowId) {
+        const header = document.getElementById(headerId);
+        const content = document.getElementById(contentId);
+        const arrow = document.getElementById(arrowId);
+        if (!header || !content) return;
+        header.addEventListener('click', () => {
+          content.classList.toggle('open');
+          if (arrow) {
+            arrow.style.transform = content.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+          }
+        });
+      }
+      toggleCollapse('nutritionHeader', 'nutritionContent', 'nutritionArrow');
+      toggleCollapse('recipeHeader', 'recipeContent', 'recipeArrow');
+      toggleCollapse('tipsHeader', 'tipsContent', 'tipsArrow');
+
+      // 默认打开营养分析，折叠食谱和贴士
+      document.getElementById('recipeContent')?.classList.remove('open');
+      document.getElementById('tipsContent')?.classList.remove('open');
+      const recipeArrow = document.getElementById('recipeArrow');
+      const tipsArrow = document.getElementById('tipsArrow');
+      if (recipeArrow) recipeArrow.style.transform = 'rotate(0deg)';
+      if (tipsArrow) tipsArrow.style.transform = 'rotate(0deg)';
+    }
+
+    // 返回按钮
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.location.href = '饮食管理首页.html';
+    });
+
+    // 底部按钮
+    document.getElementById('favoriteBtn').addEventListener('click', () => {
+      alert('收藏功能开发中，可保存当前建议到个人中心');
+    });
+    document.getElementById('shareBtn').addEventListener('click', () => {
+      alert('分享功能开发中，可分享膳食建议给亲友');
+    });
+    document.getElementById('nextMealBtn').addEventListener('click', () => {
+      window.location.href = '打卡详情页.html';
+    });
+
+    renderPage();
+  </script>
+</body>
+</html>
