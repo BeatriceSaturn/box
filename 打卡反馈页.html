@@ -5,73 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>打卡成功 - 吃了么</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fef9e8;
       font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
     .header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      width: 100%;
-      background: #fff9f0;
-      border-bottom: 1px solid #f0e4d4;
-      padding: 0 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      padding: 1rem;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
     }
     .back-btn {
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 2rem;
+      height: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0.5rem;
       cursor: pointer;
-      transition: background 0.2s;
+      border-radius: 50%;
     }
     .back-btn:hover { background: #f0e4d4; }
-    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
-    .title {
-      flex: 1;
-      text-align: center;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #5a3e2b;
-    }
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
+    .title { font-size: 1.1rem; font-weight: 600; color: #5a3e2b; }
+    .main { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .card {
       background: white;
       border-radius: 1.5rem;
       border: 1px solid #f0e4d4;
       padding: 1.5rem;
-      margin-bottom: 1rem;
       width: 100%;
       max-width: 380px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+      margin: 0 auto;
     }
     .success-icon {
-      width: 5rem;
-      height: 5rem;
+      width: 4rem;
+      height: 4rem;
       background: #fdf3e8;
       border-radius: 50%;
       display: flex;
@@ -79,20 +52,9 @@
       justify-content: center;
       margin: 0 auto 1rem;
     }
-    .success-icon svg { width: 2.5rem; height: 2.5rem; stroke: #e67e22; stroke-width: 1.5; }
-    .title-text {
-      font-size: 1.5rem;
-      font-weight: 700;
-      text-align: center;
-      color: #5a3e2b;
-      margin-bottom: 0.25rem;
-    }
-    .sub-text {
-      text-align: center;
-      color: #a07a5c;
-      font-size: 0.85rem;
-      margin-bottom: 1rem;
-    }
+    .success-icon svg { width: 2rem; height: 2rem; stroke: #e67e22; stroke-width: 1.5; }
+    .title-text { font-size: 1.5rem; font-weight: 700; text-align: center; color: #5a3e2b; margin-bottom: 0.25rem; }
+    .sub-text { text-align: center; color: #a07a5c; font-size: 0.85rem; margin-bottom: 1rem; }
     .meal-info {
       display: flex;
       align-items: center;
@@ -101,41 +63,16 @@
       border-bottom: 1px solid #f0e4d4;
       margin-bottom: 1rem;
     }
-    .meal-icon {
-      width: 3rem;
-      height: 3rem;
-      background: #fdf3e8;
-      border-radius: 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-    }
+    .meal-icon { width: 3rem; height: 3rem; background: #fdf3e8; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
     .meal-detail { flex: 1; }
     .meal-label { font-size: 0.7rem; color: #a07a5c; margin-bottom: 0.2rem; }
     .meal-name { font-weight: 600; color: #5a3e2b; }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-    }
-    .stat-item {
-      background: #fffbf5;
-      border-radius: 0.75rem;
-      padding: 0.75rem;
-      text-align: center;
-    }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    .stat-item { background: #fffbf5; border-radius: 0.75rem; padding: 0.75rem; text-align: center; }
     .stat-emoji { font-size: 1.5rem; margin-bottom: 0.25rem; }
     .stat-value { font-size: 1.2rem; font-weight: 700; color: #e67e22; }
     .stat-label { font-size: 0.7rem; color: #a07a5c; }
-    .tip-card {
-      background: #fff7f0;
-      border-radius: 1rem;
-      padding: 1rem;
-      margin: 1rem 0;
-      text-align: center;
-    }
+    .tip-card { background: #fff7f0; border-radius: 1rem; padding: 1rem; margin: 1rem 0; text-align: center; }
     .tip-title { font-weight: 600; color: #5a3e2b; margin-bottom: 0.25rem; font-size: 0.9rem; }
     .tip-text { font-size: 0.75rem; color: #a07a5c; line-height: 1.4; }
     .btn-primary {
@@ -152,10 +89,8 @@
       justify-content: center;
       gap: 0.5rem;
       cursor: pointer;
-      transition: all 0.2s;
       margin-bottom: 0.75rem;
     }
-    .btn-primary:active { transform: scale(0.98); background: #d4691a; }
     .btn-secondary {
       width: 100%;
       background: transparent;
@@ -170,39 +105,12 @@
       justify-content: center;
       gap: 0.5rem;
       cursor: pointer;
-      transition: all 0.2s;
     }
-    .btn-secondary:active { background: #fff7f0; transform: scale(0.98); }
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #fff9f0;
-      border-top: 1px solid #f0e4d4;
-      display: flex;
-      justify-content: space-around;
-      padding: 0.5rem 1rem 1rem;
-      z-index: 20;
-    }
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.2rem;
-      cursor: pointer;
-      color: #c0a080;
-      transition: color 0.2s;
-    }
-    .nav-item.active { color: #e67e22; }
-    .nav-icon { width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2; }
-    .nav-label { font-size: 0.7rem; font-weight: 500; }
   </style>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script>
-    // Firebase 配置（请与你的项目一致）
     const firebaseConfig = {
       apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
       authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
@@ -227,7 +135,6 @@
       }
     });
 
-    // 获取当前用户最近的一条饮食记录
     async function loadLatestMeal() {
       try {
         const snapshot = await db.collection('meals')
@@ -235,110 +142,57 @@
           .orderBy('createdAt', 'desc')
           .limit(1)
           .get();
-        if (!snapshot.empty) {
-          const meal = snapshot.docs[0].data();
-          renderFeedback(meal);
-        } else {
-          // 没有记录，显示默认信息
-          renderEmpty();
+        if (snapshot.empty) {
+          // 没有记录时显示默认信息
+          renderDefault();
+          return;
         }
+        const meal = snapshot.docs[0].data();
+        renderMeal(meal);
       } catch (err) {
-        console.error("获取最新打卡记录失败:", err);
-        renderEmpty();
+        console.error(err);
+        renderDefault();
       }
     }
 
-    // 餐次图标映射
-    function getMealIcon(mealType) {
-      const map = {
-        breakfast: '☕',
-        lunch: '🍱',
-        dinner: '🍲',
-        snack: '🍎'
-      };
-      return map[mealType] || '🍽️';
-    }
-
-    // 餐次中文名
-    function getMealName(mealType) {
-      const map = {
-        breakfast: '早餐',
-        lunch: '午餐',
-        dinner: '晚餐',
-        snack: '加餐'
-      };
-      return map[mealType] || '餐食';
-    }
-
-    // 心情映射
-    function getMoodEmoji(mood) {
-      const map = {
-        relaxed: '😊', busy: '⚡', stressed: '😰', energized: '💪', tired: '😴'
-      };
-      return map[mood] || '😊';
-    }
-
-    function getMoodName(mood) {
-      const map = {
-        relaxed: '放松', busy: '忙碌', stressed: '压力', energized: '充能', tired: '疲惫'
-      };
-      return map[mood] || '放松';
-    }
-
-    // 随机小贴士
-    const tips = [
-      '坚持规律饮食，让身体和心灵都得到照顾。',
-      '每一餐都是对自己的关爱，继续加油！',
-      '记录饮食是了解自己的第一步，你很棒！',
-      '吃得好，心情也会更好～',
-      '按时吃饭，元气满满一整天！'
-    ];
-
-    function renderFeedback(meal) {
-      const mealType = meal.mealType || 'snack';
-      const mealName = meal.mealName || '美味一餐';
+    function renderMeal(meal) {
+      const mealTypeMap = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐', snack: '加餐' };
+      const moodMap = { relaxed: '放松', busy: '忙碌', stressed: '压力', energized: '充能', tired: '疲惫' };
+      const moodEmoji = { relaxed: '😊', busy: '⚡', stressed: '😰', energized: '💪', tired: '😴' };
+      const mealType = mealTypeMap[meal.mealType] || '餐食';
+      const moodName = moodMap[meal.mood] || '放松';
+      const moodEmojiIcon = moodEmoji[meal.mood] || '😊';
       const kcal = meal.kcal ? `${meal.kcal} kcal` : '--';
-      const moodEmoji = getMoodEmoji(meal.mood);
-      const moodName = getMoodName(meal.mood);
+
+      const tips = [
+        '坚持规律饮食，让身体和心灵都得到照顾。',
+        '每一餐都是对自己的关爱，继续加油！',
+        '记录饮食是了解自己的第一步，你很棒！',
+        '吃得好，心情也会更好～',
+        '按时吃饭，元气满满一整天！'
+      ];
       const randomTip = tips[Math.floor(Math.random() * tips.length)];
 
       const html = `
         <div class="card">
-          <div class="success-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="m9 12 2 2 4-4"/>
-            </svg>
-          </div>
+          <div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
           <div class="title-text">打卡成功！</div>
           <div class="sub-text">今天也在认真照顾自己。</div>
-
           <div class="meal-info">
-            <div class="meal-icon">${getMealIcon(mealType)}</div>
+            <div class="meal-icon">${meal.mealType === 'breakfast' ? '☕' : (meal.mealType === 'lunch' ? '🍱' : (meal.mealType === 'dinner' ? '🍲' : '🍎'))}</div>
             <div class="meal-detail">
-              <div class="meal-label">${getMealName(mealType)}</div>
-              <div class="meal-name">${escapeHtml(mealName)}</div>
+              <div class="meal-label">${mealType}</div>
+              <div class="meal-name">${escapeHtml(meal.mealName)}</div>
             </div>
           </div>
-
           <div class="stats-grid">
-            <div class="stat-item">
-              <div class="stat-emoji">${moodEmoji}</div>
-              <div class="stat-value">${escapeHtml(moodName)}</div>
-              <div class="stat-label">当时心情</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-emoji">🔥</div>
-              <div class="stat-value">${escapeHtml(kcal)}</div>
-              <div class="stat-label">卡路里</div>
-            </div>
+            <div class="stat-item"><div class="stat-emoji">${moodEmojiIcon}</div><div class="stat-value">${moodName}</div><div class="stat-label">当时心情</div></div>
+            <div class="stat-item"><div class="stat-emoji">🔥</div><div class="stat-value">${kcal}</div><div class="stat-label">卡路里</div></div>
           </div>
-
           <div class="tip-card">
             <div class="tip-title">💡 小贴士</div>
             <div class="tip-text">${escapeHtml(randomTip)}</div>
           </div>
-
           <button class="btn-primary" id="viewProgressBtn">📊 查看今日进度</button>
           <button class="btn-secondary" id="continueLoggingBtn">➕ 继续记录其他餐次</button>
         </div>
@@ -347,23 +201,18 @@
       bindButtons();
     }
 
-    function renderEmpty() {
+    function renderDefault() {
       const html = `
         <div class="card">
-          <div class="success-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="m9 12 2 2 4-4"/>
-            </svg>
-          </div>
+          <div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
           <div class="title-text">打卡成功！</div>
           <div class="sub-text">今天也在认真照顾自己。</div>
           <div class="tip-card">
             <div class="tip-title">💡 小贴士</div>
-            <div class="tip-text">还没有饮食记录，快去打卡吧～</div>
+            <div class="tip-text">坚持规律饮食，让身体和心灵都得到照顾。今天的每一次打卡，都是对自己的关爱。</div>
           </div>
           <button class="btn-primary" id="viewProgressBtn">📊 查看今日进度</button>
-          <button class="btn-secondary" id="continueLoggingBtn">➕ 去记录</button>
+          <button class="btn-secondary" id="continueLoggingBtn">➕ 继续记录其他餐次</button>
         </div>
       `;
       document.getElementById('mainContent').innerHTML = html;
@@ -371,12 +220,10 @@
     }
 
     function bindButtons() {
-      const viewBtn = document.getElementById('viewProgressBtn');
-      const continueBtn = document.getElementById('continueLoggingBtn');
-      if (viewBtn) viewBtn.addEventListener('click', () => {
+      document.getElementById('viewProgressBtn')?.addEventListener('click', () => {
         window.location.href = '饮食管理首页.html';
       });
-      if (continueBtn) continueBtn.addEventListener('click', () => {
+      document.getElementById('continueLoggingBtn')?.addEventListener('click', () => {
         window.location.href = '打卡详情页.html';
       });
     }
@@ -391,68 +238,20 @@
       });
     }
 
-    // 底部导航栏跳转
-    function initBottomNav() {
-      const navItems = document.querySelectorAll('.nav-item');
-      navItems.forEach(item => {
-        item.addEventListener('click', () => {
-          const navTo = item.getAttribute('data-nav');
-          if (navTo === 'home') window.location.href = '饮食管理首页.html';
-          else if (navTo === 'record') window.location.href = '打卡详情页.html';
-          else if (navTo === 'friends') window.location.href = '亲友共享空间主页.html';
-          else if (navTo === 'report') window.location.href = '饮食趋势报表.html';
-        });
-      });
-    }
-
     document.getElementById('backBtn').addEventListener('click', () => {
       window.location.href = '饮食管理首页.html';
     });
-
-    initBottomNav();
   </script>
 </head>
 <body>
-  <header class="header">
-    <div class="back-btn" id="backBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
+  <div class="header">
+    <div class="back-btn" id="backBtn">←</div>
     <div class="title">打卡成功</div>
-    <div class="right-placeholder" style="width:2.5rem;"></div>
-  </header>
-
-  <main class="main-content" id="mainContent">
+    <div style="width:2rem;"></div>
+  </div>
+  <div class="main" id="mainContent">
     <div style="text-align: center; padding: 2rem;">加载中...</div>
-  </main>
-
-  <div class="bottom-nav">
-    <div class="nav-item" data-nav="home">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/>
-        <rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
-      </svg>
-      <span class="nav-label">首页</span>
-    </div>
-    <div class="nav-item" data-nav="record">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
-      </svg>
-      <span class="nav-label">饮食记录</span>
-    </div>
-    <div class="nav-item" data-nav="friends">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>
-      </svg>
-      <span class="nav-label">亲友空间</span>
-    </div>
-    <div class="nav-item" data-nav="report">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
-      </svg>
-      <span class="nav-label">报表</span>
-    </div>
   </div>
 </body>
 </html>
+      
