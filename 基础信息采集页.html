@@ -3,364 +3,163 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>个人信息 - 吃了么</title>
+  <title>完善信息 - 吃了么</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fef9e8;
       font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
     .header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      width: 100%;
-      background: #fff9f0;
-      border-bottom: 1px solid #f0e4d4;
-      padding: 0 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      padding: 1rem;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
     }
     .back-btn {
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 2rem;
+      height: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0.5rem;
       cursor: pointer;
-      transition: background 0.2s;
+      border-radius: 50%;
     }
     .back-btn:hover { background: #f0e4d4; }
-    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
-    .title {
-      flex: 1;
-      text-align: center;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #5a3e2b;
-    }
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem 1.25rem 2rem;
-    }
+    .title { font-size: 1.1rem; font-weight: 600; color: #5a3e2b; }
+    .main { flex: 1; overflow-y: auto; padding: 1rem; }
     .card {
+      background: white;
       border-radius: 1rem;
       border: 1px solid #f0e4d4;
-      background-color: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    .card-header {
-      padding: 1rem 1rem 0.5rem;
-    }
-    .card-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #5a3e2b;
-    }
-    .card-desc {
-      font-size: 0.75rem;
-      color: #a07a5c;
-      margin-top: 0.25rem;
-    }
-    .card-content {
-      padding: 0 1rem 1rem;
-    }
-    .form-group {
+      padding: 1rem;
       margin-bottom: 1rem;
     }
-    .form-label {
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: #5a3e2b;
-      display: block;
-      margin-bottom: 0.5rem;
+    .form-group { margin-bottom: 1rem; }
+    label { font-size: 0.85rem; font-weight: 500; color: #5a3e2b; display: block; margin-bottom: 0.25rem; }
+    input {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid #e2d4c8;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      background: white;
     }
     .radio-group {
       display: flex;
       gap: 1rem;
+      margin-top: 0.5rem;
     }
-    .radio-item {
+    .radio-group label {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
+      gap: 0.3rem;
+      font-weight: normal;
     }
-    .radio-item input {
-      width: 1rem;
-      height: 1rem;
-      accent-color: #e67e22;
-    }
-    .input {
-      width: 100%;
-      padding: 0.7rem;
-      border: 1px solid #f0e4d4;
+    .bmi-result {
+      background: #fff7f0;
       border-radius: 0.75rem;
-      font-size: 0.9rem;
-      background: white;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
     }
-    .input:focus {
-      outline: none;
-      border-color: #e67e22;
-    }
-    .bmi-card {
-      margin-top: 1rem;
-    }
-    .bmi-value {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-    }
-    .bmi-number {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #e67e22;
-    }
-    .bmi-status {
-      padding: 0.25rem 1rem;
-      border-radius: 2rem;
-      font-size: 0.8rem;
-      font-weight: 500;
-    }
-    .status-healthy { background: #e0f2e9; color: #2e7d32; }
-    .status-underweight { background: #e0f0ff; color: #1565c0; }
-    .status-overweight { background: #fff3e0; color: #ef6c00; }
-    .status-obese { background: #ffebee; color: #c62828; }
-    .btn-primary {
+    .btn {
       width: 100%;
       background: #e67e22;
       border: none;
       border-radius: 2rem;
       padding: 0.8rem;
+      font-size: 1rem;
       font-weight: 600;
       color: white;
-      font-size: 1rem;
       cursor: pointer;
       margin-top: 1rem;
-    }
-    .btn-primary:active { transform: scale(0.98); }
-    .footer-note {
-      text-align: center;
-      font-size: 0.7rem;
-      color: #c0a080;
-      margin-top: 1rem;
-    }
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 1.2rem;
-      z-index: 1000;
     }
   </style>
 </head>
 <body>
-  <header class="header">
-    <div class="back-btn" id="backBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <div class="title">个人信息</div>
-    <div class="right-placeholder" style="width:2.5rem;"></div>
-  </header>
-
-  <main class="main-content">
-    <div class="card" style="margin-bottom: 1rem; border-color: #e67e22; background: #fff7f0;">
-      <div class="card-header">
-        <div class="card-title">完善个人信息</div>
-        <div class="card-desc">这些信息将帮助我们为您提供更精准的膳食建议</div>
-      </div>
-    </div>
-
+  <div class="header">
+    <div class="back-btn" id="backBtn">←</div>
+    <div class="title">完善个人信息</div>
+    <div style="width:2rem;"></div>
+  </div>
+  <div class="main">
     <div class="card">
-      <div class="card-content">
-        <div class="form-group">
-          <label class="form-label">性别</label>
-          <div class="radio-group" id="genderGroup">
-            <label class="radio-item"><input type="radio" name="gender" value="female"> 女性</label>
-            <label class="radio-item"><input type="radio" name="gender" value="male"> 男性</label>
-            <label class="radio-item"><input type="radio" name="gender" value="other"> 其他</label>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="age">年龄</label>
-          <input type="number" id="age" class="input" placeholder="请输入年龄" min="18" max="120" value="28">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="height">身高 (cm)</label>
-          <input type="number" id="height" class="input" placeholder="请输入身高" min="100" max="250" value="165">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="weight">体重 (kg)</label>
-          <input type="number" id="weight" class="input" placeholder="请输入体重" min="20" max="300" value="55">
+      <div class="form-group">
+        <label>性别</label>
+        <div class="radio-group">
+          <label><input type="radio" name="gender" value="female"> 女</label>
+          <label><input type="radio" name="gender" value="male"> 男</label>
+          <label><input type="radio" name="gender" value="other"> 其他</label>
         </div>
       </div>
+      <div class="form-group">
+        <label>年龄</label>
+        <input type="number" id="age" placeholder="18-100" value="28">
+      </div>
+      <div class="form-group">
+        <label>身高 (cm)</label>
+        <input type="number" id="height" placeholder="100-250" value="165">
+      </div>
+      <div class="form-group">
+        <label>体重 (kg)</label>
+        <input type="number" id="weight" placeholder="20-200" value="55">
+      </div>
+      <div class="bmi-result" id="bmiResult"></div>
+      <button class="btn" id="submitBtn">确认信息并继续</button>
     </div>
-
-    <div class="card bmi-card" id="bmiCard">
-      <div class="card-header">
-        <div class="card-title">BMI 健康指数</div>
-      </div>
-      <div class="card-content">
-        <div class="bmi-value">
-          <div>
-            <div class="card-desc" style="margin-bottom: 0.25rem;">当前BMI</div>
-            <span class="bmi-number" id="bmiValue">21.3</span>
-          </div>
-          <div>
-            <span class="bmi-status" id="bmiStatus">健康</span>
-          </div>
-        </div>
-        <div id="bmiAdvice" style="margin: 0.5rem 0; font-size:0.85rem;">当前BMI处于相对健康区间。</div>
-        <div id="bmiAdviceDetail" style="font-size:0.7rem; color:#a07a5c;">保持规律饮食与适量活动，继续稳定作息。</div>
-      </div>
-    </div>
-
-    <button class="btn-primary" id="submitBtn">确认信息并继续</button>
-    <div class="footer-note">您可以在之后随时修改这些信息</div>
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/@cloudbase/js-sdk@1.7.2/dist/cloudbase.full.js"></script>
+  </div>
   <script>
-    // 初始化云开发
-    const app = cloudbase.init({
-      env: 'beatrice-saturn-d7fu78ek2c55aa9b'
-    });
-    const auth = app.auth();
-    const db = app.database();
-
-    // 检查登录状态，如果没有登录则跳回登录页
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-      alert('请先登录');
-      window.location.href = 'index.html';
+    function calculateBMI() {
+      const h = parseFloat(document.getElementById('height').value);
+      const w = parseFloat(document.getElementById('weight').value);
+      if (h > 0 && w > 0) {
+        const bmi = (w / ((h/100)**2)).toFixed(1);
+        let status = '';
+        if (bmi < 18.5) status = '偏瘦';
+        else if (bmi < 24) status = '健康';
+        else if (bmi < 28) status = '超重';
+        else status = '肥胖';
+        document.getElementById('bmiResult').innerHTML = `当前BMI: <strong>${bmi}</strong> (${status})`;
+        return { bmi, status };
+      }
+      return null;
     }
+    document.getElementById('height').addEventListener('input', calculateBMI);
+    document.getElementById('weight').addEventListener('input', calculateBMI);
+    calculateBMI();
 
-    // DOM 元素
-    const genderRadios = document.querySelectorAll('input[name="gender"]');
-    const ageInput = document.getElementById('age');
-    const heightInput = document.getElementById('height');
-    const weightInput = document.getElementById('weight');
-    const bmiValueSpan = document.getElementById('bmiValue');
-    const bmiStatusSpan = document.getElementById('bmiStatus');
-    const bmiAdviceDiv = document.getElementById('bmiAdvice');
-    const bmiAdviceDetailDiv = document.getElementById('bmiAdviceDetail');
-    const submitBtn = document.getElementById('submitBtn');
-    const backBtn = document.getElementById('backBtn');
-
-    // 计算BMI并更新界面
-    function updateBMI() {
-      const heightCm = parseFloat(heightInput.value);
-      const weightKg = parseFloat(weightInput.value);
-      if (isNaN(heightCm) || isNaN(weightKg) || heightCm <= 0 || weightKg <= 0) {
-        bmiValueSpan.textContent = '--';
-        bmiStatusSpan.textContent = '未知';
-        bmiAdviceDiv.textContent = '请输入有效的身高和体重';
-        bmiAdviceDetailDiv.textContent = '';
+    document.getElementById('submitBtn').addEventListener('click', () => {
+      const gender = document.querySelector('input[name="gender"]:checked')?.value || '';
+      const age = parseInt(document.getElementById('age').value);
+      const height = parseFloat(document.getElementById('height').value);
+      const weight = parseFloat(document.getElementById('weight').value);
+      if (!gender || !age || !height || !weight) {
+        alert('请完整填写信息');
         return;
       }
-      const heightM = heightCm / 100;
-      const bmi = weightKg / (heightM * heightM);
-      const bmiFixed = bmi.toFixed(1);
-      bmiValueSpan.textContent = bmiFixed;
-
-      let status = '', advice = '', detail = '', statusClass = '';
-      if (bmi < 18.5) {
-        status = '偏瘦'; statusClass = 'status-underweight';
-        advice = '体重偏轻，建议适当增加营养摄入。';
-        detail = '多摄入优质蛋白和健康脂肪，保持三餐规律。';
-      } else if (bmi >= 18.5 && bmi < 24) {
-        status = '健康'; statusClass = 'status-healthy';
-        advice = '当前BMI处于相对健康区间。';
-        detail = '保持规律饮食与适量活动，继续稳定作息。';
-      } else if (bmi >= 24 && bmi < 28) {
-        status = '超重'; statusClass = 'status-overweight';
-        advice = '体重超标，注意饮食控制和运动。';
-        detail = '减少高热量食物，增加蔬菜和全谷物，每天坚持30分钟有氧运动。';
-      } else {
-        status = '肥胖'; statusClass = 'status-obese';
-        advice = '体重偏高，建议制定科学减重计划。';
-        detail = '咨询营养师，控制总热量摄入，定期监测体重。';
-      }
-      bmiStatusSpan.textContent = status;
-      bmiStatusSpan.className = `bmi-status ${statusClass}`;
-      bmiAdviceDiv.textContent = advice;
-      bmiAdviceDetailDiv.textContent = detail;
-    }
-
-    heightInput.addEventListener('input', updateBMI);
-    weightInput.addEventListener('input', updateBMI);
-
-    // 保存到云数据库
-    function saveToCloud() {
-      let selectedGender = '';
-      for (let radio of genderRadios) {
-        if (radio.checked) { selectedGender = radio.value; break; }
-      }
-      const age = parseInt(ageInput.value) || 0;
-      const height = parseFloat(heightInput.value) || 0;
-      const weight = parseFloat(weightInput.value) || 0;
-      const bmi = (height && weight) ? (weight / ((height/100)**2)).toFixed(1) : 0;
-
-      const userData = {
-        uid: currentUser.uid,
-        gender: selectedGender,
-        age: age,
-        height: height,
-        weight: weight,
-        bmi: bmi,
-        updatedAt: new Date()
+      const bmiData = calculateBMI();
+      // 保存到 localStorage
+      const userProfile = {
+        gender,
+        age,
+        height,
+        weight,
+        bmi: bmiData.bmi,
+        bmiStatus: bmiData.status,
+        updatedAt: new Date().toISOString()
       };
-
-      // 查询是否已存在该用户的档案
-      const collection = db.collection('users');
-      collection.where({ uid: currentUser.uid }).get().then(res => {
-        if (res.data.length > 0) {
-          // 已存在，更新
-          return collection.doc(res.data[0]._id).update(userData);
-        } else {
-          // 不存在，新增
-          return collection.add(userData);
-        }
-      }).then(() => {
-        alert('档案保存成功！');
-        window.location.href = '核心目标设定页.html';
-      }).catch(err => {
-        console.error('保存失败', err);
-        alert('保存失败，请重试');
-      });
-    }
-
-    submitBtn.addEventListener('click', saveToCloud);
-    backBtn.addEventListener('click', () => {
+      localStorage.setItem('userProfile', JSON.stringify(userProfile));
+      alert('信息保存成功！');
+      window.location.href = '核心目标设定页.html';
+    });
+    document.getElementById('backBtn').addEventListener('click', () => {
       window.location.href = 'index.html';
     });
-
-    // 初始化：默认选中女性
-    genderRadios[0].checked = true;
-    updateBMI();
   </script>
 </body>
 </html>
