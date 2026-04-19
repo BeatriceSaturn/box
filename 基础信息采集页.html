@@ -80,6 +80,14 @@
       margin-top: 1rem;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // 已替换为你的实际值
+    const SUPABASE_URL = 'https://akxuloriodjnhgujonsr.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFreHVsb3Jpb2RqbmhndWpvbnNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1ODM1ODIsImV4cCI6MjA5MjE1OTU4Mn0.Lb43TKoqLKAHab65Oyr9hFUFGygb9gofu05lkihw60w';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
 </head>
 <body>
   <div class="header">
@@ -133,7 +141,7 @@
     document.getElementById('weight').addEventListener('input', calculateBMI);
     calculateBMI();
 
-    document.getElementById('submitBtn').addEventListener('click', () => {
+    document.getElementById('submitBtn').addEventListener('click', async () => {
       const gender = document.querySelector('input[name="gender"]:checked')?.value || '';
       const age = parseInt(document.getElementById('age').value);
       const height = parseFloat(document.getElementById('height').value);
@@ -143,20 +151,38 @@
         return;
       }
       const bmiData = calculateBMI();
-      // 保存到 localStorage
-      const userProfile = {
+
+      // 获取当前匿名登录的用户
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        alert('请先登录（页面会自动登录，若失败请刷新重试）');
+        return;
+      }
+
+      const profileData = {
+        id: user.id,
         gender,
         age,
         height,
         weight,
-        bmi: bmiData.bmi,
-        bmiStatus: bmiData.status,
-        updatedAt: new Date().toISOString()
+        bmi: parseFloat(bmiData.bmi),
+        updated_at: new Date()
       };
-      localStorage.setItem('userProfile', JSON.stringify(userProfile));
-      alert('信息保存成功！');
-      window.location.href = '核心目标设定页.html';
+
+      // 保存到 Supabase profiles 表（upsert 方式）
+      const { error } = await supabase
+        .from('profiles')
+        .upsert(profileData);
+
+      if (error) {
+        console.error('保存失败:', error);
+        alert('保存失败：' + error.message);
+      } else {
+        alert('信息保存成功！');
+        window.location.href = '核心目标设定页.html';
+      }
     });
+
     document.getElementById('backBtn').addEventListener('click', () => {
       window.location.href = 'index.html';
     });
