@@ -223,6 +223,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script>
+    // Firebase 配置（请确保与你项目一致）
     const firebaseConfig = {
       apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
       authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
@@ -238,30 +239,51 @@
 
     let currentUser = null;
 
+    // 监听登录状态
     auth.onAuthStateChanged(user => {
       if (user) {
         currentUser = user;
+        console.log("用户已登录:", user.uid);
         renderPage();
       } else {
+        console.log("未登录，跳转到登录页");
         window.location.href = 'index.html';
       }
     });
 
-    // 获取用户档案
+    // 获取用户档案（如果没有则返回 null）
     async function getUserProfile() {
-      const doc = await db.collection('profiles').doc(currentUser.uid).get();
-      return doc.exists ? doc.data() : null;
+      try {
+        const doc = await db.collection('profiles').doc(currentUser.uid).get();
+        if (doc.exists) return doc.data();
+        else return null;
+      } catch (err) {
+        console.error("获取档案失败:", err);
+        return null;
+      }
     }
 
     // 获取最近7天的饮食记录
     async function getRecentMeals() {
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      const snapshot = await db.collection('meals')
-        .where('userId', '==', currentUser.uid)
-        .where('createdAt', '>=', sevenDaysAgo)
-        .get();
-      return snapshot.docs.map(doc => doc.data());
+      try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        // 注意：Firestore 查询需要索引，这里简化，查询所有 meals 然后前端过滤日期
+        const snapshot = await db.collection('meals')
+          .where('userId', '==', currentUser.uid)
+          .get();
+        const meals = snapshot.docs.map(doc => doc.data());
+        // 前端过滤最近7天
+        const now = new Date();
+        const recent = meals.filter(m => {
+          const createdAt = m.createdAt?.toDate ? m.createdAt.toDate() : new Date(m.createdAt);
+          return (now - createdAt) <= 7 * 24 * 3600 * 1000;
+        });
+        return recent;
+      } catch (err) {
+        console.error("获取饮食记录失败:", err);
+        return [];
+      }
     }
 
     // 计算平均热量
@@ -286,11 +308,9 @@
       return { status: '肥胖', advice: '体重偏高，建议制定科学减重计划。', habitAdvice: '控制总热量摄入，定期监测体重，咨询营养师。' };
     }
 
-    // 模拟营养分析（基于饮食记录的种类数量，简单估算）
+    // 模拟营养分析（基于饮食记录的数量，简单估算）
     function getNutritionAnalysis(meals) {
-      // 真实场景中需要解析食物名称的营养成分，这里简单用记录数量模拟
       const totalMeals = meals.length;
-      // 假设每餐蛋白质、纤维等基础值，随着记录增多而改善
       const proteinPercent = Math.min(95, 60 + totalMeals);
       const fiberPercent = Math.min(90, 50 + totalMeals);
       const calciumPercent = Math.min(85, 45 + totalMeals);
@@ -314,162 +334,178 @@
     ];
 
     async function renderPage() {
-      const profile = await getUserProfile();
-      const meals = await getRecentMeals();
-      const avgCalories = getAverageCalories(meals);
-      let bmi = null, bmiInfo = null;
-      if (profile && profile.height && profile.weight) {
-        const heightM = profile.height / 100;
-        bmi = (profile.weight / (heightM * heightM)).toFixed(1);
-        bmiInfo = getBMIInfo(bmi);
-      } else {
-        bmiInfo = { status: '未知', advice: '请先完善个人信息', habitAdvice: '完善信息后可获得更精准建议' };
-      }
-      const nutrition = getNutritionAnalysis(meals);
-      // 建议目标热量（基于BMI状态）
-      let targetCalories = 2000;
-      if (bmiInfo.status === '偏瘦') targetCalories = 2200;
-      else if (bmiInfo.status === '超重' || bmiInfo.status === '肥胖') targetCalories = 1800;
+      console.log("开始渲染页面...");
+      try {
+        const profile = await getUserProfile();
+        const meals = await getRecentMeals();
+        console.log("获取到的饮食记录数量:", meals.length);
 
-      const mainAdvice = bmiInfo.advice;
-      const energyAdvice = avgCalories < 1500 ? '能量摄入偏低，建议增加健康加餐' : (avgCalories > 2500 ? '能量摄入偏高，注意控制高热量食物' : '能量摄入适中，继续保持');
-      const habitAdvice = bmiInfo.habitAdvice;
+        const avgCalories = getAverageCalories(meals);
+        let bmi = null, bmiInfo = null;
+        if (profile && profile.height && profile.weight) {
+          const heightM = profile.height / 100;
+          bmi = (profile.weight / (heightM * heightM)).toFixed(1);
+          bmiInfo = getBMIInfo(bmi);
+        } else {
+          bmiInfo = { status: '未知', advice: '请先完善个人信息', habitAdvice: '完善信息后可获得更精准建议' };
+        }
 
-      // 营养卡片HTML
-      const nutritionHtml = `
-        <div class="nutrition-card">
-          <div class="nutrition-header">
-            <div class="nutrition-name"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg> 蛋白质</div>
-            <div class="nutrition-percent">${nutrition.proteinPercent}%</div>
+        const nutrition = getNutritionAnalysis(meals);
+        let targetCalories = 2000;
+        if (bmiInfo.status === '偏瘦') targetCalories = 2200;
+        else if (bmiInfo.status === '超重' || bmiInfo.status === '肥胖') targetCalories = 1800;
+
+        const mainAdvice = bmiInfo.advice;
+        const energyAdvice = avgCalories < 1500 ? '能量摄入偏低，建议增加健康加餐' : (avgCalories > 2500 ? '能量摄入偏高，注意控制高热量食物' : '能量摄入适中，继续保持');
+        const habitAdvice = bmiInfo.habitAdvice;
+
+        // 营养卡片HTML
+        const nutritionHtml = `
+          <div class="nutrition-card">
+            <div class="nutrition-header">
+              <div class="nutrition-name"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg> 蛋白质</div>
+              <div class="nutrition-percent">${nutrition.proteinPercent}%</div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${nutrition.proteinPercent}%; background:#f59e0b;"></div></div>
+            <div class="nutrition-tip">💡 建议每餐补充优质蛋白，如鸡蛋、鱼类、豆制品。</div>
           </div>
-          <div class="progress-bar"><div class="progress-fill" style="width:${nutrition.proteinPercent}%; background:#f59e0b;"></div></div>
-          <div class="nutrition-tip">💡 建议每餐补充优质蛋白，如鸡蛋、鱼类、豆制品。</div>
-        </div>
-        <div class="nutrition-card">
-          <div class="nutrition-header">
-            <div class="nutrition-name"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg> 膳食纤维</div>
-            <div class="nutrition-percent">${nutrition.fiberPercent}%</div>
+          <div class="nutrition-card">
+            <div class="nutrition-header">
+              <div class="nutrition-name"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg> 膳食纤维</div>
+              <div class="nutrition-percent">${nutrition.fiberPercent}%</div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${nutrition.fiberPercent}%; background:#f59e0b;"></div></div>
+            <div class="nutrition-tip">💡 增加蔬菜和全谷物摄入，促进消化健康。</div>
           </div>
-          <div class="progress-bar"><div class="progress-fill" style="width:${nutrition.fiberPercent}%; background:#f59e0b;"></div></div>
-          <div class="nutrition-tip">💡 增加蔬菜和全谷物摄入，促进消化健康。</div>
-        </div>
-        <div class="nutrition-card">
-          <div class="nutrition-header">
-            <div class="nutrition-name"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> 钙</div>
-            <div class="nutrition-percent">${nutrition.calciumPercent}%</div>
+          <div class="nutrition-card">
+            <div class="nutrition-header">
+              <div class="nutrition-name"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> 钙</div>
+              <div class="nutrition-percent">${nutrition.calciumPercent}%</div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${nutrition.calciumPercent}%; background:#ef4444;"></div></div>
+            <div class="nutrition-tip">💡 建议每天补充乳制品或钙强化食品。</div>
           </div>
-          <div class="progress-bar"><div class="progress-fill" style="width:${nutrition.calciumPercent}%; background:#ef4444;"></div></div>
-          <div class="nutrition-tip">💡 建议每天补充乳制品或钙强化食品。</div>
-        </div>
-        <div class="nutrition-card">
-          <div class="nutrition-header">
-            <div class="nutrition-name"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg> 铁</div>
-            <div class="nutrition-percent">${nutrition.ironPercent}%</div>
+          <div class="nutrition-card">
+            <div class="nutrition-header">
+              <div class="nutrition-name"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg> 铁</div>
+              <div class="nutrition-percent">${nutrition.ironPercent}%</div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${nutrition.ironPercent}%; background:#10b981;"></div></div>
+            <div class="nutrition-tip">💡 保持当前摄入水平，继续食用红肉和绿叶蔬菜。</div>
           </div>
-          <div class="progress-bar"><div class="progress-fill" style="width:${nutrition.ironPercent}%; background:#10b981;"></div></div>
-          <div class="nutrition-tip">💡 保持当前摄入水平，继续食用红肉和绿叶蔬菜。</div>
-        </div>
-      `;
+        `;
 
-      // 推荐食谱折叠内容
-      const recipesHtml = recipes.map(r => `
-        <div class="recipe-item">
-          <div class="recipe-title">🍽️ ${r.name}</div>
-          <div style="font-size:0.75rem; color:#a07a5c;">${r.desc} · ${r.kcal}kcal</div>
-        </div>
-      `).join('');
+        const recipesHtml = recipes.map(r => `
+          <div class="recipe-item">
+            <div class="recipe-title">🍽️ ${r.name}</div>
+            <div style="font-size:0.75rem; color:#a07a5c;">${r.desc} · ${r.kcal}kcal</div>
+          </div>
+        `).join('');
 
-      // 小贴士折叠内容
-      const tipsHtml = tips.map(t => `<div class="tip-item">💡 ${t}</div>`).join('');
+        const tipsHtml = tips.map(t => `<div class="tip-item">💡 ${t}</div>`).join('');
 
-      const fullHtml = `
-        <div class="card">
-          <div class="flex-between">
-            <div class="flex-between" style="gap:0.5rem;">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg>
-              <h2 class="section-title" style="margin-bottom:0;">您的个性化膳食建议</h2>
+        const fullHtml = `
+          <div class="card">
+            <div class="flex-between">
+              <div class="flex-between" style="gap:0.5rem;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg>
+                <h2 class="section-title" style="margin-bottom:0;">您的个性化膳食建议</h2>
+              </div>
+            </div>
+            <p class="advice-desc" style="margin-top:0.5rem;">${mainAdvice}</p>
+            <div class="metrics-row">
+              <div class="metric-item"><div class="metric-label">当前平均热量</div><div class="metric-value">${avgCalories || '--'} kcal</div></div>
+              <div class="metric-item"><div class="metric-label">建议目标热量</div><div class="metric-value">${targetCalories} kcal</div></div>
             </div>
           </div>
-          <p class="advice-desc" style="margin-top:0.5rem;">${mainAdvice}</p>
-          <div class="metrics-row">
-            <div class="metric-item"><div class="metric-label">当前平均热量</div><div class="metric-value">${avgCalories || '--'} kcal</div></div>
-            <div class="metric-item"><div class="metric-label">建议目标热量</div><div class="metric-value">${targetCalories} kcal</div></div>
-          </div>
-        </div>
 
-        <div class="advice-item">
-          <div class="advice-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></div>
-          <div class="advice-content"><div class="advice-title">能量提升建议</div><div class="advice-desc">${energyAdvice}</div></div>
-        </div>
-        <div class="advice-item">
-          <div class="advice-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg></div>
-          <div class="advice-content"><div class="advice-title">日常习惯建议</div><div class="advice-desc">${habitAdvice}</div></div>
-        </div>
+          <div class="advice-item">
+            <div class="advice-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></div>
+            <div class="advice-content"><div class="advice-title">能量提升建议</div><div class="advice-desc">${energyAdvice}</div></div>
+          </div>
+          <div class="advice-item">
+            <div class="advice-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg></div>
+            <div class="advice-content"><div class="advice-title">日常习惯建议</div><div class="advice-desc">${habitAdvice}</div></div>
+          </div>
 
-        <div class="card">
-          <div class="collapsible-header" id="nutritionHeader">
-            <h3 class="section-title" style="margin-bottom:0;">营养摄入分析</h3>
-            <svg id="nutritionArrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a07a5c" stroke-width="2" style="transform:rotate(180deg); transition:0.2s;"><path d="m6 9 6 6 6-6"/></svg>
+          <div class="card">
+            <div class="collapsible-header" id="nutritionHeader">
+              <h3 class="section-title" style="margin-bottom:0;">营养摄入分析</h3>
+              <svg id="nutritionArrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a07a5c" stroke-width="2" style="transform:rotate(180deg); transition:0.2s;"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <div id="nutritionContent" class="collapsible-content open">
+              ${nutritionHtml}
+            </div>
           </div>
-          <div id="nutritionContent" class="collapsible-content open">
-            ${nutritionHtml}
-          </div>
-        </div>
 
-        <div class="card">
-          <div class="collapsible-header" id="recipeHeader">
-            <h3 class="section-title" style="margin-bottom:0;">推荐食谱</h3>
-            <svg id="recipeArrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a07a5c" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          <div class="card">
+            <div class="collapsible-header" id="recipeHeader">
+              <h3 class="section-title" style="margin-bottom:0;">推荐食谱</h3>
+              <svg id="recipeArrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a07a5c" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <div id="recipeContent" class="collapsible-content">
+              ${recipesHtml}
+            </div>
           </div>
-          <div id="recipeContent" class="collapsible-content">
-            ${recipesHtml}
-          </div>
-        </div>
 
-        <div class="card">
-          <div class="collapsible-header" id="tipsHeader">
-            <h3 class="section-title" style="margin-bottom:0;">饮食小贴士</h3>
-            <svg id="tipsArrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a07a5c" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          <div class="card">
+            <div class="collapsible-header" id="tipsHeader">
+              <h3 class="section-title" style="margin-bottom:0;">饮食小贴士</h3>
+              <svg id="tipsArrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a07a5c" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <div id="tipsContent" class="collapsible-content">
+              ${tipsHtml}
+            </div>
           </div>
-          <div id="tipsContent" class="collapsible-content">
-            ${tipsHtml}
-          </div>
-        </div>
-      `;
+        `;
 
-      document.getElementById('mainContent').innerHTML = fullHtml;
+        document.getElementById('mainContent').innerHTML = fullHtml;
 
-      // 折叠功能
-      function toggleCollapse(headerId, contentId, arrowId) {
-        const header = document.getElementById(headerId);
-        const content = document.getElementById(contentId);
-        const arrow = document.getElementById(arrowId);
-        if (!header || !content) return;
-        header.addEventListener('click', () => {
-          content.classList.toggle('open');
-          if (arrow) {
-            arrow.style.transform = content.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+        // 绑定折叠事件
+        function toggleCollapse(headerId, contentId, arrowId) {
+          const header = document.getElementById(headerId);
+          const content = document.getElementById(contentId);
+          const arrow = document.getElementById(arrowId);
+          if (header && content) {
+            header.addEventListener('click', () => {
+              content.classList.toggle('open');
+              if (arrow) {
+                arrow.style.transform = content.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+              }
+            });
           }
-        });
-      }
-      toggleCollapse('nutritionHeader', 'nutritionContent', 'nutritionArrow');
-      toggleCollapse('recipeHeader', 'recipeContent', 'recipeArrow');
-      toggleCollapse('tipsHeader', 'tipsContent', 'tipsArrow');
+        }
+        toggleCollapse('nutritionHeader', 'nutritionContent', 'nutritionArrow');
+        toggleCollapse('recipeHeader', 'recipeContent', 'recipeArrow');
+        toggleCollapse('tipsHeader', 'tipsContent', 'tipsArrow');
 
-      // 默认折叠食谱和贴士
-      document.getElementById('recipeContent')?.classList.remove('open');
-      document.getElementById('tipsContent')?.classList.remove('open');
-      const recipeArrow = document.getElementById('recipeArrow');
-      const tipsArrow = document.getElementById('tipsArrow');
-      if (recipeArrow) recipeArrow.style.transform = 'rotate(0deg)';
-      if (tipsArrow) tipsArrow.style.transform = 'rotate(0deg)';
+        // 默认折叠食谱和贴士
+        const recipeContent = document.getElementById('recipeContent');
+        const tipsContent = document.getElementById('tipsContent');
+        if (recipeContent) recipeContent.classList.remove('open');
+        if (tipsContent) tipsContent.classList.remove('open');
+        const recipeArrow = document.getElementById('recipeArrow');
+        const tipsArrow = document.getElementById('tipsArrow');
+        if (recipeArrow) recipeArrow.style.transform = 'rotate(0deg)';
+        if (tipsArrow) tipsArrow.style.transform = 'rotate(0deg)';
+
+      } catch (err) {
+        console.error("渲染页面时出错:", err);
+        document.getElementById('mainContent').innerHTML = '<div style="text-align:center; padding:2rem;">加载失败，请刷新重试<br><button onclick="location.reload()">刷新</button></div>';
+      }
     }
 
-    // 底部按钮事件
-    document.getElementById('favoriteBtn')?.addEventListener('click', () => alert('收藏功能开发中'));
-    document.getElementById('shareBtn')?.addEventListener('click', () => alert('分享功能开发中'));
-    document.getElementById('nextMealBtn')?.addEventListener('click', () => window.location.href = '打卡详情页.html');
-    document.getElementById('backBtn')?.addEventListener('click', () => window.location.href = '饮食管理首页.html');
+    // 绑定底部按钮（在页面加载后执行）
+    window.addEventListener('load', () => {
+      const favBtn = document.getElementById('favoriteBtn');
+      const shareBtn = document.getElementById('shareBtn');
+      const nextBtn = document.getElementById('nextMealBtn');
+      const back = document.getElementById('backBtn');
+      if (favBtn) favBtn.addEventListener('click', () => alert('收藏功能开发中'));
+      if (shareBtn) shareBtn.addEventListener('click', () => alert('分享功能开发中'));
+      if (nextBtn) nextBtn.addEventListener('click', () => window.location.href = '打卡详情页.html');
+      if (back) back.addEventListener('click', () => window.location.href = '饮食管理首页.html');
+    });
   </script>
 </head>
 <body>
@@ -492,13 +528,5 @@
     <button class="btn-outline" id="shareBtn">📤 分享</button>
     <button class="btn-primary" id="nextMealBtn">➕ 记录下一餐</button>
   </div>
-
-  <script>
-    // 绑定底部按钮（由于动态渲染，需要等待页面加载后绑定）
-    document.getElementById('favoriteBtn').addEventListener('click', () => alert('收藏功能开发中'));
-    document.getElementById('shareBtn').addEventListener('click', () => alert('分享功能开发中'));
-    document.getElementById('nextMealBtn').addEventListener('click', () => window.location.href = '打卡详情页.html');
-    document.getElementById('backBtn').addEventListener('click', () => window.location.href = '饮食管理首页.html');
-  </script>
 </body>
 </html>
