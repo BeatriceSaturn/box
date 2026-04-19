@@ -5,441 +5,192 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>我的计划进度 - 吃了么</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fef9e8;
       font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
-    /* 头部 */
     .header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      width: 100%;
-      background: #fff9f0;
-      border-bottom: 1px solid #f0e4d4;
-      padding: 0 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      padding: 1rem;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
     }
     .back-btn {
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 2rem;
+      height: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0.5rem;
       cursor: pointer;
-      transition: background 0.2s;
+      border-radius: 50%;
     }
     .back-btn:hover { background: #f0e4d4; }
-    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
-    .title {
-      flex: 1;
-      text-align: center;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #5a3e2b;
-    }
-    /* 主内容滚动区 */
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem;
-      padding-bottom: 80px;
-      scrollbar-width: thin;
-    }
-    /* 卡片 */
+    .title { font-size: 1.1rem; font-weight: 600; color: #5a3e2b; }
+    .main { flex: 1; overflow-y: auto; padding: 1rem; }
     .card {
       background: white;
       border-radius: 1rem;
       border: 1px solid #f0e4d4;
-      padding: 1.25rem;
-      margin-bottom: 1.5rem;
-    }
-    .plan-name {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #5a3e2b;
-      margin-bottom: 0.25rem;
-    }
-    .plan-days {
-      font-size: 0.8rem;
-      color: #a07a5c;
+      padding: 1rem;
       margin-bottom: 1rem;
     }
-    .progress-section {
-      margin-bottom: 1rem;
-    }
-    .progress-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8rem;
-      color: #5a3e2b;
-      margin-bottom: 0.5rem;
-    }
-    .progress-bar {
-      background: #f0e4d4;
-      border-radius: 1rem;
-      height: 0.6rem;
-      overflow: hidden;
-    }
-    .progress-fill {
-      background: linear-gradient(90deg, #e67e22, #f0a55a);
-      width: 0%;
-      height: 100%;
-      border-radius: 1rem;
-      transition: width 0.3s;
-    }
-    .stats {
-      display: flex;
-      justify-content: space-between;
-      background: #fffbf5;
-      border-radius: 1rem;
-      padding: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .stat-item {
-      text-align: center;
-      flex: 1;
-    }
-    .stat-value {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #e67e22;
-    }
-    .stat-label {
-      font-size: 0.7rem;
-      color: #a07a5c;
-    }
-    /* 日历网格 */
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 0.5rem;
-      margin: 1rem 0;
-    }
-    .day-cell {
-      aspect-ratio: 1 / 1;
-      background: #fffbf5;
-      border-radius: 0.75rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-      color: #5a3e2b;
-      border: 1px solid #f0e4d4;
-    }
-    .day-cell.checked {
-      background: #fdf3e8;
-      border-color: #e67e22;
-      color: #e67e22;
-      font-weight: 600;
-    }
-    .day-cell.today {
-      border: 2px solid #e67e22;
-      background: #fff7f0;
-    }
-    .day-number {
-      font-weight: 500;
-    }
-    .check-mark {
-      font-size: 0.6rem;
-      margin-top: 0.1rem;
-    }
-    .encouragement {
-      background: #fff7f0;
-      border-radius: 1rem;
-      padding: 1rem;
-      text-align: center;
-      font-size: 0.85rem;
-      color: #5a3e2b;
-      border-left: 4px solid #e67e22;
-    }
-    .btn-primary {
-      width: 100%;
-      background: #e67e22;
-      border: none;
-      border-radius: 2rem;
-      padding: 0.8rem;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: white;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-top: 0.5rem;
-    }
-    .btn-primary:active { transform: scale(0.98); background: #d4691a; }
-    /* 底部导航栏 */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #fff9f0;
-      border-top: 1px solid #f0e4d4;
-      display: flex;
-      justify-content: space-around;
-      padding: 0.5rem 1rem 1rem;
-      z-index: 20;
-    }
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.2rem;
-      cursor: pointer;
-      color: #c0a080;
-      transition: color 0.2s;
-    }
-    .nav-item.active { color: #e67e22; }
-    .nav-icon { width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2; }
-    .nav-label { font-size: 0.7rem; font-weight: 500; }
+    .plan-name { font-size: 1.2rem; font-weight: 700; color: #5a3e2b; margin-bottom: 0.25rem; }
+    .plan-days { font-size: 0.8rem; color: #a07a5c; margin-bottom: 1rem; }
+    .progress-section { margin-bottom: 1rem; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem; }
+    .progress-bar { background: #f0e4d4; border-radius: 1rem; height: 0.6rem; overflow: hidden; }
+    .progress-fill { background: linear-gradient(90deg, #e67e22, #f0a55a); width: 0%; height: 100%; border-radius: 1rem; transition: width 0.3s; }
+    .stats { display: flex; justify-content: space-between; background: #fffbf5; border-radius: 1rem; padding: 0.75rem; margin-bottom: 1rem; }
+    .stat-item { text-align: center; flex: 1; }
+    .stat-value { font-size: 1.2rem; font-weight: 700; color: #e67e22; }
+    .stat-label { font-size: 0.7rem; color: #a07a5c; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; margin: 1rem 0; }
+    .day-cell { aspect-ratio: 1; background: #fffbf5; border-radius: 0.75rem; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #f0e4d4; font-size: 0.7rem; }
+    .day-cell.checked { background: #fdf3e8; border-color: #e67e22; color: #e67e22; font-weight: 600; }
+    .day-cell.today { border: 2px solid #e67e22; background: #fff7f0; }
+    .encouragement { background: #fff7f0; border-radius: 1rem; padding: 1rem; text-align: center; font-size: 0.85rem; border-left: 4px solid #e67e22; }
+    .btn-primary { width: 100%; background: #e67e22; border: none; border-radius: 2rem; padding: 0.8rem; font-weight: 600; color: white; cursor: pointer; margin-top: 0.5rem; }
   </style>
-</head>
-<body>
-  <header class="header">
-    <div class="back-btn" id="backBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <div class="title">我的计划进度</div>
-    <div class="right-placeholder" style="width:2.5rem;"></div>
-  </header>
-
-  <main class="main-content" id="mainContent">
-    <div style="text-align: center; padding: 2rem;">加载中...</div>
-  </main>
-
-  <div class="bottom-nav">
-    <div class="nav-item" data-nav="home">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/>
-        <rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
-      </svg>
-      <span class="nav-label">首页</span>
-    </div>
-    <div class="nav-item" data-nav="record">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
-      </svg>
-      <span class="nav-label">饮食记录</span>
-    </div>
-    <div class="nav-item" data-nav="friends">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>
-      </svg>
-      <span class="nav-label">亲友空间</span>
-    </div>
-    <div class="nav-item" data-nav="report">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
-      </svg>
-      <span class="nav-label">报表</span>
-    </div>
-  </div>
-
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script>
-    // 获取打卡记录
-    function getCheckins() {
-      const userId = localStorage.getItem('currentUserId') || 'guest';
-      const key = `checkins_${userId}`;
-      const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : {};
-    }
+    const firebaseConfig = {
+      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
+      authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
+      projectId: "beatricesaturn-6ff7e",
+      storageBucket: "beatricesaturn-6ff7e.firebasestorage.app",
+      messagingSenderId: "607338984635",
+      appId: "1:607338984635:web:a4b3668715462a4d0ca59e",
+      measurementId: "G-L2R10QZZL9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    // 获取选中的计划
-    function getSelectedPlan() {
-      return localStorage.getItem('selectedPlan');
-    }
+    let currentUser = null;
+    let selectedPlan = null;
+    let totalDays = 0;
+    let completedDays = 0;
+    let checkinsMap = {};
 
-    // 计划名称映射
-    function getPlanName(planId) {
-      const map = {
-        '3day': '3天体验计划',
-        '7day': '7天巩固计划',
-        '14day': '14天平衡计划',
-        '21day': '21天蜕变计划'
-      };
-      return map[planId] || '未选择计划';
-    }
-
-    // 计划总天数
-    function getTotalDays(planId) {
-      const map = { '3day': 3, '7day': 7, '14day': 14, '21day': 21 };
-      return map[planId] || 7;
-    }
-
-    // 计算已完成天数（至少有一餐打卡的日期数）
-    function getCompletedDays(checkins) {
-      let count = 0;
-      for (const date in checkins) {
-        const meals = checkins[date];
-        if (meals.breakfast || meals.lunch || meals.dinner || meals.snack) {
-          count++;
-        }
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        loadData();
+      } else {
+        window.location.href = 'index.html';
       }
-      return count;
+    });
+
+    async function loadData() {
+      // 获取用户选择的计划
+      const planDoc = await db.collection('plans').doc(currentUser.uid).get();
+      if (!planDoc.exists || !planDoc.data().selectedPlan) {
+        window.location.href = '饮食计划选择页.html';
+        return;
+      }
+      selectedPlan = planDoc.data().selectedPlan;
+      const planMap = { '3day': 3, '7day': 7, '14day': 14, '21day': 21 };
+      totalDays = planMap[selectedPlan] || 7;
+
+      // 获取用户的打卡记录
+      const checkinsSnap = await db.collection('checkins')
+        .where('__name__', '>=', `${currentUser.uid}_`)
+        .get();
+      checkinsSnap.forEach(doc => {
+        const date = doc.id.split('_')[1];
+        const data = doc.data();
+        if (data.breakfast || data.lunch || data.dinner) {
+          checkinsMap[date] = true;
+        }
+      });
+      completedDays = Object.keys(checkinsMap).length;
+
+      renderPage();
     }
 
-    // 获取最近 N 天的日期列表（从计划开始日或今天往前推）
-    function getRecentDates(totalDays) {
-      const dates = [];
+    function renderPage() {
+      const planNameMap = { '3day': '3天体验计划', '7day': '7天巩固计划', '14day': '14天平衡计划', '21day': '21天蜕变计划' };
+      const planName = planNameMap[selectedPlan] || '计划';
+      const percent = totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0;
+
+      // 生成最近 totalDays 天的日历
       const today = new Date();
+      const dates = [];
       for (let i = totalDays - 1; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(today.getDate() - i);
         const dateStr = d.toISOString().slice(0,10);
-        dates.push({ date: dateStr, dayIndex: i+1 });
+        const isChecked = checkinsMap[dateStr] === true;
+        const isToday = i === totalDays - 1; // 最后一天是今天
+        dates.push({ dateStr, dayIndex: i+1, isChecked, isToday });
       }
-      return dates;
-    }
+      const calendarHtml = dates.map(d => `
+        <div class="day-cell ${d.isChecked ? 'checked' : ''} ${d.isToday ? 'today' : ''}">
+          <div>第${d.dayIndex}天</div>
+          <div>${d.isChecked ? '✓' : '○'}</div>
+        </div>
+      `).join('');
 
-    // 生成鼓励语
-    function getEncouragement(completed, total) {
-      const percent = (completed / total) * 100;
-      if (completed === 0) return "🚀 开始你的计划吧！今天就是改变的第一步。";
-      if (percent < 30) return "💪 好的开始是成功的一半，继续坚持！";
-      if (percent < 70) return "🌟 你已经坚持了 " + completed + " 天，离目标越来越近了！";
-      if (percent < 100) return "🎉 太棒了！再坚持一下，胜利在望！";
-      return "🏆 恭喜你完成了全部计划！你已成为习惯的主人！";
-    }
-
-    // 渲染页面
-    function renderProgress() {
-      const planId = getSelectedPlan();
-      if (!planId) {
-        document.getElementById('mainContent').innerHTML = `
-          <div class="card" style="text-align:center;">
-            <div style="font-size:3rem; margin-bottom:1rem;">📋</div>
-            <div class="plan-name">暂无进行中的计划</div>
-            <div class="plan-days">请先选择一个计划开始你的健康之旅</div>
-            <button class="btn-primary" id="goToPlanBtn">去选择计划</button>
-          </div>
-        `;
-        const goBtn = document.getElementById('goToPlanBtn');
-        if (goBtn) goBtn.addEventListener('click', () => {
-          window.location.href = '饮食计划选择页.html';
-        });
-        return;
-      }
-
-      const planName = getPlanName(planId);
-      const totalDays = getTotalDays(planId);
-      const checkins = getCheckins();
-      const completedDays = getCompletedDays(checkins);
-      const percent = totalDays > 0 ? (completedDays / totalDays * 100).toFixed(0) : 0;
-
-      const recentDates = getRecentDates(totalDays);
-      const todayStr = new Date().toISOString().slice(0,10);
-
-      // 生成日历网格
-      let calendarHtml = '<div class="calendar-grid">';
-      recentDates.forEach((item, idx) => {
-        const isChecked = (() => {
-          const meals = checkins[item.date];
-          return meals && (meals.breakfast || meals.lunch || meals.dinner || meals.snack);
-        })();
-        const isToday = item.date === todayStr;
-        let cellClass = 'day-cell';
-        if (isChecked) cellClass += ' checked';
-        if (isToday) cellClass += ' today';
-        calendarHtml += `
-          <div class="${cellClass}">
-            <div class="day-number">第${item.dayIndex}天</div>
-            <div class="check-mark">${isChecked ? '✓' : '○'}</div>
-          </div>
-        `;
-      });
-      calendarHtml += '</div>';
-
-      const encouragement = getEncouragement(completedDays, totalDays);
+      const encouragement = (() => {
+        if (completedDays === 0) return "🚀 开始你的计划吧！今天就是改变的第一步。";
+        if (percent < 30) return "💪 好的开始是成功的一半，继续坚持！";
+        if (percent < 70) return `🌟 你已经坚持了 ${completedDays} 天，离目标越来越近了！`;
+        if (percent < 100) return "🎉 太棒了！再坚持一下，胜利在望！";
+        return "🏆 恭喜你完成了全部计划！你已成为习惯的主人！";
+      })();
 
       const html = `
         <div class="card">
           <div class="plan-name">${planName}</div>
           <div class="plan-days">总天数 ${totalDays} 天</div>
           <div class="progress-section">
-            <div class="progress-label">
-              <span>完成进度</span>
-              <span>${percent}%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${percent}%;"></div>
-            </div>
+            <div class="progress-label"><span>完成进度</span><span>${percent}%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${percent}%;"></div></div>
           </div>
           <div class="stats">
-            <div class="stat-item">
-              <div class="stat-value">${completedDays}</div>
-              <div class="stat-label">已坚持天数</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value">${totalDays - completedDays}</div>
-              <div class="stat-label">剩余天数</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value">${percent}%</div>
-              <div class="stat-label">完成率</div>
-            </div>
+            <div class="stat-item"><div class="stat-value">${completedDays}</div><div class="stat-label">已坚持天数</div></div>
+            <div class="stat-item"><div class="stat-value">${totalDays - completedDays}</div><div class="stat-label">剩余天数</div></div>
+            <div class="stat-item"><div class="stat-value">${percent}%</div><div class="stat-label">完成率</div></div>
           </div>
         </div>
 
         <div class="card">
           <div style="font-weight:600; margin-bottom:0.5rem;">📅 每日打卡日历</div>
-          ${calendarHtml}
+          <div class="calendar-grid">${calendarHtml}</div>
         </div>
 
-        <div class="encouragement">
-          ${encouragement}
-        </div>
+        <div class="encouragement">${encouragement}</div>
 
         <button class="btn-primary" id="backToPlanBtn">返回计划详情</button>
       `;
 
       document.getElementById('mainContent').innerHTML = html;
-
-      // 绑定返回按钮
-      const backBtn = document.getElementById('backToPlanBtn');
-      if (backBtn) {
-        backBtn.addEventListener('click', () => {
-          window.location.href = '计划详情页.html';
-        });
-      }
-    }
-
-    // 头部返回按钮
-    document.getElementById('backBtn').addEventListener('click', () => {
-      window.location.href = '计划详情页.html';
-    });
-
-    // 底部导航栏跳转
-    function initBottomNav() {
-      const navItems = document.querySelectorAll('.nav-item');
-      navItems.forEach(item => {
-        item.addEventListener('click', () => {
-          const navTo = item.getAttribute('data-nav');
-          if (navTo === 'home') window.location.href = '饮食管理首页.html';
-          else if (navTo === 'record') window.location.href = '打卡详情页.html';
-          else if (navTo === 'friends') window.location.href = '亲友共享空间主页.html';
-          else if (navTo === 'report') window.location.href = '饮食趋势报表.html';
-        });
+      document.getElementById('backToPlanBtn').addEventListener('click', () => {
+        window.location.href = '计划详情页.html';
       });
     }
 
-    renderProgress();
-    initBottomNav();
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.location.href = '计划详情页.html';
+    });
   </script>
+</head>
+<body>
+  <div class="header">
+    <div class="back-btn" id="backBtn">←</div>
+    <div class="title">我的计划进度</div>
+    <div style="width:2rem;"></div>
+  </div>
+  <div class="main" id="mainContent">
+    <div style="text-align: center; padding: 2rem;">加载中...</div>
+  </div>
 </body>
 </html>
