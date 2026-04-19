@@ -80,14 +80,13 @@
       margin-top: 1rem;
     }
   </style>
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script>
-    // 你的 Firebase 配置（必须与 index.html 完全一致）
+    // 必须与 index.html 中的配置完全一致
     const firebaseConfig = {
-      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0IlyPM",
+      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
       authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
       projectId: "beatricesaturn-6ff7e",
       storageBucket: "beatricesaturn-6ff7e.firebasestorage.app",
@@ -163,15 +162,14 @@
       }
       const bmiData = calculateBMI();
 
-      // 获取当前登录用户（可能是邮箱登录或匿名登录）
+      // 获取当前登录用户
       let user = auth.currentUser;
       if (!user) {
-        // 如果没有登录，尝试匿名登录（兼容游客模式）
+        // 未登录时尝试匿名登录（兼容游客模式）
         try {
           const result = await auth.signInAnonymously();
           user = result.user;
           sessionStorage.setItem('userId', user.uid);
-          console.log('匿名登录成功，用户ID:', user.uid);
         } catch (err) {
           console.error(err);
           alert('登录失败，请刷新页面重试');
