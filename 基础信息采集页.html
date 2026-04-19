@@ -84,7 +84,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script>
-    // 必须与 index.html 中的配置完全一致
     const firebaseConfig = {
       apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
       authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
@@ -107,6 +106,10 @@
   </div>
   <div class="main">
     <div class="card">
+      <div class="form-group">
+        <label>昵称（用于亲友显示）</label>
+        <input type="text" id="nickname" placeholder="例如：小食光" value="美食家">
+      </div>
       <div class="form-group">
         <label>性别</label>
         <div class="radio-group">
@@ -152,32 +155,26 @@
     calculateBMI();
 
     document.getElementById('submitBtn').addEventListener('click', async () => {
+      const nickname = document.getElementById('nickname').value.trim();
       const gender = document.querySelector('input[name="gender"]:checked')?.value || '';
       const age = parseInt(document.getElementById('age').value);
       const height = parseFloat(document.getElementById('height').value);
       const weight = parseFloat(document.getElementById('weight').value);
-      if (!gender || !age || !height || !weight) {
+      if (!nickname || !gender || !age || !height || !weight) {
         alert('请完整填写信息');
         return;
       }
       const bmiData = calculateBMI();
 
-      // 获取当前登录用户
-      let user = auth.currentUser;
+      const user = auth.currentUser;
       if (!user) {
-        // 未登录时尝试匿名登录（兼容游客模式）
-        try {
-          const result = await auth.signInAnonymously();
-          user = result.user;
-          sessionStorage.setItem('userId', user.uid);
-        } catch (err) {
-          console.error(err);
-          alert('登录失败，请刷新页面重试');
-          return;
-        }
+        alert('请先登录');
+        return;
       }
 
       const profileData = {
+        nickname,
+        email: user.email || '',   // 存储邮箱，用于亲友搜索
         gender,
         age,
         height,
