@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>饮食趋势报表 - 吃了么</title>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <style>
     * {
       margin: 0;
@@ -83,7 +89,7 @@
       color: #e67e22;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
-    /* 统计卡片网格 */
+    /* 统计卡片 */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -126,7 +132,7 @@
       color: #c0a080;
       margin-left: 0.25rem;
     }
-    /* 区块卡片 */
+    /* 图表卡片 */
     .section-card {
       background: white;
       border-radius: 1rem;
@@ -140,54 +146,11 @@
       color: #5a3e2b;
       margin-bottom: 0.75rem;
     }
-    /* 餐次分布条 */
-    .meal-dist-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
+    .chart-container {
+      position: relative;
+      height: 200px;
+      margin-bottom: 1rem;
     }
-    .meal-name {
-      width: 3rem;
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: #5a3e2b;
-    }
-    .meal-bar {
-      flex: 1;
-      height: 1.5rem;
-      background: #f0e4d4;
-      border-radius: 0.75rem;
-      overflow: hidden;
-    }
-    .meal-fill {
-      height: 100%;
-      background: #e67e22;
-      width: 0%;
-      border-radius: 0.75rem;
-    }
-    .meal-count {
-      width: 2rem;
-      text-align: right;
-      font-size: 0.8rem;
-      color: #a07a5c;
-    }
-    /* 心情分布网格 */
-    .mood-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 0.5rem;
-    }
-    .mood-item {
-      background: #fffbf5;
-      border-radius: 0.75rem;
-      padding: 0.5rem;
-      text-align: center;
-      border: 1px solid #f0e4d4;
-    }
-    .mood-emoji { font-size: 1.2rem; margin-bottom: 0.25rem; }
-    .mood-name { font-size: 0.7rem; color: #5a3e2b; }
-    .mood-count { font-size: 0.8rem; font-weight: 600; color: #e67e22; }
     /* 成就网格 */
     .achievements-grid {
       display: grid;
@@ -213,7 +176,6 @@
     }
     .achievement-icon svg { width: 1.2rem; height: 1.2rem; stroke: #e67e22; stroke-width: 2; }
     .achievement-name { font-size: 0.7rem; font-weight: 500; color: #5a3e2b; }
-    /* 按钮 */
     .btn-outline {
       display: flex;
       align-items: center;
@@ -232,12 +194,6 @@
       margin-bottom: 0.75rem;
     }
     .btn-outline:active { background: #fff7f0; transform: scale(0.98); }
-    .btn-primary {
-      background: #e67e22;
-      border: none;
-      color: white;
-    }
-    .btn-primary:active { background: #d4691a; }
     /* 底部导航栏 */
     .bottom-nav {
       position: fixed;
@@ -277,7 +233,6 @@
   </header>
 
   <main class="main-content" id="mainContent">
-    <!-- 动态渲染内容 -->
     <div style="text-align: center; padding: 2rem;">加载中...</div>
   </main>
 
@@ -310,31 +265,36 @@
   </div>
 
   <script>
-    // ---------- 数据获取 ----------
-    function getUserId() {
-      let userId = localStorage.getItem('currentUserId');
-      if (!userId) {
-        userId = 'guest_' + Date.now();
-        localStorage.setItem('currentUserId', userId);
+    // ========== Firebase 配置 ==========
+    const firebaseConfig = {
+      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
+      authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
+      projectId: "beatricesaturn-6ff7e",
+      storageBucket: "beatricesaturn-6ff7e.firebasestorage.app",
+      messagingSenderId: "607338984635",
+      appId: "1:607338984635:web:a4b3668715462a4d0ca59e",
+      measurementId: "G-L2R10QZZL9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null;
+    let currentRange = 'all'; // 'all', 'week', 'month', 'year'
+    let mealChart = null;
+    let moodChart = null;
+
+    // 监听登录状态
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        renderDashboard();
+      } else {
+        window.location.href = 'index.html';
       }
-      return userId;
-    }
+    });
 
-    // 获取打卡记录 { date: { breakfast, lunch, dinner } }
-    function getCheckins() {
-      const userId = getUserId();
-      const key = `checkins_${userId}`;
-      const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : {};
-    }
-
-    // 获取饮食记录列表
-    function getMealsLog() {
-      const data = localStorage.getItem('mealsLog');
-      return data ? JSON.parse(data) : [];
-    }
-
-    // 辅助：日期是否在范围内
+    // 辅助函数：日期是否在范围内
     function isDateInRange(dateStr, rangeType) {
       const d = new Date(dateStr);
       const now = new Date();
@@ -344,113 +304,142 @@
       } else if (rangeType === 'month') {
         const monthAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
         return d >= monthAgo;
-      } else { // year
+      } else if (rangeType === 'year') {
         const yearAgo = new Date(now.getTime() - 365 * 24 * 3600 * 1000);
         return d >= yearAgo;
       }
+      return true;
     }
 
-    // 统计核心数据（根据时间范围）
-    function computeStats(rangeType) {
-      const checkins = getCheckins();
-      const mealsLog = getMealsLog();
+    // 统计核心数据
+    async function computeStats() {
+      if (!currentUser) return null;
 
-      // 筛选日期范围内的打卡记录
+      // 获取所有 checkins 文档（用户每日打卡状态）
+      const checkinsSnap = await db.collection('checkins')
+        .where('__name__', '>=', `${currentUser.uid}_`)
+        .get();
+      const checkins = {};
+      checkinsSnap.forEach(doc => {
+        const uid_date = doc.id;
+        const date = uid_date.split('_')[1];
+        if (date) checkins[date] = doc.data();
+      });
+
+      // 获取所有 meals 文档（用户饮食记录）
+      const mealsSnap = await db.collection('meals')
+        .where('userId', '==', currentUser.uid)
+        .get();
+      const meals = mealsSnap.docs.map(doc => doc.data());
+
       let totalCheckinDays = 0;
-      let totalMealsCount = 0; // 三餐打卡次数（早餐/午餐/晚餐）
+      let totalMealsCount = 0;
       let totalCalories = 0;
       let mealCounts = { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
       let moodCounts = { relaxed: 0, busy: 0, stressed: 0, energized: 0, tired: 0 };
 
-      // 处理打卡记录（三餐）
-      for (const [date, meals] of Object.entries(checkins)) {
-        if (rangeType !== 'all' && !isDateInRange(date, rangeType)) continue;
+      // 处理打卡记录
+      for (const [date, mealsOfDay] of Object.entries(checkins)) {
+        if (currentRange !== 'all' && !isDateInRange(date, currentRange)) continue;
         totalCheckinDays++;
-        if (meals.breakfast) { totalMealsCount++; mealCounts.breakfast++; }
-        if (meals.lunch) { totalMealsCount++; mealCounts.lunch++; }
-        if (meals.dinner) { totalMealsCount++; mealCounts.dinner++; }
+        if (mealsOfDay.breakfast) { totalMealsCount++; mealCounts.breakfast++; }
+        if (mealsOfDay.lunch) { totalMealsCount++; mealCounts.lunch++; }
+        if (mealsOfDay.dinner) { totalMealsCount++; mealCounts.dinner++; }
       }
 
-      // 处理饮食记录（包含加餐和热量）
-      for (const record of mealsLog) {
-        const recordDate = record.date || record.timestamp?.slice(0,10);
-        if (!recordDate) continue;
-        if (rangeType !== 'all' && !isDateInRange(recordDate, rangeType)) continue;
-        // 餐次计数
-        const mealType = record.mealType;
+      // 处理饮食记录
+      for (const meal of meals) {
+        const mealDate = meal.date;
+        if (!mealDate) continue;
+        if (currentRange !== 'all' && !isDateInRange(mealDate, currentRange)) continue;
+        const mealType = meal.mealType;
         if (mealType === 'breakfast') mealCounts.breakfast++;
         else if (mealType === 'lunch') mealCounts.lunch++;
         else if (mealType === 'dinner') mealCounts.dinner++;
         else if (mealType === 'snack') mealCounts.snack++;
-        // 热量
-        const kcal = parseInt(record.kcal);
+        const kcal = parseInt(meal.kcal);
         if (!isNaN(kcal)) totalCalories += kcal;
-        // 心情
-        const mood = record.mood;
+        const mood = meal.mood;
         if (mood && moodCounts.hasOwnProperty(mood)) moodCounts[mood]++;
       }
 
-      const expectedTotalMeals = totalCheckinDays * 3; // 理想三餐数
+      const expectedTotalMeals = totalCheckinDays * 3;
       const completionRate = expectedTotalMeals > 0 ? (totalMealsCount / expectedTotalMeals * 100).toFixed(0) : 0;
       const avgCalories = totalMealsCount > 0 ? Math.round(totalCalories / totalMealsCount) : 0;
 
       return {
-        totalCheckinDays,
         totalMealsCount,
         completionRate,
         totalCalories,
         avgCalories,
         mealCounts,
-        moodCounts
+        moodCounts,
+        totalCheckinDays
       };
     }
 
-    // 餐次分布渲染
-    function renderMealDistribution(mealCounts) {
-      const total = Object.values(mealCounts).reduce((a,b) => a+b, 0);
-      const items = [
-        { name: '早餐', key: 'breakfast', label: 'breakfast' },
-        { name: '午餐', key: 'lunch', label: 'lunch' },
-        { name: '晚餐', key: 'dinner', label: 'dinner' },
-        { name: '加餐', key: 'snack', label: 'snack' }
+    // 渲染图表
+    function renderCharts(mealCounts, moodCounts) {
+      // 餐次分布条形图
+      const mealLabels = ['早餐', '午餐', '晚餐', '加餐'];
+      const mealData = [
+        mealCounts.breakfast || 0,
+        mealCounts.lunch || 0,
+        mealCounts.dinner || 0,
+        mealCounts.snack || 0
       ];
-      return items.map(item => {
-        const count = mealCounts[item.key] || 0;
-        const percent = total > 0 ? (count / total * 100) : 0;
-        return `
-          <div class="meal-dist-item">
-            <div class="meal-name">${item.name}</div>
-            <div class="meal-bar"><div class="meal-fill" style="width: ${percent}%;"></div></div>
-            <div class="meal-count">${count}</div>
-          </div>
-        `;
-      }).join('');
+      const ctxMeal = document.getElementById('mealChart').getContext('2d');
+      if (mealChart) mealChart.destroy();
+      mealChart = new Chart(ctxMeal, {
+        type: 'bar',
+        data: {
+          labels: mealLabels,
+          datasets: [{
+            label: '次数',
+            data: mealData,
+            backgroundColor: '#e67e22',
+            borderRadius: 8,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: { legend: { position: 'top' } }
+        }
+      });
+
+      // 心情分布柱状图
+      const moodLabels = ['放松', '忙碌', '压力', '充能', '疲惫'];
+      const moodData = [
+        moodCounts.relaxed || 0,
+        moodCounts.busy || 0,
+        moodCounts.stressed || 0,
+        moodCounts.energized || 0,
+        moodCounts.tired || 0
+      ];
+      const ctxMood = document.getElementById('moodChart').getContext('2d');
+      if (moodChart) moodChart.destroy();
+      moodChart = new Chart(ctxMood, {
+        type: 'bar',
+        data: {
+          labels: moodLabels,
+          datasets: [{
+            label: '次数',
+            data: moodData,
+            backgroundColor: '#f0a55a',
+            borderRadius: 8,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: { legend: { position: 'top' } }
+        }
+      });
     }
 
-    // 心情分布渲染
-    function renderMoodDistribution(moodCounts) {
-      const moodMap = [
-        { name: '放松', key: 'relaxed', emoji: '😊' },
-        { name: '忙碌', key: 'busy', emoji: '⚡' },
-        { name: '压力', key: 'stressed', emoji: '😰' },
-        { name: '充能', key: 'energized', emoji: '💪' },
-        { name: '疲惫', key: 'tired', emoji: '😴' }
-      ];
-      return moodMap.map(m => {
-        const count = moodCounts[m.key] || 0;
-        return `
-          <div class="mood-item">
-            <div class="mood-emoji">${m.emoji}</div>
-            <div class="mood-name">${m.name}</div>
-            <div class="mood-count">${count}</div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // 成就展示（基于总打卡天数）
+    // 成就展示
     function renderAchievements(totalDays, totalMeals) {
-      // 简单的成就判断
       const hasGuardian = totalDays >= 3;
       const hasRegular = totalMeals >= 7;
       return `
@@ -474,13 +463,10 @@
       `;
     }
 
-    // 主渲染函数
-    let currentRange = 'all'; // all, week, month, year
-    function renderDashboard() {
-      const stats = computeStats(currentRange);
-      const mealDistHtml = renderMealDistribution(stats.mealCounts);
-      const moodDistHtml = renderMoodDistribution(stats.moodCounts);
-      const achievementsHtml = renderAchievements(stats.totalCheckinDays, stats.totalMealsCount);
+    // 主渲染
+    async function renderDashboard() {
+      const stats = await computeStats();
+      if (!stats) return;
 
       const tabsActiveClass = (val) => currentRange === val ? 'active' : '';
 
@@ -524,20 +510,22 @@
         </div>
 
         <div class="section-card">
-          <div class="section-title">饮食分布</div>
-          <div style="margin-bottom: 1rem;">
-            <div style="font-size:0.8rem; font-weight:500; margin-bottom:0.5rem;">餐次分布</div>
-            ${mealDistHtml}
+          <div class="section-title">餐次分布</div>
+          <div class="chart-container">
+            <canvas id="mealChart"></canvas>
           </div>
-          <div>
-            <div style="font-size:0.8rem; font-weight:500; margin-bottom:0.5rem;">心情分布</div>
-            <div class="mood-grid">${moodDistHtml}</div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-title">心情分布</div>
+          <div class="chart-container">
+            <canvas id="moodChart"></canvas>
           </div>
         </div>
 
         <div class="section-card">
           <div class="section-title">最近成就</div>
-          ${achievementsHtml}
+          ${renderAchievements(stats.totalCheckinDays, stats.totalMealsCount)}
           <button class="btn-outline" id="viewMilestonesBtn">查看我的成就里程碑 →</button>
         </div>
 
@@ -545,25 +533,24 @@
       `;
 
       document.getElementById('mainContent').innerHTML = html;
+      renderCharts(stats.mealCounts, stats.moodCounts);
 
-      // 绑定tab切换
+      // 绑定标签切换
       document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', (e) => {
-          const range = tab.getAttribute('data-range');
-          currentRange = range;
+          currentRange = tab.getAttribute('data-range');
           renderDashboard();
         });
       });
-      // 绑定按钮事件
       document.getElementById('viewMilestonesBtn')?.addEventListener('click', () => {
-        alert('成就系统：坚持打卡可获得勋章！当前总打卡 ${stats.totalMealsCount} 次，继续加油！');
+        alert('成就系统：坚持打卡可获得勋章！继续加油！');
       });
       document.getElementById('backHomeBtn')?.addEventListener('click', () => {
         window.location.href = '饮食管理首页.html';
       });
     }
 
-    // 底部导航栏
+    // 底部导航栏跳转
     function initBottomNav() {
       const navItems = document.querySelectorAll('.nav-item');
       navItems.forEach(item => {
@@ -582,7 +569,6 @@
       window.location.href = '饮食管理首页.html';
     });
 
-    renderDashboard();
     initBottomNav();
   </script>
 </body>
