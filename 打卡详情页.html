@@ -5,162 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>记录饮食 - 吃了么</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fef9e8;
       font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
-    /* 头部 */
     .header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      width: 100%;
-      background: #fff9f0;
-      border-bottom: 1px solid #f0e4d4;
-      padding: 0 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      padding: 1rem;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
     }
     .back-btn {
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 2rem;
+      height: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0.5rem;
       cursor: pointer;
-      transition: background 0.2s;
+      border-radius: 50%;
     }
     .back-btn:hover { background: #f0e4d4; }
-    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
-    .title {
-      flex: 1;
-      text-align: center;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #5a3e2b;
-    }
-    .right-placeholder { width: 2.5rem; }
-
-    /* 主内容滚动区 */
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
+    .title { font-size: 1.1rem; font-weight: 600; color: #5a3e2b; }
+    .main { flex: 1; overflow-y: auto; padding: 1rem; }
+    .card {
+      background: white;
+      border-radius: 1rem;
+      border: 1px solid #f0e4d4;
       padding: 1rem;
-      scrollbar-width: thin;
+      margin-bottom: 1rem;
     }
-    /* 卡片样式 */
-    .section {
-      margin-bottom: 1.5rem;
-    }
-    .section-label {
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #5a3e2b;
-      margin-bottom: 0.5rem;
-      display: block;
-    }
-    /* 餐次选择网格 */
-    .meal-grid {
+    .section-label { font-size: 0.85rem; font-weight: 600; color: #5a3e2b; margin-bottom: 0.5rem; display: block; }
+    .meal-grid, .mood-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 0.5rem;
+      margin-bottom: 0.5rem;
     }
-    .meal-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.25rem;
-      padding: 0.75rem;
-      background: #fffbf5;
-      border: 1px solid #f0e4d4;
-      border-radius: 0.75rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .meal-btn.active {
-      background: #e67e22;
-      border-color: #e67e22;
-      color: white;
-    }
-    .meal-btn.active svg { stroke: white; }
-    .meal-btn svg { width: 1.5rem; height: 1.5rem; stroke: #e67e22; }
-    .meal-btn span { font-size: 0.7rem; font-weight: 500; }
-    /* 图片上传区 */
-    .upload-zone {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      padding: 1.5rem;
-      background: #fffbf5;
-      border: 2px dashed #e2d4c8;
-      border-radius: 1rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .upload-zone:hover { border-color: #e67e22; background: #fff7f0; }
-    .upload-icon { width: 2.5rem; height: 2.5rem; stroke: #c0a080; }
-    .image-preview {
-      margin-top: 0.5rem;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-    }
-    .image-preview img { max-width: 100%; max-height: 150px; border-radius: 0.75rem; }
-    /* 输入框 */
-    .input-field {
-      width: 100%;
-      padding: 0.75rem;
-      background: white;
-      border: 1px solid #f0e4d4;
-      border-radius: 0.75rem;
-      font-size: 0.9rem;
-    }
-    .input-field:focus { outline: none; border-color: #e67e22; }
-    /* 时间选择行 */
-    .time-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .time-input {
-      flex: 1;
-      padding: 0.75rem;
-      background: white;
-      border: 1px solid #f0e4d4;
-      border-radius: 0.75rem;
-      font-size: 1rem;
-      text-align: center;
-      font-family: monospace;
-    }
-    .time-btn {
-      padding: 0.75rem;
-      background: #fdf3e8;
-      border: none;
-      border-radius: 0.75rem;
-      cursor: pointer;
-    }
-    /* 心情网格 */
-    .mood-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 0.5rem;
-    }
-    .mood-btn {
+    .mood-grid { grid-template-columns: repeat(5, 1fr); }
+    .meal-btn, .mood-btn {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -172,214 +60,174 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    .mood-btn.active {
+    .meal-btn.active, .mood-btn.active {
       background: #e67e22;
       border-color: #e67e22;
       color: white;
     }
-    .mood-btn.active svg { stroke: white; }
-    .mood-btn svg { width: 1.2rem; height: 1.2rem; }
-    .mood-btn span { font-size: 0.7rem; }
-    /* 按钮组 */
-    .button-group {
+    .meal-btn svg, .mood-btn svg { width: 1.5rem; height: 1.5rem; stroke: currentColor; }
+    .upload-zone {
       display: flex;
-      gap: 1rem;
-      margin-top: 1rem;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      border: 2px dashed #e2d4c8;
+      border-radius: 1rem;
+      cursor: pointer;
+      background: #fffbf5;
     }
-    .btn-cancel {
-      flex: 1;
-      padding: 0.75rem;
-      background: transparent;
+    .upload-zone:hover { border-color: #e67e22; }
+    .image-preview { margin-top: 0.5rem; max-width: 100%; max-height: 150px; border-radius: 0.75rem; }
+    input, textarea {
+      width: 100%;
+      padding: 0.7rem;
       border: 1px solid #e2d4c8;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      background: white;
+      margin-bottom: 0.5rem;
+    }
+    .time-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .time-input { flex: 1; margin-bottom: 0; }
+    .time-btn { padding: 0.7rem; background: #fdf3e8; border: none; border-radius: 0.75rem; cursor: pointer; }
+    .btn-submit, .btn-cancel {
+      width: 100%;
+      padding: 0.8rem;
       border-radius: 2rem;
       font-weight: 600;
-      color: #a07a5c;
+      margin-top: 0.5rem;
       cursor: pointer;
     }
-    .btn-submit {
-      flex: 1;
-      padding: 0.75rem;
-      background: #e67e22;
-      border: none;
-      border-radius: 2rem;
-      font-weight: 600;
-      color: white;
-      cursor: pointer;
-    }
-    .btn-submit:disabled {
-      background: #d9c8b8;
-      cursor: not-allowed;
-    }
+    .btn-submit { background: #e67e22; border: none; color: white; }
+    .btn-cancel { background: transparent; border: 1px solid #e2d4c8; color: #a07a5c; }
+    .button-group { display: flex; gap: 1rem; margin-top: 1rem; }
+    .button-group .btn-submit, .button-group .btn-cancel { margin-top: 0; }
   </style>
+  <!-- Firebase SDK (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script>
+    // 你的 Firebase 配置（与 index.html 保持一致）
+    const firebaseConfig = {
+      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
+      authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
+      projectId: "beatricesaturn-6ff7e",
+      storageBucket: "beatricesaturn-6ff7e.firebasestorage.app",
+      messagingSenderId: "607338984635",
+      appId: "1:607338984635:web:a4b3668715462a4d0ca59e",
+      measurementId: "G-L2R10QZZL9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
 </head>
 <body>
-  <header class="header">
-    <div class="back-btn" id="backBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
+  <div class="header">
+    <div class="back-btn" id="backBtn">←</div>
     <div class="title">记录饮食</div>
-    <div class="right-placeholder"></div>
-  </header>
-
-  <main class="main-content">
-    <!-- 餐次选择 -->
-    <div class="section">
+    <div style="width:2rem;"></div>
+  </div>
+  <div class="main">
+    <div class="card">
       <div class="section-label">选择餐次</div>
       <div class="meal-grid" id="mealGrid">
-        <div class="meal-btn active" data-meal="breakfast">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2v2M14 2v2M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1M6 2v2"/></svg>
-          <span>早餐</span>
-        </div>
-        <div class="meal-btn" data-meal="lunch">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
-          <span>午餐</span>
-        </div>
-        <div class="meal-btn" data-meal="dinner">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9ZM7 21h10M19.5 12 22 6M16.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62M11.25 3c.27.1.8.53.74 1.36-.05.83-.93 1.2-.98 2.02-.06.78.33 1.24.72 1.62M6.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.74 1.62"/></svg>
-          <span>晚餐</span>
-        </div>
-        <div class="meal-btn" data-meal="snack">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.528V3a1 1 0 0 1 1-1h0M18.237 21A15 15 0 0 0 22 11a6 6 0 0 0-10-4.472A6 6 0 0 0 2 11a15.1 15.1 0 0 0 3.763 10 3 3 0 0 0 3.648.648 5.5 5.5 0 0 1 5.178 0A3 3 0 0 0 18.237 21"/></svg>
-          <span>加餐</span>
-        </div>
+        <div class="meal-btn active" data-meal="breakfast">☕<span>早餐</span></div>
+        <div class="meal-btn" data-meal="lunch">🍱<span>午餐</span></div>
+        <div class="meal-btn" data-meal="dinner">🍲<span>晚餐</span></div>
+        <div class="meal-btn" data-meal="snack">🍎<span>加餐</span></div>
       </div>
-    </div>
 
-    <!-- 上传照片 -->
-    <div class="section">
       <div class="section-label">上传餐食照片</div>
       <div class="upload-zone" id="uploadZone">
-        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/>
-          <circle cx="12" cy="13" r="3"/>
-        </svg>
-        <div style="text-align:center;">
-          <p style="font-weight:500;">上传餐食照片</p>
-          <p style="font-size:0.7rem; color:#a07a5c;">点击选择或拖拽上传</p>
-        </div>
-        <div class="image-preview" id="imagePreview" style="display:none;">
-          <img id="previewImg" alt="预览">
-        </div>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c0a080" stroke-width="1.5"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/><circle cx="12" cy="13" r="3"/></svg>
+        <div style="text-align:center;"><p>点击上传照片</p><p style="font-size:0.7rem;">支持 jpg/png</p></div>
+        <div class="image-preview" id="imagePreview" style="display:none;"><img id="previewImg" style="max-width:100%; max-height:120px;"></div>
       </div>
       <input type="file" id="imageInput" accept="image/*" style="display:none;">
-    </div>
 
-    <!-- 餐食名称 -->
-    <div class="section">
       <div class="section-label">餐食名称 <span style="color:#e67e22;">*</span></div>
-      <input type="text" class="input-field" id="mealName" placeholder="例如：番茄鸡蛋面、清粥榨菜..." autocomplete="off">
-    </div>
+      <input type="text" id="mealName" placeholder="例如：番茄鸡蛋面、燕麦酸奶碗">
 
-    <!-- 进食时间 -->
-    <div class="section">
       <div class="section-label">进食时间 <span style="color:#e67e22;">*</span></div>
       <div class="time-row">
-        <input type="time" class="time-input" id="mealTime" value="12:00">
+        <input type="time" id="mealTime" class="time-input" value="12:00">
         <button class="time-btn" id="nowTimeBtn">现在</button>
       </div>
-    </div>
 
-    <!-- 当时心情 -->
-    <div class="section">
       <div class="section-label">当时心情</div>
       <div class="mood-grid" id="moodGrid">
-        <div class="mood-btn" data-mood="relaxed">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>
-          <span>放松</span>
-        </div>
-        <div class="mood-btn" data-mood="busy">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
-          <span>忙碌</span>
-        </div>
-        <div class="mood-btn" data-mood="stressed">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
-          <span>压力</span>
-        </div>
-        <div class="mood-btn" data-mood="energized">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg>
-          <span>充能</span>
-        </div>
-        <div class="mood-btn" data-mood="tired">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
-          <span>疲惫</span>
-        </div>
+        <div class="mood-btn" data-mood="relaxed">😊<span>放松</span></div>
+        <div class="mood-btn" data-mood="busy">⚡<span>忙碌</span></div>
+        <div class="mood-btn" data-mood="stressed">😰<span>压力</span></div>
+        <div class="mood-btn" data-mood="energized">💪<span>充能</span></div>
+        <div class="mood-btn" data-mood="tired">😴<span>疲惫</span></div>
+      </div>
+
+      <div class="section-label">饮食备注</div>
+      <textarea id="mealNote" rows="3" placeholder="分享一下这顿饭的感受..."></textarea>
+
+      <div class="button-group">
+        <button class="btn-cancel" id="cancelBtn">取消</button>
+        <button class="btn-submit" id="submitBtn">完成打卡</button>
       </div>
     </div>
-
-    <!-- 饮食备注 -->
-    <div class="section">
-      <div class="section-label">饮食备注</div>
-      <textarea class="input-field" id="mealNote" rows="3" placeholder="分享一下这顿饭的感受，或者记录任何想说的话..."></textarea>
-    </div>
-
-    <div class="button-group">
-      <button class="btn-cancel" id="cancelBtn">取消</button>
-      <button class="btn-submit" id="submitBtn">完成打卡</button>
-    </div>
-  </main>
+  </div>
 
   <script>
-    // DOM 元素
-    const mealBtns = document.querySelectorAll('.meal-btn');
-    const moodBtns = document.querySelectorAll('.mood-btn');
-    const mealNameInput = document.getElementById('mealName');
-    const mealTimeInput = document.getElementById('mealTime');
-    const nowTimeBtn = document.getElementById('nowTimeBtn');
-    const mealNote = document.getElementById('mealNote');
-    const submitBtn = document.getElementById('submitBtn');
-    const cancelBtn = document.getElementById('cancelBtn');
-    const backBtn = document.getElementById('backBtn');
-    const uploadZone = document.getElementById('uploadZone');
-    const imageInput = document.getElementById('imageInput');
-    const imagePreview = document.getElementById('imagePreview');
-    const previewImg = document.getElementById('previewImg');
+    // 获取当前用户
+    let currentUser = null;
+    auth.onAuthStateChanged(user => { currentUser = user; });
 
-    let selectedMeal = 'breakfast';   // breakfast, lunch, dinner, snack
-    let selectedMood = 'relaxed';
-    let imageData = null;              // base64 或 null
-
-    // 初始化当前时间
-    function setCurrentTime() {
-      const now = new Date();
-      const hours = String(now.getHours()).padStart(2,'0');
-      const minutes = String(now.getMinutes()).padStart(2,'0');
-      mealTimeInput.value = `${hours}:${minutes}`;
-    }
-    setCurrentTime();
-
-    nowTimeBtn.addEventListener('click', () => setCurrentTime());
-
-    // 餐次切换
-    mealBtns.forEach(btn => {
+    // 餐次选择
+    let selectedMeal = 'breakfast';
+    document.querySelectorAll('.meal-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        mealBtns.forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.meal-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         selectedMeal = btn.getAttribute('data-meal');
       });
     });
 
-    // 心情切换
-    moodBtns.forEach(btn => {
+    // 心情选择
+    let selectedMood = 'relaxed';
+    document.querySelectorAll('.mood-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        moodBtns.forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         selectedMood = btn.getAttribute('data-mood');
       });
     });
-    // 默认选中放松
     document.querySelector('.mood-btn[data-mood="relaxed"]').classList.add('active');
 
-    // 图片上传逻辑
-    uploadZone.addEventListener('click', () => {
-      imageInput.click();
-    });
+    // 时间
+    function setCurrentTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2,'0');
+      const minutes = String(now.getMinutes()).padStart(2,'0');
+      document.getElementById('mealTime').value = `${hours}:${minutes}`;
+    }
+    setCurrentTime();
+    document.getElementById('nowTimeBtn').addEventListener('click', setCurrentTime);
+
+    // 图片上传
+    let imageData = null;
+    const uploadZone = document.getElementById('uploadZone');
+    const imageInput = document.getElementById('imageInput');
+    const previewImg = document.getElementById('previewImg');
+    const imagePreview = document.getElementById('imagePreview');
+    uploadZone.addEventListener('click', () => imageInput.click());
     imageInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = function(ev) {
+        reader.onload = (ev) => {
           imageData = ev.target.result;
           previewImg.src = imageData;
           imagePreview.style.display = 'block';
@@ -388,98 +236,51 @@
       }
     });
 
-    // 辅助函数：获取用户ID
-    function getUserId() {
-      let userId = localStorage.getItem('currentUserId');
-      if (!userId) {
-        userId = 'guest_' + Date.now();
-        localStorage.setItem('currentUserId', userId);
-      }
-      return userId;
-    }
+    // 保存打卡
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+      const mealName = document.getElementById('mealName').value.trim();
+      if (!mealName) { alert('请填写餐食名称'); return; }
+      const mealTime = document.getElementById('mealTime').value;
+      if (!mealTime) { alert('请选择进食时间'); return; }
+      if (!currentUser) { alert('请先登录'); return; }
 
-    // 获取打卡记录
-    function getCheckins() {
-      const userId = getUserId();
-      const key = `checkins_${userId}`;
-      const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : {};
-    }
-
-    // 保存打卡记录
-    function saveCheckins(checkins) {
-      const userId = getUserId();
-      const key = `checkins_${userId}`;
-      localStorage.setItem(key, JSON.stringify(checkins));
-    }
-
-    // 获取饮食记录列表
-    function getMealsLog() {
-      const log = localStorage.getItem('mealsLog');
-      return log ? JSON.parse(log) : [];
-    }
-
-    // 保存饮食记录
-    function saveMealsLog(log) {
-      localStorage.setItem('mealsLog', JSON.stringify(log));
-    }
-
-    // 完成打卡
-    function submitLog() {
-      // 验证餐食名称
-      const mealName = mealNameInput.value.trim();
-      if (!mealName) {
-        alert('请填写餐食名称');
-        return;
-      }
-      const mealTime = mealTimeInput.value;
-      if (!mealTime) {
-        alert('请选择进食时间');
-        return;
-      }
-
-      // 构建记录对象
       const today = new Date().toISOString().slice(0,10);
-      const now = new Date();
-      const timestamp = now.toISOString();
-
       const record = {
-        id: Date.now(),
+        userId: currentUser.uid,
         mealType: selectedMeal,
         mealName: mealName,
         mealTime: mealTime,
         mood: selectedMood,
-        note: mealNote.value.trim() || '',
-        image: imageData || null,
+        note: document.getElementById('mealNote').value,
+        image: imageData,  // 注意：base64 图片可能很大，建议后续改用 Firebase Storage
+        kcal: 0,           // 可扩展计算
         date: today,
-        timestamp: timestamp
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
-      // 保存到 mealsLog
-      const mealsLog = getMealsLog();
-      mealsLog.push(record);
-      saveMealsLog(mealsLog);
-
-      // 如果是正餐（早餐/午餐/晚餐），更新打卡状态
-      if (selectedMeal === 'breakfast' || selectedMeal === 'lunch' || selectedMeal === 'dinner') {
-        const checkins = getCheckins();
-        if (!checkins[today]) checkins[today] = {};
-        checkins[today][selectedMeal] = true;
-        saveCheckins(checkins);
+      try {
+        await db.collection('meals').add(record);
+        // 同时更新三餐打卡状态（简单处理：更新到 checkins 子集合或单独的表，这里简化）
+        // 为了后续报表，可以记录到 checkins 集合
+        const checkinRef = db.collection('checkins').doc(`${currentUser.uid}_${today}`);
+        await checkinRef.set({
+          [selectedMeal]: true,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        alert('打卡成功！');
+        window.location.href = '打卡反馈页.html';
+      } catch (err) {
+        console.error(err);
+        alert('保存失败：' + err.message);
       }
+    });
 
-      // 跳转到打卡反馈页（或者返回首页，这里跳转到打卡反馈页）
-      window.location.href = '打卡反馈页.html';
-    }
-
-    submitBtn.addEventListener('click', submitLog);
-    cancelBtn.addEventListener('click', () => {
+    document.getElementById('cancelBtn').addEventListener('click', () => {
       window.location.href = '饮食管理首页.html';
     });
-    backBtn.addEventListener('click', () => {
+    document.getElementById('backBtn').addEventListener('click', () => {
       window.location.href = '饮食管理首页.html';
     });
   </script>
 </body>
 </html>
-            
