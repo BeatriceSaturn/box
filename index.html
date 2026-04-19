@@ -120,6 +120,20 @@
       color: #e67e22;
       text-decoration: none;
     }
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      z-index: 1000;
+      font-size: 1.2rem;
+    }
   </style>
 </head>
 <body>
@@ -138,21 +152,21 @@
     </div>
 
     <div class="login-options">
-      <button class="btn" onclick="window.location.href='基础信息采集页.html'">
+      <button class="btn" id="wechatLogin">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>
           <path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/>
         </svg>
         微信登录
       </button>
-      <button class="btn" onclick="window.location.href='基础信息采集页.html'">
+      <button class="btn" id="emailLogin">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/>
           <rect x="2" y="4" width="20" height="16" rx="2"/>
         </svg>
         邮箱登录
       </button>
-      <button class="btn" onclick="window.location.href='基础信息采集页.html'">
+      <button class="btn" id="phoneLogin">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
           <path d="M12 18h.01"/>
@@ -166,7 +180,7 @@
         <span class="divider-line"></span>
       </div>
 
-      <button class="btn guest-btn" onclick="window.location.href='基础信息采集页.html'">
+      <button class="btn guest-btn" id="guestLogin">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/>
           <circle cx="12" cy="12" r="3"/>
@@ -183,5 +197,67 @@
   <footer>
     登录即表示您同意 <a href="#">用户协议</a> 和 <a href="#">隐私政策</a>
   </footer>
+
+  <!-- 引入云开发 SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@cloudbase/js-sdk@1.7.2/dist/cloudbase.full.js"></script>
+  <script>
+    // 初始化云开发
+    const app = cloudbase.init({
+      env: 'beatrice-saturn-d7fu78ek2c55aa9b'   // 你的环境ID
+    });
+
+    const auth = app.auth();
+    let currentUser = null;
+
+    // 显示加载提示
+    function showLoading() {
+      let loadingDiv = document.querySelector('.loading-overlay');
+      if (!loadingDiv) {
+        loadingDiv = document.createElement('div');
+        loadingDiv.className = 'loading-overlay';
+        loadingDiv.style.position = 'fixed';
+        loadingDiv.style.top = '0';
+        loadingDiv.style.left = '0';
+        loadingDiv.style.right = '0';
+        loadingDiv.style.bottom = '0';
+        loadingDiv.style.backgroundColor = 'rgba(0,0,0,0.5)';
+        loadingDiv.style.display = 'flex';
+        loadingDiv.style.alignItems = 'center';
+        loadingDiv.style.justifyContent = 'center';
+        loadingDiv.style.color = 'white';
+        loadingDiv.style.fontSize = '1.2rem';
+        loadingDiv.style.zIndex = '1000';
+        loadingDiv.innerText = '登录中...';
+        document.body.appendChild(loadingDiv);
+      }
+      loadingDiv.style.display = 'flex';
+    }
+
+    function hideLoading() {
+      const loadingDiv = document.querySelector('.loading-overlay');
+      if (loadingDiv) loadingDiv.style.display = 'none';
+    }
+
+    // 匿名登录成功后跳转到信息采集页
+    function anonymousLoginAndRedirect() {
+      showLoading();
+      auth.anonymousAuthProvider().signIn().then(() => {
+        currentUser = auth.currentUser;
+        console.log('匿名登录成功', currentUser);
+        // 登录成功后跳转到基础信息采集页
+        window.location.href = '基础信息采集页.html';
+      }).catch(err => {
+        console.error('匿名登录失败', err);
+        alert('登录失败，请重试');
+        hideLoading();
+      });
+    }
+
+    // 绑定所有登录按钮（目前都使用匿名登录，后续可替换为真实邮箱/微信登录）
+    document.getElementById('wechatLogin').addEventListener('click', anonymousLoginAndRedirect);
+    document.getElementById('emailLogin').addEventListener('click', anonymousLoginAndRedirect);
+    document.getElementById('phoneLogin').addEventListener('click', anonymousLoginAndRedirect);
+    document.getElementById('guestLogin').addEventListener('click', anonymousLoginAndRedirect);
+  </script>
 </body>
 </html>
