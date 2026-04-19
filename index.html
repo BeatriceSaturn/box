@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>吃了么 - 登录</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fef9e8;
       font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
@@ -102,11 +98,29 @@
       font-size: 0.7rem;
       color: #c0a080;
     }
-    a {
-      color: #e67e22;
-      text-decoration: none;
-    }
+    a { color: #e67e22; text-decoration: none; }
   </style>
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // 已替换为你的实际值
+    const SUPABASE_URL = 'https://akxuloriodjnhgujonsr.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFreHVsb3Jpb2RqbmhndWpvbnNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1ODM1ODIsImV4cCI6MjA5MjE1OTU4Mn0.Lb43TKoqLKAHab65Oyr9hFUFGygb9gofu05lkihw60w';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 页面加载时自动匿名登录
+    window.onload = async () => {
+      const { data, error } = await supabase.auth.signInAnonymously();
+      if (error) {
+        console.error('匿名登录失败:', error.message);
+        alert('初始化失败，请刷新页面重试。');
+      } else {
+        console.log('登录成功，用户ID:', data.user.id);
+        sessionStorage.setItem('userId', data.user.id);
+      }
+    };
+  </script>
 </head>
 <body>
   <div class="container">
