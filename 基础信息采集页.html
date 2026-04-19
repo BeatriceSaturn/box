@@ -79,6 +79,11 @@
       cursor: pointer;
       margin-top: 1rem;
     }
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #a07a5c;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -86,8 +91,31 @@
     const SUPABASE_URL = 'https://akxuloriodjnhgujonsr.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFreHVsb3Jpb2RqbmhndWpvbnNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1ODM1ODIsImV4cCI6MjA5MjE1OTU4Mn0.Lb43TKoqLKAHab65Oyr9hFUFGygb9gofu05lkihw60w';
 
-    // 创建客户端并挂载到 window 上，避免重复声明
+    // 创建客户端并挂载到 window
     window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 页面加载时确保已经匿名登录
+    window.onload = async () => {
+      // 先检查当前是否有 session
+      const { data: { session }, error: sessionError } = await window.supabase.auth.getSession();
+      if (sessionError || !session) {
+        // 没有 session，执行匿名登录
+        const { data, error } = await window.supabase.auth.signInAnonymously();
+        if (error) {
+          console.error('匿名登录失败:', error);
+          document.getElementById('mainCard').innerHTML = '<div class="loading">初始化失败，请刷新重试</div>';
+          return;
+        } else {
+          console.log('匿名登录成功，用户ID:', data.user.id);
+          sessionStorage.setItem('userId', data.user.id);
+        }
+      } else {
+        console.log('已有 session，用户ID:', session.user.id);
+        sessionStorage.setItem('userId', session.user.id);
+      }
+      // 显示表单
+      document.getElementById('mainCard').style.display = 'block';
+    };
   </script>
 </head>
 <body>
@@ -97,7 +125,7 @@
     <div style="width:2rem;"></div>
   </div>
   <div class="main">
-    <div class="card">
+    <div id="mainCard" class="card" style="display:none;">
       <div class="form-group">
         <label>性别</label>
         <div class="radio-group">
@@ -153,10 +181,10 @@
       }
       const bmiData = calculateBMI();
 
-      // 使用 window.supabase 客户端
+      // 再次获取用户（确保登录）
       const { data: { user }, error: userError } = await window.supabase.auth.getUser();
       if (userError || !user) {
-        alert('请先登录（页面会自动登录，若失败请刷新重试）');
+        alert('未登录，请刷新页面重试');
         return;
       }
 
