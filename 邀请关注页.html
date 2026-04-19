@@ -5,530 +5,171 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>邀请关注 - 吃了么</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fef9e8;
       font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
-    /* 头部 */
     .header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      width: 100%;
-      background: #fff9f0;
-      border-bottom: 1px solid #f0e4d4;
-      padding: 0 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      padding: 1rem;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
     }
     .back-btn {
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 2rem;
+      height: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0.5rem;
       cursor: pointer;
-      transition: background 0.2s;
+      border-radius: 50%;
     }
     .back-btn:hover { background: #f0e4d4; }
-    .back-btn svg { width: 1.5rem; height: 1.5rem; stroke: #5a3e2b; stroke-width: 2.5; }
-    .title {
-      flex: 1;
-      text-align: center;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #5a3e2b;
-    }
-    /* 主内容滚动区 */
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem;
-      padding-bottom: 80px;
-      scrollbar-width: thin;
-    }
-    /* 标签页 */
-    .tabs {
-      display: flex;
-      background: #f0e4d4;
-      border-radius: 2rem;
-      padding: 0.25rem;
-      margin-bottom: 1.5rem;
-    }
-    .tab {
-      flex: 1;
-      text-align: center;
-      padding: 0.5rem 0;
-      border-radius: 2rem;
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: #a07a5c;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .tab.active {
-      background: white;
-      color: #e67e22;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    /* 卡片 */
+    .title { font-size: 1.1rem; font-weight: 600; color: #5a3e2b; }
+    .main { flex: 1; overflow-y: auto; padding: 1rem; }
     .card {
       background: white;
       border-radius: 1rem;
       border: 1px solid #f0e4d4;
-      padding: 1rem;
-      margin-bottom: 1.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      text-align: center;
     }
-    .section-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #5a3e2b;
-      margin-bottom: 0.75rem;
-    }
-    /* 链接分享 */
     .link-box {
       background: #fffbf5;
       border-radius: 0.75rem;
       padding: 0.75rem;
-      margin-bottom: 1rem;
-    }
-    .link-label {
-      font-size: 0.7rem;
-      color: #a07a5c;
-      margin-bottom: 0.25rem;
-    }
-    .link-row {
       display: flex;
       gap: 0.5rem;
       align-items: center;
+      margin: 1rem 0;
     }
     .link-input {
       flex: 1;
       background: white;
       border: 1px solid #f0e4d4;
       border-radius: 2rem;
-      padding: 0.6rem 0.8rem;
+      padding: 0.6rem;
       font-size: 0.8rem;
       color: #5a3e2b;
-      background: #fff;
     }
     .copy-btn {
       background: #fdf3e8;
       border: none;
       border-radius: 2rem;
-      width: 2.5rem;
-      height: 2.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-    .copy-btn svg { width: 1.2rem; height: 1.2rem; stroke: #e67e22; }
-    .share-buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin: 1rem 0;
-    }
-    .share-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      background: #fffbf5;
-      border: 1px solid #f0e4d4;
-      border-radius: 2rem;
       padding: 0.6rem 1rem;
       cursor: pointer;
-      transition: all 0.2s;
+      font-weight: 500;
     }
-    .share-btn:active { background: #fff7f0; transform: scale(0.98); }
-    .share-icon { width: 1.5rem; height: 1.5rem; stroke: #e67e22; }
+    .qr-container {
+      display: flex;
+      justify-content: center;
+      margin: 1rem 0;
+    }
+    .qr-code {
+      width: 180px;
+      height: 180px;
+      background: white;
+      padding: 0.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
     .tip {
       background: #fff7f0;
       border-radius: 0.75rem;
       padding: 0.75rem;
-      font-size: 0.7rem;
-      color: #a07a5c;
-      display: flex;
-      gap: 0.5rem;
-      align-items: flex-start;
-    }
-    /* 二维码区域 */
-    .qr-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem;
-    }
-    .qr-code {
-      width: 160px;
-      height: 160px;
-      background: #fdf3e8;
-      border-radius: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       font-size: 0.8rem;
-      color: #e67e22;
-      border: 1px solid #f0e4d4;
-    }
-    /* 成员权限列表 */
-    .member-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid #f0e4d4;
-    }
-    .member-avatar {
-      width: 2.5rem;
-      height: 2.5rem;
-      background: #fdf3e8;
-      border-radius: 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .member-info { flex: 1; }
-    .member-name { font-weight: 600; color: #5a3e2b; }
-    .member-status { font-size: 0.7rem; color: #a07a5c; }
-    .switch-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .switch-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-    .switch-label {
-      font-size: 0.7rem;
-      color: #5a3e2b;
-    }
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 2.5rem;
-      height: 1.2rem;
-    }
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #e2d4c8;
-      transition: 0.2s;
-      border-radius: 1rem;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 0.9rem;
-      width: 0.9rem;
-      left: 0.15rem;
-      bottom: 0.15rem;
-      background-color: white;
-      transition: 0.2s;
-      border-radius: 50%;
-    }
-    input:checked + .slider { background-color: #e67e22; }
-    input:checked + .slider:before { transform: translateX(1.3rem); }
-    /* 按钮组 */
-    .button-group {
-      display: flex;
-      gap: 0.75rem;
+      color: #a07a5c;
       margin-top: 1rem;
     }
-    .btn-outline {
-      flex: 1;
-      background: transparent;
-      border: 1px solid #e2d4c8;
-      border-radius: 2rem;
-      padding: 0.7rem;
-      font-weight: 500;
-      color: #a07a5c;
-      cursor: pointer;
-      text-align: center;
-    }
-    .btn-primary {
-      flex: 1;
+    .btn-secondary {
+      width: 100%;
       background: #e67e22;
       border: none;
       border-radius: 2rem;
-      padding: 0.7rem;
-      font-weight: 500;
+      padding: 0.8rem;
+      font-weight: 600;
       color: white;
       cursor: pointer;
-      text-align: center;
+      margin-top: 1rem;
     }
-    .btn-primary:active, .btn-outline:active { transform: scale(0.98); }
   </style>
-</head>
-<body>
-  <header class="header">
-    <div class="back-btn" id="backBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <div class="title">邀请关注</div>
-    <div class="right-placeholder" style="width:2.5rem;"></div>
-  </header>
-
-  <main class="main-content" id="mainContent">
-    <!-- 动态渲染 -->
-    <div style="text-align: center; padding: 2rem;">加载中...</div>
-  </main>
-
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script>
-    // 获取亲友列表 (与亲友空间页共用)
-    function getFriends() {
-      const stored = localStorage.getItem('friendsList');
-      if (stored) {
-        try { return JSON.parse(stored); } catch(e) {}
+    const firebaseConfig = {
+      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
+      authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
+      projectId: "beatricesaturn-6ff7e",
+      storageBucket: "beatricesaturn-6ff7e.firebasestorage.app",
+      messagingSenderId: "607338984635",
+      appId: "1:607338984635:web:a4b3668715462a4d0ca59e",
+      measurementId: "G-L2R10QZZL9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        const uid = user.uid;
+        const baseUrl = `${window.location.protocol}//${window.location.host}`;
+        const inviteLink = `${baseUrl}/index.html?ref=${uid}`;
+        document.getElementById('inviteLink').value = inviteLink;
+        new QRCode(document.getElementById('qrcode'), {
+          text: inviteLink,
+          width: 160,
+          height: 160,
+          colorDark: "#5a3e2b",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      } else {
+        window.location.href = 'index.html';
       }
-      // 默认数据（与亲友空间页一致）
-      return [
-        { id: '1', name: '爸爸', relation: '家人', quote: '再忙也要记得补充能量呀！', status: 'checked', statusText: '已按时吃饭', statusColor: 'emerald', actionType: 'flower', actionLabel: '送朵花' },
-        { id: '2', name: '同学', relation: '朋友', quote: '干饭人，干饭魂，吃饭才有精气神！', status: 'busy', statusText: '正在忙碌中', statusColor: 'amber', actionType: 'remind', actionLabel: '催吃饭' },
-        { id: '3', name: '女儿', relation: '家人', quote: '按时吃饭，照顾好自己喔~', status: 'online', statusText: '在线', statusColor: 'sky', actionType: 'greet', actionLabel: '打招呼' }
-      ];
-    }
+    });
 
-    // 保存亲友列表
-    function saveFriends(friends) {
-      localStorage.setItem('friendsList', JSON.stringify(friends));
-    }
-
-    // 获取权限设置 (存储在单独的 key 中，结构: { memberId: { viewDetail: bool, viewStatus: bool } })
-    function getPermissions() {
-      const perms = localStorage.getItem('memberPermissions');
-      return perms ? JSON.parse(perms) : {};
-    }
-
-    function savePermissions(perms) {
-      localStorage.setItem('memberPermissions', JSON.stringify(perms));
-    }
-
-    // 生成邀请链接 (模拟，基于当前页面 URL)
-    function getInviteLink() {
-      // 实际场景中可生成带有用户ID的链接，这里简单用当前页面URL
-      return `${window.location.origin}${window.location.pathname}?invite=${getUserId()}`;
-    }
-
-    function getUserId() {
-      let uid = localStorage.getItem('currentUserId');
-      if (!uid) {
-        uid = 'user_' + Date.now();
-        localStorage.setItem('currentUserId', uid);
-      }
-      return uid;
-    }
-
-    // 复制链接
     function copyLink() {
-      const link = getInviteLink();
-      navigator.clipboard.writeText(link).then(() => {
-        alert('邀请链接已复制，快去分享给亲友吧！');
-      }).catch(() => {
-        alert('复制失败，请手动复制');
-      });
+      const linkInput = document.getElementById('inviteLink');
+      linkInput.select();
+      document.execCommand('copy');
+      alert('邀请链接已复制！');
     }
 
-    // 渲染邀请页面
-    let currentTab = 'share'; // 'share' or 'qr'
-    function renderInvitePage() {
-      const friends = getFriends();
-      const permissions = getPermissions();
-      const inviteLink = getInviteLink();
-
-      const tabShareActive = currentTab === 'share' ? 'active' : '';
-      const tabQrActive = currentTab === 'qr' ? 'active' : '';
-
-      // 成员列表 HTML
-      let membersHtml = '';
-      friends.forEach(friend => {
-        const perm = permissions[friend.id] || { viewDetail: true, viewStatus: true };
-        membersHtml += `
-          <div class="member-item" data-id="${friend.id}">
-            <div class="member-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-            <div class="member-info">
-              <div class="member-name">${escapeHtml(friend.name)}</div>
-              <div class="member-status">${friend.quote}</div>
-            </div>
-            <div class="switch-group">
-              <div class="switch-item">
-                <span class="switch-label">饮食详情</span>
-                <label class="switch">
-                  <input type="checkbox" class="perm-detail" data-id="${friend.id}" ${perm.viewDetail ? 'checked' : ''}>
-                  <span class="slider"></span>
-                </label>
-              </div>
-              <div class="switch-item">
-                <span class="switch-label">打卡状态</span>
-                <label class="switch">
-                  <input type="checkbox" class="perm-status" data-id="${friend.id}" ${perm.viewStatus ? 'checked' : ''}>
-                  <span class="slider"></span>
-                </label>
-              </div>
-            </div>
-          </div>
-        `;
-      });
-
-      const shareTabHtml = `
-        <div class="card">
-          <div class="link-box">
-            <div class="link-label">邀请链接</div>
-            <div class="link-row">
-              <input class="link-input" type="text" readonly value="${inviteLink}" id="inviteLinkInput">
-              <button class="copy-btn" id="copyLinkBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button>
-            </div>
-          </div>
-          <div class="share-buttons">
-            <div class="share-btn" id="shareWechatBtn">
-              <svg class="share-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/></svg>
-              <span>微信</span>
-            </div>
-            <div class="share-btn" id="shareSmsBtn">
-              <svg class="share-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
-              <span>短信</span>
-            </div>
-          </div>
-          <div class="tip">
-            <span>💡</span>
-            <span>分享此链接给亲友，他们可以通过链接快速关注你的饮食打卡，相互督促，养成健康饮食习惯。</span>
-          </div>
-        </div>
-      `;
-
-      const qrTabHtml = `
-        <div class="card">
-          <div class="qr-container">
-            <div class="qr-code">
-              <svg width="100" height="100" viewBox="0 0 100 100" fill="none" stroke="#e67e22" stroke-width="2">
-                <rect x="10" y="10" width="80" height="80" rx="10" fill="#fdf3e8"/>
-                <path d="M25 25h15v15H25zM60 25h15v15H60zM25 60h15v15H25zM60 60h15v15H60z" fill="#e67e22"/>
-                <path d="M45 45h10v10H45z" fill="#e67e22"/>
-              </svg>
-            </div>
-            <div style="font-size:0.7rem; color:#a07a5c;">扫一扫关注我的饮食动态</div>
-            <div class="tip" style="margin-top:0.5rem;">
-              <span>📱</span>
-              <span>打开微信/浏览器扫一扫，即可添加我为亲友。</span>
-            </div>
-          </div>
-        </div>
-      `;
-
-      const membersHtmlSection = `
-        <div class="card">
-          <div class="section-title">已连接成员权限</div>
-          <div id="membersList">${membersHtml}</div>
-        </div>
-      `;
-
-      const html = `
-        <div class="tabs">
-          <div class="tab ${tabShareActive}" data-tab="share">分享邀请</div>
-          <div class="tab ${tabQrActive}" data-tab="qr">二维码</div>
-        </div>
-        ${currentTab === 'share' ? shareTabHtml : qrTabHtml}
-        ${membersHtmlSection}
-        <div class="button-group">
-          <button class="btn-outline" id="backToFriendsBtn">返回</button>
-          <button class="btn-primary" id="savePermissionsBtn">完成</button>
-        </div>
-      `;
-
-      document.getElementById('mainContent').innerHTML = html;
-
-      // 绑定 Tab 切换
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', (e) => {
-          currentTab = tab.getAttribute('data-tab');
-          renderInvitePage();
-        });
-      });
-
-      // 复制链接按钮
-      const copyBtn = document.getElementById('copyLinkBtn');
-      if (copyBtn) copyBtn.addEventListener('click', copyLink);
-
-      // 分享按钮模拟
-      const wechatBtn = document.getElementById('shareWechatBtn');
-      if (wechatBtn) wechatBtn.addEventListener('click', () => alert('模拟分享到微信，实际接入微信分享SDK可调起分享'));
-      const smsBtn = document.getElementById('shareSmsBtn');
-      if (smsBtn) smsBtn.addEventListener('click', () => alert('模拟分享到短信，可调用系统短信接口'));
-
-      // 权限开关事件 (实时保存)
-      document.querySelectorAll('.perm-detail, .perm-status').forEach(checkbox => {
-        checkbox.addEventListener('change', (e) => {
-          const memberId = checkbox.getAttribute('data-id');
-          const isDetail = checkbox.classList.contains('perm-detail');
-          const perms = getPermissions();
-          if (!perms[memberId]) perms[memberId] = { viewDetail: true, viewStatus: true };
-          if (isDetail) {
-            perms[memberId].viewDetail = checkbox.checked;
-          } else {
-            perms[memberId].viewStatus = checkbox.checked;
-          }
-          savePermissions(perms);
-        });
-      });
-
-      // 返回按钮
-      const backBtn = document.getElementById('backToFriendsBtn');
-      if (backBtn) backBtn.addEventListener('click', () => {
-        window.location.href = '亲友共享空间主页.html';
-      });
-
-      // 完成按钮（保存并返回）
-      const completeBtn = document.getElementById('savePermissionsBtn');
-      if (completeBtn) completeBtn.addEventListener('click', () => {
-        // 权限已在实时保存，直接跳转
-        window.location.href = '亲友共享空间主页.html';
-      });
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-      });
-    }
-
-    // 头部返回按钮
     document.getElementById('backBtn').addEventListener('click', () => {
       window.location.href = '亲友共享空间主页.html';
     });
-
-    renderInvitePage();
   </script>
+</head>
+<body>
+  <div class="header">
+    <div class="back-btn" id="backBtn">←</div>
+    <div class="title">邀请关注</div>
+    <div style="width:2rem;"></div>
+  </div>
+  <div class="main">
+    <div class="card">
+      <h3 style="margin-bottom:1rem;">邀请亲友一起打卡</h3>
+      <p style="font-size:0.85rem; color:#a07a5c;">分享你的专属链接，亲友注册后会自动添加为好友</p>
+      <div class="link-box">
+        <input type="text" id="inviteLink" class="link-input" readonly>
+        <button class="copy-btn" onclick="copyLink()">复制</button>
+      </div>
+      <div class="qr-container">
+        <div id="qrcode" class="qr-code"></div>
+      </div>
+      <div class="tip">
+        💡 扫描二维码或复制链接发送给亲友，对方打开链接后注册账号，你们将自动成为好友，可以互相查看饮食打卡状态。
+      </div>
+      <button class="btn-secondary" id="shareBtn" onclick="alert('分享功能可调用微信/短信接口，请手动复制链接分享')">📤 分享链接</button>
+    </div>
+  </div>
 </body>
 </html>
