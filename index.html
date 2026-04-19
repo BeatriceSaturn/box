@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>吃了么 - 登录</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fef9e8;
       font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
@@ -102,11 +98,9 @@
       font-size: 0.7rem;
       color: #c0a080;
     }
-    a {
-      color: #e67e22;
-      text-decoration: none;
-    }
-    /* 简单模态框样式 */
+    a { color: #e67e22; text-decoration: none; }
+
+    /* 模态框样式 */
     .modal {
       display: none;
       position: fixed;
@@ -151,14 +145,14 @@
       color: #5a3e2b;
     }
   </style>
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK (Compat 版本，简化使用) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script>
-    // 你的 Firebase 配置（请替换为你的实际值）
+    // 你的 Firebase 配置（直接使用你提供的值）
     const firebaseConfig = {
-      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0IlyPM",
+      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
       authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
       projectId: "beatricesaturn-6ff7e",
       storageBucket: "beatricesaturn-6ff7e.firebasestorage.app",
@@ -171,17 +165,19 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // 全局跳转到采集页
+    // 跳转到采集页
     function goToProfile() {
       window.location.href = '基础信息采集页.html';
     }
 
     // 邮箱登录模态框
     function showEmailModal() {
-      const modal = document.getElementById('emailModal');
-      modal.style.display = 'flex';
+      document.getElementById('emailModal').style.display = 'flex';
       document.getElementById('emailInput').value = '';
       document.getElementById('passwordInput').value = '';
+    }
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
     }
 
     async function emailLogin() {
@@ -216,10 +212,9 @@
       }
     }
 
-    // 手机号登录（简化：提示即将开放，暂时使用匿名登录）
+    // 手机号登录（简化，后续可完善）
     function phoneLogin() {
       alert('手机号登录功能即将开放，请先使用邮箱或游客浏览。');
-      // 如果要实现真实手机号登录，需要配置 reCAPTCHA 和短信验证，这里暂时不做
     }
 
     // 游客浏览（匿名登录）
@@ -231,13 +226,9 @@
         console.log('匿名登录成功', userId);
         goToProfile();
       } catch (error) {
-        console.error(error);
+        console.error('匿名登录失败:', error);
         alert('登录失败，请检查网络后重试');
       }
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).style.display = 'none';
     }
 
     window.onclick = function(event) {
@@ -263,12 +254,10 @@
     </div>
 
     <div>
-      <!-- 邮箱登录按钮 -->
       <button class="btn" id="emailBtn">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
         邮箱登录
       </button>
-      <!-- 手机号登录按钮 -->
       <button class="btn" id="phoneBtn">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
         手机号登录
@@ -296,8 +285,8 @@
   <div id="emailModal" class="modal">
     <div class="modal-content">
       <h3>邮箱登录</h3>
-      <input type="email" id="emailInput" placeholder="电子邮箱" autocomplete="email">
-      <input type="password" id="passwordInput" placeholder="密码" autocomplete="current-password">
+      <input type="email" id="emailInput" placeholder="电子邮箱">
+      <input type="password" id="passwordInput" placeholder="密码">
       <button id="confirmEmailBtn">登录 / 注册</button>
       <button class="secondary" onclick="closeModal('emailModal')">取消</button>
     </div>
