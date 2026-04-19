@@ -18,7 +18,6 @@
       flex-direction: column;
       overflow: hidden;
     }
-    /* 头部 */
     .header {
       position: sticky;
       top: 0;
@@ -51,7 +50,6 @@
       font-weight: 600;
       color: #5a3e2b;
     }
-    /* 主内容滚动区 */
     .main-content {
       flex: 1;
       overflow-y: auto;
@@ -59,7 +57,6 @@
       padding-bottom: 80px;
       scrollbar-width: thin;
     }
-    /* 卡片样式 */
     .card {
       background: white;
       border-radius: 1rem;
@@ -67,15 +64,15 @@
       padding: 1.25rem;
       margin-bottom: 1rem;
     }
-    .bmi-card {
-      background: #ecfdf5;
-      border-color: #a7f3d0;
-    }
     .section-title {
       font-size: 1rem;
       font-weight: 600;
       color: #5a3e2b;
       margin-bottom: 0.75rem;
+    }
+    .bmi-card {
+      background: #ecfdf5;
+      border-color: #a7f3d0;
     }
     .bmi-header {
       display: flex;
@@ -136,25 +133,59 @@
       font-weight: 600;
       color: #5a3e2b;
     }
-    /* 指标概览 */
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
+    .input-group {
       margin-bottom: 1rem;
     }
+    .input-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      color: #5a3e2b;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid #e2d4c8;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      background: white;
+    }
+    .btn-primary {
+      width: 100%;
+      background: #e67e22;
+      border: none;
+      border-radius: 2rem;
+      padding: 0.8rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    .btn-secondary {
+      width: 100%;
+      background: transparent;
+      border: 1px solid #e2d4c8;
+      border-radius: 2rem;
+      padding: 0.8rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #a07a5c;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .metrics-row {
+      display: flex;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
     .metric-card {
+      flex: 1;
       background: #fffbf5;
       border-radius: 0.75rem;
       padding: 0.75rem;
       text-align: center;
-    }
-    .metric-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.25rem;
-      margin-bottom: 0.25rem;
     }
     .metric-icon svg { width: 1.2rem; height: 1.2rem; stroke: #e67e22; }
     .metric-value {
@@ -162,20 +193,6 @@
       font-weight: 700;
       color: #5a3e2b;
     }
-    .metric-label {
-      font-size: 0.7rem;
-      color: #a07a5c;
-    }
-    /* 趋势占位 */
-    .trend-placeholder {
-      background: #fffbf5;
-      border-radius: 0.75rem;
-      padding: 1rem;
-      text-align: center;
-      color: #c0a080;
-      font-size: 0.8rem;
-    }
-    /* 建议框 */
     .suggestion-box {
       background: #fff7f0;
       border-left: 4px solid #e67e22;
@@ -183,226 +200,79 @@
       border-radius: 0.75rem;
       margin: 1rem 0;
     }
-    /* 按钮 */
-    .btn-primary {
-      width: 100%;
-      background: #e67e22;
-      border: none;
-      border-radius: 2rem;
-      padding: 0.8rem;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-bottom: 0.75rem;
-    }
-    .btn-primary:active { transform: scale(0.98); background: #d4691a; }
-    .btn-secondary {
-      width: 100%;
-      background: transparent;
-      border: 1px solid #e2d4c8;
-      border-radius: 2rem;
-      padding: 0.8rem;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: #a07a5c;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-secondary:active { background: #fff7f0; transform: scale(0.98); }
-    /* 底部导航栏 */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #fff9f0;
-      border-top: 1px solid #f0e4d4;
-      display: flex;
-      justify-content: space-around;
-      padding: 0.5rem 1rem 1rem;
-      z-index: 20;
-    }
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.2rem;
-      cursor: pointer;
-      color: #c0a080;
-      transition: color 0.2s;
-    }
-    .nav-item.active { color: #e67e22; }
-    .nav-icon { width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2; }
-    .nav-label { font-size: 0.7rem; font-weight: 500; }
   </style>
-</head>
-<body>
-  <header class="header">
-    <div class="back-btn" id="backBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <div class="title">健康指标测试</div>
-    <div class="right-placeholder" style="width:2.5rem;"></div>
-  </header>
-
-  <main class="main-content" id="mainContent">
-    <!-- 动态渲染 -->
-    <div style="text-align: center; padding: 2rem;">加载中...</div>
-  </main>
-
-  <div class="bottom-nav">
-    <div class="nav-item" data-nav="home">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/>
-        <rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
-      </svg>
-      <span class="nav-label">首页</span>
-    </div>
-    <div class="nav-item" data-nav="record">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
-      </svg>
-      <span class="nav-label">饮食记录</span>
-    </div>
-    <div class="nav-item" data-nav="friends">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>
-      </svg>
-      <span class="nav-label">亲友空间</span>
-    </div>
-    <div class="nav-item" data-nav="report">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
-      </svg>
-      <span class="nav-label">报表</span>
-    </div>
-  </div>
-
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script>
-    // 获取用户档案
-    function getUserProfile() {
-      const profile = localStorage.getItem('userProfile');
-      if (profile) {
-        try {
-          return JSON.parse(profile);
-        } catch(e) {}
+    const firebaseConfig = {
+      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
+      authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
+      projectId: "beatricesaturn-6ff7e",
+      storageBucket: "beatricesaturn-6ff7e.firebasestorage.app",
+      messagingSenderId: "607338984635",
+      appId: "1:607338984635:web:a4b3668715462a4d0ca59e",
+      measurementId: "G-L2R10QZZL9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null;
+    let currentProfile = null;
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        loadProfile();
+      } else {
+        window.location.href = 'index.html';
       }
-      return null;
+    });
+
+    async function loadProfile() {
+      try {
+        const doc = await db.collection('profiles').doc(currentUser.uid).get();
+        if (doc.exists) {
+          currentProfile = doc.data();
+        } else {
+          currentProfile = null;
+        }
+        renderPage();
+      } catch (err) {
+        console.error(err);
+        renderPage(); // 即使无数据也渲染
+      }
     }
 
-    // 计算 BMI
     function calculateBMI(weight, height) {
       if (!weight || !height) return null;
       const h = height / 100;
       return (weight / (h * h)).toFixed(1);
     }
 
-    // 根据 BMI 获取状态和建议
     function getBMIInfo(bmi) {
-      if (bmi < 18.5) {
-        return { status: '偏瘦', statusClass: 'status-underweight', advice: '体重偏轻，建议适当增加营养摄入。', detail: '多摄入优质蛋白和健康脂肪，保持三餐规律。' };
-      } else if (bmi >= 18.5 && bmi < 24) {
-        return { status: '健康', statusClass: 'status-healthy', advice: '当前BMI处于相对健康区间。', detail: '保持规律饮食与适量活动，继续稳定作息。' };
-      } else if (bmi >= 24 && bmi < 28) {
-        return { status: '超重', statusClass: 'status-overweight', advice: '体重超标，注意饮食控制和运动。', detail: '减少高热量食物，增加蔬菜和全谷物，每天坚持30分钟有氧运动。' };
-      } else {
-        return { status: '肥胖', statusClass: 'status-obese', advice: '体重偏高，建议制定科学减重计划。', detail: '咨询营养师，控制总热量摄入，定期监测体重。' };
-      }
+      if (bmi < 18.5) return { status: '偏瘦', statusClass: 'status-underweight', advice: '体重偏轻，建议适当增加营养摄入。', detail: '多摄入优质蛋白和健康脂肪，保持三餐规律。' };
+      if (bmi < 24) return { status: '健康', statusClass: 'status-healthy', advice: '当前BMI处于相对健康区间。', detail: '保持规律饮食与适量活动，继续稳定作息。' };
+      if (bmi < 28) return { status: '超重', statusClass: 'status-overweight', advice: '体重超标，注意饮食控制和运动。', detail: '减少高热量食物，增加蔬菜和全谷物，每天坚持30分钟有氧运动。' };
+      return { status: '肥胖', statusClass: 'status-obese', advice: '体重偏高，建议制定科学减重计划。', detail: '咨询营养师，控制总热量摄入，定期监测体重。' };
     }
 
-    // 模拟精力值和睡眠质量（基于BMI和近期打卡记录）
-    function getEnergyAndSleep() {
-      // 简单模拟：基于BMI和最近打卡次数（从打卡记录中获取最近7天打卡率）
-      const checkins = getCheckins();
-      const last7Days = getLast7DaysCheckinRate(checkins);
-      // 精力值基础 70，打卡率越高越高，BMI健康加分
-      let energy = 70;
-      if (last7Days > 0.7) energy += 15;
-      else if (last7Days > 0.4) energy += 5;
-      else energy -= 10;
-      const profile = getUserProfile();
-      if (profile) {
-        const bmi = calculateBMI(profile.weight, profile.height);
-        if (bmi && bmi >= 18.5 && bmi < 24) energy += 10;
-        else if (bmi && bmi >= 28) energy -= 10;
-      }
-      energy = Math.min(100, Math.max(30, energy));
-      const sleep = Math.min(100, Math.max(40, energy - 5 + Math.floor(Math.random() * 10)));
-      return { energy, sleep };
-    }
+    function renderPage() {
+      const profile = currentProfile;
+      const hasData = profile && profile.height && profile.weight;
+      const bmi = hasData ? calculateBMI(profile.weight, profile.height) : null;
+      const bmiInfo = bmi ? getBMIInfo(bmi) : null;
+      const genderText = profile?.gender === 'female' ? '女' : (profile?.gender === 'male' ? '男' : (profile?.gender || '未设置'));
+      const ageText = profile?.age || '--';
+      const heightText = profile?.height || '--';
+      const weightText = profile?.weight || '--';
 
-    function getCheckins() {
-      const userId = localStorage.getItem('currentUserId') || 'guest';
-      const key = `checkins_${userId}`;
-      const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : {};
-    }
+      // 模拟精力值和睡眠质量（基于BMI和最近打卡记录，这里简化）
+      const energy = hasData ? (bmi >= 18.5 && bmi < 24 ? 85 : 70) : 70;
+      const sleep = hasData ? (bmi >= 18.5 && bmi < 24 ? 80 : 65) : 70;
 
-    function getLast7DaysCheckinRate(checkins) {
-      const today = new Date();
-      let total = 0;
-      let checked = 0;
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(today);
-        d.setDate(today.getDate() - i);
-        const dateStr = d.toISOString().slice(0,10);
-        const meals = checkins[dateStr];
-        if (meals && (meals.breakfast || meals.lunch || meals.dinner || meals.snack)) {
-          checked++;
-        }
-        total++;
-      }
-      return total > 0 ? checked / total : 0;
-    }
-
-    // 生成膳食建议（简单动态）
-    function getDietSuggestion(bmiStatus) {
-      if (bmiStatus === '偏瘦') return '增加优质蛋白和健康脂肪，如鸡蛋、鱼肉、坚果。';
-      if (bmiStatus === '超重' || bmiStatus === '肥胖') return '控制总热量，多吃蔬菜，减少精制碳水。';
-      return '晚餐尽量不要太晚，持续保持现有节律。';
-    }
-
-    // 渲染页面
-    function renderHealthMetrics() {
-      const profile = getUserProfile();
-      if (!profile) {
-        document.getElementById('mainContent').innerHTML = `
-          <div class="card" style="text-align:center;">
-            <div style="font-size:3rem; margin-bottom:1rem;">📊</div>
-            <div class="section-title">暂无健康数据</div>
-            <p class="advice-text">请先完善个人信息，以便获得准确的健康指标。</p>
-            <button class="btn-primary" id="goToProfileBtn">去完善信息</button>
-          </div>
-        `;
-        const goBtn = document.getElementById('goToProfileBtn');
-        if (goBtn) goBtn.addEventListener('click', () => {
-          window.location.href = '基础信息采集页.html';
-        });
-        return;
-      }
-
-      const height = profile.height;
-      const weight = profile.weight;
-      const age = profile.age || '--';
-      const gender = profile.gender === 'female' ? '女' : (profile.gender === 'male' ? '男' : '其他');
-      const bmi = calculateBMI(weight, height);
-      const bmiInfo = bmi ? getBMIInfo(bmi) : { status: '未知', advice: '请输入有效的身高体重', detail: '' };
-      const { energy, sleep } = getEnergyAndSleep();
-      const dietSuggestion = getDietSuggestion(bmiInfo.status);
-
-      const statusColor = bmiInfo.status === '健康' ? '#10b981' : (bmiInfo.status === '偏瘦' ? '#3b82f6' : (bmiInfo.status === '超重' ? '#f59e0b' : '#ef4444'));
+      const dietSuggestion = hasData ? (bmiInfo.status === '偏瘦' ? '增加优质蛋白和健康脂肪，如鸡蛋、鱼肉、坚果。' : (bmiInfo.status === '超重' || bmiInfo.status === '肥胖' ? '控制总热量，多吃蔬菜，减少精制碳水。' : '晚餐尽量不要太晚，持续保持现有节律。')) : '完善信息后可获得更精准建议。';
 
       const html = `
         <div class="card bmi-card">
@@ -413,41 +283,43 @@
               <div class="number">${bmi || '--'}</div>
             </div>
           </div>
-          <div class="status-badge" style="background: ${statusColor};">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg>
-            ${bmiInfo.status}
-          </div>
-          <div class="advice-text">${bmiInfo.advice}</div>
-          <div class="advice-detail">💡 ${bmiInfo.detail}</div>
+          ${bmi ? `<div class="status-badge">${bmiInfo.status}</div>` : '<div class="status-badge" style="background:#c0a080;">未录入</div>'}
+          <div class="advice-text">${bmi ? bmiInfo.advice : '请先填写身高体重，系统将自动计算您的BMI并给出建议。'}</div>
+          <div class="advice-detail">💡 ${bmi ? bmiInfo.detail : '填写后即可看到个性化健康分析。'}</div>
           <div class="info-grid">
-            <div class="info-item"><div class="info-label">身高</div><div class="info-value">${height} cm</div></div>
-            <div class="info-item"><div class="info-label">体重</div><div class="info-value">${weight} kg</div></div>
-            <div class="info-item"><div class="info-label">年龄</div><div class="info-value">${age}</div></div>
-            <div class="info-item"><div class="info-label">性别</div><div class="info-value">${gender}</div></div>
+            <div class="info-item"><div class="info-label">身高</div><div class="info-value">${heightText} cm</div></div>
+            <div class="info-item"><div class="info-label">体重</div><div class="info-value">${weightText} kg</div></div>
+            <div class="info-item"><div class="info-label">年龄</div><div class="info-value">${ageText}</div></div>
+            <div class="info-item"><div class="info-label">性别</div><div class="info-value">${genderText}</div></div>
           </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">更新身体数据</div>
+          <div class="input-group">
+            <label>身高 (cm)</label>
+            <input type="number" id="editHeight" placeholder="100-250" value="${profile?.height || ''}">
+          </div>
+          <div class="input-group">
+            <label>体重 (kg)</label>
+            <input type="number" id="editWeight" placeholder="20-200" value="${profile?.weight || ''}">
+          </div>
+          <button class="btn-primary" id="updateBtn">更新并保存</button>
         </div>
 
         <div class="card">
           <div class="section-title">健康指标概览</div>
-          <div class="metrics-grid">
+          <div class="metrics-row">
             <div class="metric-card">
-              <div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg><span>精力值</span></div>
+              <div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></div>
               <div class="metric-value">${energy}</div>
-              <div class="metric-label">/ 100</div>
+              <div class="metric-label">精力值</div>
             </div>
             <div class="metric-card">
-              <div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg><span>睡眠质量</span></div>
+              <div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg></div>
               <div class="metric-value">${sleep}</div>
-              <div class="metric-label">/ 100</div>
+              <div class="metric-label">睡眠质量</div>
             </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="section-title">近期趋势</div>
-          <div class="trend-placeholder">
-            📈 BMI 趋势图（最近7天）<br>
-            <span style="font-size:0.7rem;">打卡越多，健康曲线越稳定~</span>
           </div>
         </div>
 
@@ -461,44 +333,61 @@
           </div>
         </div>
 
-        <button class="btn-primary" id="aiSuggestionBtn">✨ 查看个性化膳食建议</button>
+        <button class="btn-primary" id="aiAdviceBtn">✨ 查看个性化膳食建议</button>
         <button class="btn-secondary" id="nextMealBtn">➕ 去记录下一餐</button>
       `;
 
       document.getElementById('mainContent').innerHTML = html;
 
-      // 绑定按钮事件
-      const aiBtn = document.getElementById('aiSuggestionBtn');
-      if (aiBtn) aiBtn.addEventListener('click', () => {
+      document.getElementById('updateBtn').addEventListener('click', async () => {
+        const newHeight = parseFloat(document.getElementById('editHeight').value);
+        const newWeight = parseFloat(document.getElementById('editWeight').value);
+        if (isNaN(newHeight) || isNaN(newWeight) || newHeight <= 0 || newWeight <= 0) {
+          alert('请输入有效的身高和体重');
+          return;
+        }
+        const newBmi = calculateBMI(newWeight, newHeight);
+        try {
+          await db.collection('profiles').doc(currentUser.uid).set({
+            height: newHeight,
+            weight: newWeight,
+            bmi: parseFloat(newBmi),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          alert('更新成功！');
+          loadProfile(); // 刷新页面数据
+        } catch (err) {
+          console.error(err);
+          alert('保存失败：' + err.message);
+        }
+      });
+
+      document.getElementById('aiAdviceBtn')?.addEventListener('click', () => {
         window.location.href = 'AI个性化膳食建议.html';
       });
-      const nextBtn = document.getElementById('nextMealBtn');
-      if (nextBtn) nextBtn.addEventListener('click', () => {
+      document.getElementById('nextMealBtn')?.addEventListener('click', () => {
         window.location.href = '打卡详情页.html';
       });
     }
 
-    // 返回按钮（返回到饮食管理首页）
     document.getElementById('backBtn').addEventListener('click', () => {
       window.location.href = '饮食管理首页.html';
     });
-
-    // 底部导航栏
-    function initBottomNav() {
-      const navItems = document.querySelectorAll('.nav-item');
-      navItems.forEach(item => {
-        item.addEventListener('click', () => {
-          const navTo = item.getAttribute('data-nav');
-          if (navTo === 'home') window.location.href = '饮食管理首页.html';
-          else if (navTo === 'record') window.location.href = '打卡详情页.html';
-          else if (navTo === 'friends') window.location.href = '亲友共享空间主页.html';
-          else if (navTo === 'report') window.location.href = '饮食趋势报表.html';
-        });
-      });
-    }
-
-    renderHealthMetrics();
-    initBottomNav();
   </script>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" id="backBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="title">健康指标测试</div>
+    <div class="right-placeholder" style="width:2.5rem;"></div>
+  </header>
+
+  <main class="main-content" id="mainContent">
+    <div style="text-align: center; padding: 2rem;">加载中...</div>
+  </main>
 </body>
 </html>
