@@ -57,14 +57,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1rem;
       font-weight: bold;
       color: #e67e22;
     }
     .friend-info { flex: 1; }
     .friend-name { font-weight: 600; color: #5a3e2b; }
     .friend-email { font-size: 0.7rem; color: #a07a5c; }
-    .friend-status { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.25rem; }
+    .friend-status { display: flex; gap: 0.5rem; margin-top: 0.25rem; }
     .status-icon { width: 1.2rem; text-align: center; font-size: 0.8rem; }
     .status-icon.checked { color: #e67e22; }
     .action-buttons {
@@ -100,11 +99,7 @@
       border: 1px solid #e2d4c8;
       border-radius: 2rem;
     }
-    .empty-state {
-      text-align: center;
-      padding: 2rem;
-      color: #c0a080;
-    }
+    .empty-state { text-align: center; padding: 2rem; color: #c0a080; }
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -222,16 +217,17 @@
           e.stopPropagation();
           const friendId = btn.getAttribute('data-id');
           if (confirm('确定要删除这位亲友吗？')) {
-            await db.collection('friendships')
+            // 删除双向好友关系
+            const snap1 = await db.collection('friendships')
               .where('uid', '==', currentUser.uid)
               .where('friendId', '==', friendId)
-              .get()
-              .then(snap => snap.forEach(doc => doc.ref.delete()));
-            await db.collection('friendships')
+              .get();
+            snap1.forEach(doc => doc.ref.delete());
+            const snap2 = await db.collection('friendships')
               .where('uid', '==', friendId)
               .where('friendId', '==', currentUser.uid)
-              .get()
-              .then(snap => snap.forEach(doc => doc.ref.delete()));
+              .get();
+            snap2.forEach(doc => doc.ref.delete());
             loadFriends();
           }
         });
@@ -260,6 +256,7 @@
         alert('已经是好友了');
         return;
       }
+      // 双向添加好友，包含 status 字段
       await db.collection('friendships').add({
         uid: currentUser.uid,
         friendId: targetUid,
