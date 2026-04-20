@@ -172,13 +172,13 @@
       return `${date.getMonth()+1}/${date.getDate()} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
     }
 
-    async function sendMessage(message) {
+    async function sendMessage(message, type = 'text') {
       if (!message.trim()) return;
       await db.collection('interactions').add({
         fromUid: currentUser.uid,
         toUid: friendId,
         message: message,
-        type: 'text',
+        type: type,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
       document.getElementById('messageInput').value = '';
@@ -187,10 +187,11 @@
 
     async function sendQuickAction(action) {
       let msg = '';
-      if (action === 'remind') msg = '⏰ 提醒你该吃饭啦！记得按时吃饭哦～';
-      else if (action === 'flower') msg = '🌸 送你一朵小花，愿你心情美丽！';
-      else if (action === 'greet') msg = '👋 打个招呼，今天也要好好吃饭！';
-      await sendMessage(msg);
+      let type = 'remind';
+      if (action === 'remind') { msg = '⏰ 提醒你该吃饭啦！记得按时吃饭哦～'; type = 'remind'; }
+      else if (action === 'flower') { msg = '🌸 送你一朵小花，愿你心情美丽！'; type = 'emotion'; }
+      else if (action === 'greet') { msg = '👋 打个招呼，今天也要好好吃饭！'; type = 'greet'; }
+      await sendMessage(msg, type);
     }
 
     function setupRealtime() {
