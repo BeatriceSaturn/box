@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>吃了么 - 登录</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fef9e8;
       font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
@@ -44,16 +40,8 @@
       stroke: #e67e22;
       stroke-width: 1.5;
     }
-    h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #5a3e2b;
-    }
-    .sub {
-      color: #a07a5c;
-      margin-top: 0.5rem;
-      font-size: 0.9rem;
-    }
+    h1 { font-size: 2rem; font-weight: 700; color: #5a3e2b; }
+    .sub { color: #a07a5c; margin-top: 0.5rem; font-size: 0.9rem; }
     .btn {
       width: 100%;
       padding: 0.9rem;
@@ -71,10 +59,7 @@
       margin-bottom: 1rem;
       transition: all 0.2s;
     }
-    .btn:hover {
-      background: #fff5eb;
-      transform: translateY(-1px);
-    }
+    .btn:hover { background: #fff5eb; transform: translateY(-1px); }
     .divider {
       display: flex;
       align-items: center;
@@ -83,11 +68,7 @@
       color: #c0a080;
       font-size: 0.8rem;
     }
-    .divider-line {
-      flex: 1;
-      height: 1px;
-      background: #e2d4c8;
-    }
+    .divider-line { flex: 1; height: 1px; background: #e2d4c8; }
     .info {
       margin-top: 2rem;
       background: #fff2e6;
@@ -102,11 +83,7 @@
       font-size: 0.7rem;
       color: #c0a080;
     }
-    a {
-      color: #e67e22;
-      text-decoration: none;
-    }
-    /* 模态框样式 */
+    a { color: #e67e22; text-decoration: none; }
     .modal {
       display: none;
       position: fixed;
@@ -150,16 +127,12 @@
       background: #f0e4d4;
       color: #5a3e2b;
     }
-    .recaptcha-container {
-      margin: 1rem 0;
-    }
+    .recaptcha-container { margin: 1rem 0; }
   </style>
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script>
-    // 你的 Firebase 配置（与之前一致）
     const firebaseConfig = {
       apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
       authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
@@ -173,27 +146,19 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // 全局跳转到采集页
-    function goToProfile() {
-      window.location.href = '基础信息采集页.html';
-    }
+    function goToProfile() { window.location.href = '基础信息采集页.html'; }
 
-    // ---------- 邮箱登录 ----------
+    // 邮箱登录
     function showEmailModal() {
       document.getElementById('emailModal').style.display = 'flex';
       document.getElementById('emailInput').value = '';
       document.getElementById('passwordInput').value = '';
     }
-    function closeModal(id) {
-      document.getElementById(id).style.display = 'none';
-    }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     async function emailLogin() {
       const email = document.getElementById('emailInput').value.trim();
       const password = document.getElementById('passwordInput').value;
-      if (!email || !password) {
-        alert('请输入邮箱和密码');
-        return;
-      }
+      if (!email || !password) { alert('请输入邮箱和密码'); return; }
       try {
         await auth.signInWithEmailAndPassword(email, password);
         alert('登录成功');
@@ -201,27 +166,21 @@
         goToProfile();
       } catch (error) {
         if (error.code === 'auth/user-not-found') {
-          const confirm = window.confirm('没有账号，是否立即注册？');
-          if (confirm) {
+          if (confirm('没有账号，是否立即注册？')) {
             try {
               await auth.createUserWithEmailAndPassword(email, password);
               alert('注册成功，已自动登录');
               closeModal('emailModal');
               goToProfile();
-            } catch (regError) {
-              alert('注册失败：' + regError.message);
-            }
+            } catch (regError) { alert('注册失败：' + regError.message); }
           }
-        } else {
-          alert('登录失败：' + error.message);
-        }
+        } else { alert('登录失败：' + error.message); }
       }
     }
 
-    // ---------- 手机号登录 ----------
+    // 手机号登录
     let recaptchaVerifier = null;
     let confirmationResult = null;
-
     function showPhoneModal() {
       document.getElementById('phoneModal').style.display = 'flex';
       document.getElementById('phoneNumber').value = '';
@@ -229,31 +188,14 @@
       document.getElementById('codeSection').style.display = 'none';
       document.getElementById('sendCodeBtn').style.display = 'block';
       document.getElementById('verifyCodeBtn').style.display = 'none';
-      // 每次打开时重新初始化 reCAPTCHA（需要确保容器存在）
-      if (recaptchaVerifier) {
-        recaptchaVerifier.clear();
-      }
-      recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-        size: 'invisible',
-        callback: () => { /* 自动调用 */ }
-      });
+      if (recaptchaVerifier) recaptchaVerifier.clear();
+      recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible', callback: () => {} });
     }
-
     async function sendVerificationCode() {
       let phone = document.getElementById('phoneNumber').value.trim();
-      if (!phone) {
-        alert('请输入手机号');
-        return;
-      }
-      // 自动添加 +86 如果用户没有输入国际前缀
-      if (!phone.startsWith('+')) {
-        phone = '+86' + phone;
-      }
-      // 简单验证手机号格式
-      if (!/^\+86\d{11}$/.test(phone)) {
-        alert('请输入有效的中国大陆手机号（11位数字）');
-        return;
-      }
+      if (!phone) { alert('请输入手机号'); return; }
+      if (!phone.startsWith('+')) phone = '+86' + phone;
+      if (!/^\+86\d{11}$/.test(phone)) { alert('请输入有效的中国大陆手机号（11位数字）'); return; }
       try {
         confirmationResult = await auth.signInWithPhoneNumber(phone, recaptchaVerifier);
         alert('验证码已发送');
@@ -261,50 +203,31 @@
         document.getElementById('sendCodeBtn').style.display = 'none';
         document.getElementById('verifyCodeBtn').style.display = 'block';
       } catch (error) {
-        console.error(error);
         alert('发送验证码失败：' + error.message);
-        recaptchaVerifier.render(); // 重新渲染
+        recaptchaVerifier.render();
       }
     }
-
     async function verifyCodeAndLogin() {
       const code = document.getElementById('verificationCode').value.trim();
-      if (!code) {
-        alert('请输入验证码');
-        return;
-      }
+      if (!code) { alert('请输入验证码'); return; }
       try {
-        const result = await confirmationResult.confirm(code);
-        const user = result.user;
-        console.log('手机号登录成功', user.uid);
+        await confirmationResult.confirm(code);
         alert('登录成功');
         closeModal('phoneModal');
         goToProfile();
-      } catch (error) {
-        console.error(error);
-        alert('验证失败：' + error.message);
-      }
+      } catch (error) { alert('验证失败：' + error.message); }
     }
 
-    // 游客浏览（匿名登录）
+    // 匿名登录
     async function guestLogin() {
       try {
-        const result = await auth.signInAnonymously();
-        const userId = result.user.uid;
-        sessionStorage.setItem('userId', userId);
-        console.log('匿名登录成功', userId);
+        await auth.signInAnonymously();
         goToProfile();
-      } catch (error) {
-        console.error('匿名登录失败:', error);
-        alert('登录失败，请检查网络后重试。建议使用邮箱或手机号登录。');
-      }
+      } catch (error) { alert('登录失败，请检查网络后重试。建议使用邮箱或手机号登录。'); }
     }
 
-    // 窗口点击关闭模态框
     window.onclick = function(event) {
-      if (event.target.classList.contains('modal')) {
-        event.target.style.display = 'none';
-      }
+      if (event.target.classList.contains('modal')) event.target.style.display = 'none';
     };
   </script>
 </head>
@@ -322,36 +245,15 @@
       <h1>吃了么</h1>
       <p class="sub">规律饮食，健康生活。<br>与家人朋友一起，养成好好吃饭的习惯。</p>
     </div>
-
     <div>
-      <!-- 邮箱登录按钮 -->
-      <button class="btn" id="emailBtn">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
-        邮箱登录
-      </button>
-      <!-- 手机号登录按钮 -->
-      <button class="btn" id="phoneBtn">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-        手机号登录
-      </button>
-
-      <div class="divider">
-        <span class="divider-line"></span>
-        <span>或</span>
-        <span class="divider-line"></span>
-      </div>
-
+      <button class="btn" id="emailBtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>邮箱登录</button>
+      <button class="btn" id="phoneBtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><path d="M12 18h.01"/></svg>手机号登录</button>
+      <div class="divider"><span class="divider-line"></span><span>或</span><span class="divider-line"></span></div>
       <button class="btn" id="guestBtn" style="background:transparent;">游客浏览</button>
-
-      <div class="info">
-        <strong>首次登录？</strong><br>
-        我们会引导您完成个人档案设置，为您提供个性化的饮食建议。
-      </div>
+      <div class="info"><strong>首次登录？</strong><br>我们会引导您完成个人档案设置，为您提供个性化的饮食建议。</div>
     </div>
   </div>
-  <footer>
-    登录即表示您同意 <a href="#">用户协议</a> 和 <a href="#">隐私政策</a>
-  </footer>
+  <footer>登录即表示您同意 <a href="#">用户协议</a> 和 <a href="#">隐私政策</a></footer>
 
   <!-- 邮箱登录模态框 -->
   <div id="emailModal" class="modal">
@@ -380,7 +282,6 @@
   </div>
 
   <script>
-    // 绑定按钮事件
     document.getElementById('emailBtn').addEventListener('click', showEmailModal);
     document.getElementById('confirmEmailBtn').addEventListener('click', emailLogin);
     document.getElementById('phoneBtn').addEventListener('click', showPhoneModal);
