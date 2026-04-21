@@ -1,278 +1,104 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>吃了么 - 登录</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #fef9e8;
-      font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    .container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 2rem 1.5rem;
-    }
-    .logo {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-    .logo-icon {
-      background: #ffd6b0;
-      width: 72px;
-      height: 72px;
-      border-radius: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 1rem;
-    }
-    .logo-icon svg {
-      width: 40px;
-      height: 40px;
-      stroke: #e67e22;
-      stroke-width: 1.5;
-    }
-    h1 { font-size: 2rem; font-weight: 700; color: #5a3e2b; }
-    .sub { color: #a07a5c; margin-top: 0.5rem; font-size: 0.9rem; }
-    .btn {
-      width: 100%;
-      padding: 0.9rem;
-      border-radius: 48px;
-      border: 1px solid #e2d4c8;
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      font-size: 1rem;
-      font-weight: 500;
-      color: #5a3e2b;
-      cursor: pointer;
-      margin-bottom: 1rem;
-      transition: all 0.2s;
-    }
-    .btn:hover { background: #fff5eb; transform: translateY(-1px); }
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin: 1.5rem 0;
-      color: #c0a080;
-      font-size: 0.8rem;
-    }
-    .divider-line { flex: 1; height: 1px; background: #e2d4c8; }
-    .info {
-      margin-top: 2rem;
-      background: #fff2e6;
-      padding: 1rem;
-      border-radius: 24px;
-      font-size: 0.8rem;
-      color: #a07a5c;
-    }
-    footer {
-      text-align: center;
-      padding: 1rem;
-      font-size: 0.7rem;
-      color: #c0a080;
-    }
-    a { color: #e67e22; text-decoration: none; }
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 2rem;
-      width: 85%;
-      max-width: 320px;
-      text-align: center;
-    }
-    .modal-content input {
-      width: 100%;
-      padding: 0.7rem;
-      margin: 0.5rem 0;
-      border: 1px solid #e2d4c8;
-      border-radius: 2rem;
-      font-size: 1rem;
-    }
-    .modal-content button {
-      width: 100%;
-      padding: 0.7rem;
-      margin-top: 0.5rem;
-      background: #e67e22;
-      border: none;
-      border-radius: 2rem;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .modal-content button.secondary {
-      background: #f0e4d4;
-      color: #5a3e2b;
-    }
-    .modal-content .note {
-      font-size: 0.7rem;
-      color: #a07a5c;
-      margin-top: 0.5rem;
-    }
-  </style>
-  <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-  <script>
-    (function() {
-      console.log('页面加载，开始初始化 CloudBase...');
-      const app = cloudbase.init({
-        env: 'beatrice-saturn-d7fu78ek2c55aa9b'
-      });
-      const auth = app.auth();
-      console.log('CloudBase 初始化完成');
-
-      function goToProfile() {
-        console.log('准备跳转到基础信息采集页');
-        window.location.href = '基础信息采集页.html';
-      }
-
-      // 匿名登录（备用）
-      window.guestLogin = async function() {
-        console.log('点击匿名登录');
-        try {
-          await auth.signInAnonymously();
-          console.log('匿名登录成功，用户:', auth.currentUser);
-          goToProfile();
-        } catch (error) {
-          console.error('匿名登录失败:', error);
-          alert('匿名登录失败，请使用邮箱登录。\n' + error.message);
-        }
-      };
-
-      // 显示邮箱登录模态框
-      window.showEmailModal = function() {
-        console.log('打开邮箱登录弹窗');
-        document.getElementById('emailModal').style.display = 'flex';
-        document.getElementById('emailInput').value = '';
-        document.getElementById('passwordInput').value = '';
-        const btn = document.getElementById('confirmEmailBtn');
-        btn.disabled = false;
-        btn.innerText = '登录 / 注册';
-      };
-
-      // 邮箱登录/注册
-      window.emailLogin = async function() {
-        const email = document.getElementById('emailInput').value.trim();
-        const password = document.getElementById('passwordInput').value;
-        if (!email || !password) {
-          alert('请输入邮箱和密码');
-          return;
-        }
-        const btn = document.getElementById('confirmEmailBtn');
-        btn.disabled = true;
-        btn.innerText = '处理中...';
-        console.log(`尝试登录/注册: ${email}`);
-        try {
-          // 先尝试登录
-          await auth.signInWithEmailAndPassword(email, password);
-          console.log('登录成功，用户:', auth.currentUser);
-          alert('登录成功');
-          closeModal('emailModal');
-          goToProfile();
-        } catch (error) {
-          console.error('登录失败:', error);
-          if (error.code === 'USER_NOT_FOUND' || error.message.includes('user not found')) {
-            const confirm = window.confirm('没有账号，是否立即注册？');
-            if (confirm) {
-              try {
-                await auth.signUpWithEmailAndPassword(email, password);
-                console.log('注册成功，用户:', auth.currentUser);
-                alert('注册成功，已自动登录');
-                closeModal('emailModal');
-                goToProfile();
-              } catch (regError) {
-                console.error('注册失败:', regError);
-                alert('注册失败：' + regError.message);
-              }
-            }
-          } else {
-            alert('登录失败：' + error.message);
-          }
-        } finally {
-          btn.disabled = false;
-          btn.innerText = '登录 / 注册';
-        }
-      };
-
-      function closeModal(id) {
-        document.getElementById(id).style.display = 'none';
-      }
-      window.closeModal = closeModal;
-    })();
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吃了么 - 登录调试</title>
+    <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
+    <style>
+        body { font-family: monospace; padding: 2rem; max-width: 500px; margin: 0 auto; background: #fef9e8; }
+        input, button { display: block; width: 100%; padding: 0.5rem; margin: 0.5rem 0; font-size: 1rem; }
+        .log { background: #f0e4d4; padding: 1rem; border-radius: 1rem; margin-top: 1rem; white-space: pre-wrap; font-size: 0.8rem; max-height: 300px; overflow-y: auto; }
+        h1 { color: #5a3e2b; }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/>
-          <path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/>
-          <path d="m2.1 21.8 6.4-6.3"/>
-          <path d="m19 5-7 7"/>
-        </svg>
-      </div>
-      <h1>吃了么</h1>
-      <p class="sub">规律饮食，健康生活。<br>与家人朋友一起，养成好好吃饭的习惯。</p>
-    </div>
+    <h1>吃了么 - 登录调试</h1>
+    <input type="email" id="email" placeholder="邮箱地址" autocomplete="email">
+    <input type="password" id="password" placeholder="密码（请自己记住）" autocomplete="new-password">
+    <button id="loginBtn">登录 / 注册</button>
+    <button id="guestBtn">游客浏览</button>
+    <div class="log" id="log"></div>
 
-    <div>
-      <button class="btn" id="emailBtn" onclick="showEmailModal()">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
-        邮箱登录
-      </button>
+    <script>
+        const logDiv = document.getElementById('log');
+        function log(msg) {
+            console.log(msg);
+            logDiv.innerText += msg + '\n';
+        }
 
-      <div class="divider">
-        <span class="divider-line"></span>
-        <span>或</span>
-        <span class="divider-line"></span>
-      </div>
+        // 初始化 CloudBase
+        log('初始化 CloudBase...');
+        const app = cloudbase.init({
+            env: 'beatrice-saturn-d7fu78ek2c55aa9b'
+        });
+        const auth = app.auth();
+        log('CloudBase 初始化完成');
 
-      <button class="btn" id="guestBtn" onclick="guestLogin()" style="background:transparent;">游客浏览</button>
+        // 跳转到采集页
+        function goToProfile() {
+            log('准备跳转到 基础信息采集页.html');
+            window.location.href = '基础信息采集页.html';
+        }
 
-      <div class="info">
-        <strong>首次登录？</strong><br>
-        我们会引导您完成个人档案设置，为您提供个性化的饮食建议。<br>
-        <span style="font-size:0.7rem;">💡 使用邮箱登录可解锁亲友共享、跨设备同步等功能。</span>
-      </div>
-    </div>
-  </div>
-  <footer>
-    登录即表示您同意 <a href="#">用户协议</a> 和 <a href="#">隐私政策</a>
-  </footer>
+        // 邮箱登录/注册
+        async function handleEmailLogin() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            if (!email || !password) {
+                alert('请输入邮箱和密码');
+                return;
+            }
+            log(`尝试登录/注册: ${email}`);
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.innerText = '处理中...';
+            try {
+                // 尝试登录
+                await auth.signInWithEmailAndPassword(email, password);
+                log('登录成功，用户:', auth.currentUser ? auth.currentUser.uid : 'null');
+                alert('登录成功');
+                goToProfile();
+            } catch (error) {
+                log('登录失败:', error.code, error.message);
+                if (error.code === 'USER_NOT_FOUND' || error.message.includes('user not found')) {
+                    const confirm = window.confirm('没有账号，是否立即注册？');
+                    if (confirm) {
+                        try {
+                            await auth.signUpWithEmailAndPassword(email, password);
+                            log('注册成功，用户:', auth.currentUser ? auth.currentUser.uid : 'null');
+                            alert('注册成功');
+                            goToProfile();
+                        } catch (regError) {
+                            log('注册失败:', regError.message);
+                            alert('注册失败: ' + regError.message);
+                        }
+                    }
+                } else {
+                    alert('登录失败: ' + error.message);
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '登录 / 注册';
+            }
+        }
 
-  <!-- 邮箱登录模态框 -->
-  <div id="emailModal" class="modal">
-    <div class="modal-content">
-      <h3>邮箱登录</h3>
-      <input type="email" id="emailInput" placeholder="电子邮箱">
-      <input type="password" id="passwordInput" placeholder="密码">
-      <div class="note">⚠️ 请设置一个你容易记住的密码（不是邮箱的密码），用于下次登录。</div>
-      <button id="confirmEmailBtn" onclick="emailLogin()">登录 / 注册</button>
-      <button class="secondary" onclick="closeModal('emailModal')">取消</button>
-    </div>
-  </div>
+        // 匿名登录
+        async function handleGuestLogin() {
+            log('尝试匿名登录');
+            try {
+                await auth.signInAnonymously();
+                log('匿名登录成功，用户:', auth.currentUser ? auth.currentUser.uid : 'null');
+                alert('匿名登录成功');
+                goToProfile();
+            } catch (error) {
+                log('匿名登录失败:', error.message);
+                alert('匿名登录失败: ' + error.message);
+            }
+        }
+
+        document.getElementById('loginBtn').addEventListener('click', handleEmailLogin);
+        document.getElementById('guestBtn').addEventListener('click', handleGuestLogin);
+    </script>
 </body>
 </html>
