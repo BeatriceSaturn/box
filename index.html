@@ -9,27 +9,26 @@
         body { font-family: system-ui; max-width: 400px; margin: 2rem auto; padding: 1rem; background: #fef9e8; }
         input, button { width: 100%; padding: 0.7rem; margin: 0.5rem 0; border-radius: 2rem; border: 1px solid #e2d4c8; font-size: 1rem; }
         button { background: #e67e22; color: white; font-weight: bold; cursor: pointer; }
-        .log { background: #f0e4d4; padding: 1rem; border-radius: 1rem; margin-top: 1rem; font-size: 0.8rem; white-space: pre-wrap; max-height: 250px; overflow-y: auto; }
+        .log { background: #f0e4d4; padding: 1rem; border-radius: 1rem; margin-top: 1rem; font-size: 0.8rem; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
         h1 { color: #5a3e2b; text-align: center; }
-        .error { color: #d9534f; }
+        .warning { color: #d9534f; font-size: 0.8rem; margin-top: 1rem; text-align: center; }
         .divider { text-align: center; margin: 1rem 0; color: #c0a080; }
     </style>
 </head>
 <body>
     <h1>吃了么</h1>
-    <button id="guestBtn">🍚 游客浏览</button>
-    <div class="divider">———— 使用邮箱 ————</div>
-    <input type="email" id="email" placeholder="电子邮箱" autocomplete="email">
-    <input type="password" id="password" placeholder="密码（至少6位）" autocomplete="new-password">
+    <button id="guestBtn" style="background: #e67e22;">🍚 游客浏览（推荐）</button>
+    <div class="divider">———— 或 ————</div>
+    <input type="email" id="email" placeholder="电子邮箱">
+    <input type="password" id="password" placeholder="密码（至少6位）">
     <button id="loginBtn">邮箱登录 / 注册</button>
     <div class="log" id="log"></div>
 
     <script>
         const logDiv = document.getElementById('log');
-        function log(msg, isError = false) {
+        function log(msg) {
             const p = document.createElement('div');
             p.textContent = msg;
-            if (isError) p.style.color = '#d9534f';
             logDiv.appendChild(p);
             console.log(msg);
         }
@@ -44,15 +43,15 @@
             auth = app.auth();
             log('CloudBase 初始化成功');
         } catch (e) {
-            log('初始化失败: ' + e.message, true);
+            log('初始化失败: ' + e.message);
         }
 
         function goToProfile() {
-            log('正在跳转到基础信息采集页...');
+            log('跳转到基础信息采集页');
             window.location.href = '基础信息采集页.html';
         }
 
-        // 匿名登录
+        // 匿名登录（最稳定）
         async function guestLogin() {
             log('尝试匿名登录...');
             try {
@@ -60,8 +59,8 @@
                 log('匿名登录成功');
                 goToProfile();
             } catch (error) {
-                log('匿名登录失败: ' + error.message, true);
-                alert('匿名登录失败: ' + error.message);
+                log('匿名登录失败: ' + error.message);
+                alert('匿名登录失败，请稍后重试');
             }
         }
 
@@ -74,7 +73,7 @@
                 return;
             }
             if (password.length < 6) {
-                alert('密码长度至少6位');
+                alert('密码至少需要6位');
                 return;
             }
             log(`尝试登录: ${email}`);
@@ -87,7 +86,7 @@
                 alert('登录成功');
                 goToProfile();
             } catch (error) {
-                log(`登录失败: ${error.code || error.message}`, true);
+                log('登录失败: ' + (error.code || error.message));
                 if (error.code === 'USER_NOT_FOUND' || error.message.includes('user not found')) {
                     const confirm = window.confirm('没有账号，是否立即注册？');
                     if (confirm) {
@@ -96,22 +95,4 @@
                             log('注册成功');
                             alert('注册成功');
                             goToProfile();
-                        } catch (regError) {
-                            log(`注册失败: ${regError.message}`, true);
-                            alert('注册失败: ' + regError.message);
                         }
-                    }
-                } else {
-                    alert('登录失败: ' + (error.message || error.code));
-                }
-            } finally {
-                btn.disabled = false;
-                btn.innerText = '邮箱登录 / 注册';
-            }
-        }
-
-        document.getElementById('guestBtn').addEventListener('click', guestLogin);
-        document.getElementById('loginBtn').addEventListener('click', emailLogin);
-    </script>
-</body>
-</html>
