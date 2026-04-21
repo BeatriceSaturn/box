@@ -140,7 +140,7 @@
         window.location.href = '基础信息采集页.html';
       }
 
-      // 匿名登录
+      // ---------- 匿名登录 ----------
       window.guestLogin = async function() {
         try {
           await auth.signInAnonymously();
@@ -150,7 +150,7 @@
         }
       };
 
-      // 邮箱验证码登录
+      // ---------- 邮箱验证码登录（正确）----------
       let emailVerificationSession = null;
       window.showEmailCodeModal = function() {
         document.getElementById('emailCodeModal').style.display = 'flex';
@@ -166,7 +166,7 @@
         try {
           const verificationInfo = await auth.getVerification({ email });
           emailVerificationSession = verificationInfo.verification_session;
-          alert('验证码已发送');
+          alert('验证码已发送，请查收邮箱（垃圾箱也可能有）');
           document.getElementById('emailCodeSection').style.display = 'block';
           document.getElementById('sendEmailCodeBtn').style.display = 'none';
           document.getElementById('verifyEmailCodeBtn').style.display = 'block';
@@ -188,9 +188,18 @@
         }
       };
 
-      // 手机号验证码登录
-      let phoneVerificationSession = null;
+      // ---------- 手机号验证码登录（正确：signInWithPhoneNumber + confirm）----------
+      let recaptchaVerifier = null;
+      let confirmationResult = null;
+
       window.showPhoneCodeModal = function() {
+        // 创建不可见 reCAPTCHA 实例
+        if (!recaptchaVerifier) {
+          recaptchaVerifier = new auth.RecaptchaVerifier('recaptcha-container', {
+            size: 'invisible',
+            callback: () => {}
+          });
+        }
         document.getElementById('phoneCodeModal').style.display = 'flex';
         document.getElementById('phoneNumberInput').value = '';
         document.getElementById('verificationCodePhone').value = '';
@@ -198,29 +207,37 @@
         document.getElementById('sendPhoneCodeBtn').style.display = 'block';
         document.getElementById('verifyPhoneCodeBtn').style.display = 'none';
       };
+
       window.sendPhoneCode = async function() {
         let phone = document.getElementById('phoneNumberInput').value.trim();
         if (!phone) { alert('请输入手机号'); return; }
         if (!phone.startsWith('+')) phone = '+86' + phone;
-        if (!/^\+86\d{11}$/.test(phone)) { alert('请输入有效的手机号'); return; }
+        if (!/^\+86\d{11}$/.test(phone)) { alert('请输入有效的手机号（11位数字）'); return; }
         try {
-          const verificationInfo = await auth.getVerification({ phone_number: phone });
-          phoneVerificationSession = verificationInfo.verification_session;
-          alert('验证码已发送');
+          // 发送短信验证码（CloudBase 标准方式）
+          confirmationResult = await auth.signInWithPhoneNumber(phone, recaptchaVerifier);
+          alert('验证码已发送，请查收短信');
           document.getElementById('phoneCodeSection').style.display = 'block';
           document.getElementById('sendPhoneCodeBtn').style.display = 'none';
           document.getElementById('verifyPhoneCodeBtn').style.display = 'block';
         } catch (error) {
+          console.error(error);
           alert('发送失败：' + (error.message || '请稍后重试'));
+          // 重置 reCAPTCHA
+          if (recaptchaVerifier) {
+            recaptchaVerifier.clear();
+            recaptchaVerifier = null;
+          }
+          // 重新显示模态框以重新创建 reCAPTCHA
+          showPhoneCodeModal();
         }
       };
+
       window.verifyPhoneCode = async function() {
-        let phone = document.getElementById('phoneNumberInput').value.trim();
-        if (!phone.startsWith('+')) phone = '+86' + phone;
         const code = document.getElementById('verificationCodePhone').value.trim();
         if (!code) { alert('请输入验证码'); return; }
         try {
-          await auth.signInWithPhoneCode(phone, code, phoneVerificationSession);
+          await confirmationResult.confirm(code);
           alert('登录成功');
           closeModal('phoneCodeModal');
           goToProfile();
@@ -231,6 +248,11 @@
 
       function closeModal(id) {
         document.getElementById(id).style.display = 'none';
+        // 关闭手机号模态框时清理 reCAPTCHA（可选）
+        if (id === 'phoneCodeModal' && recaptchaVerifier) {
+          recaptchaVerifier.clear();
+          recaptchaVerifier = null;
+        }
       }
       window.closeModal = closeModal;
     })();
@@ -279,6 +301,7 @@
     登录即表示您同意 <a href="#">用户协议</a> 和 <a href="#">隐私政策</a>
   </footer>
 
+  <!-- 邮箱验证码登录模态框 -->
   <div id="emailCodeModal" class="modal">
     <div class="modal-content">
       <h3>邮箱验证码登录</h3>
@@ -292,10 +315,12 @@
     </div>
   </div>
 
+  <!-- 手机号验证码登录模态框 -->
   <div id="phoneCodeModal" class="modal">
     <div class="modal-content">
       <h3>手机号验证码登录</h3>
       <input type="tel" id="phoneNumberInput" placeholder="手机号 (例如 13812345678)">
+      <div id="recaptcha-container"></div>
       <button id="sendPhoneCodeBtn" onclick="sendPhoneCode()">发送验证码</button>
       <div id="phoneCodeSection" style="display:none;">
         <input type="text" id="verificationCodePhone" placeholder="验证码">
