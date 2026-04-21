@@ -127,60 +127,65 @@
       background: #f0e4d4;
       color: #5a3e2b;
     }
-    .recaptcha-container { margin: 1rem 0; }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <!-- 腾讯云开发 CloudBase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@cloudbase/js-sdk@1.7.2/dist/cloudbase.full.js"></script>
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
-      authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
-      projectId: "beatricesaturn-6ff7e",
-      storageBucket: "beatricesaturn-6ff7e.firebasestorage.app",
-      messagingSenderId: "607338984635",
-      appId: "1:607338984635:web:a4b3668715462a4d0ca59e",
-      measurementId: "G-L2R10QZZL9"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    // 初始化 CloudBase
+    const app = cloudbase.init({
+      env: 'beatrice-saturn-d7fu78ek2c55aa9b'  // 你的环境ID
+    });
+    const auth = app.auth();
 
-    function goToProfile() { window.location.href = '基础信息采集页.html'; }
+    // 跳转到采集页
+    function goToProfile() {
+      window.location.href = '基础信息采集页.html';
+    }
 
-    // 邮箱登录
+    // ---------- 邮箱/密码登录 ----------
     function showEmailModal() {
       document.getElementById('emailModal').style.display = 'flex';
       document.getElementById('emailInput').value = '';
       document.getElementById('passwordInput').value = '';
     }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
     async function emailLogin() {
       const email = document.getElementById('emailInput').value.trim();
       const password = document.getElementById('passwordInput').value;
-      if (!email || !password) { alert('请输入邮箱和密码'); return; }
+      if (!email || !password) {
+        alert('请输入邮箱和密码');
+        return;
+      }
       try {
+        // 先尝试登录
         await auth.signInWithEmailAndPassword(email, password);
         alert('登录成功');
         closeModal('emailModal');
         goToProfile();
       } catch (error) {
-        if (error.code === 'auth/user-not-found') {
-          if (confirm('没有账号，是否立即注册？')) {
+        // 用户不存在，尝试注册
+        if (error.code === 'USER_NOT_FOUND' || error.message.includes('user not found')) {
+          const confirm = window.confirm('没有账号，是否立即注册？');
+          if (confirm) {
             try {
-              await auth.createUserWithEmailAndPassword(email, password);
+              await auth.signUpWithEmailAndPassword(email, password);
               alert('注册成功，已自动登录');
               closeModal('emailModal');
               goToProfile();
-            } catch (regError) { alert('注册失败：' + regError.message); }
+            } catch (regError) {
+              alert('注册失败：' + regError.message);
+            }
           }
-        } else { alert('登录失败：' + error.message); }
+        } else {
+          alert('登录失败：' + error.message);
+        }
       }
     }
 
-    // 手机号登录
-    let recaptchaVerifier = null;
-    let confirmationResult = null;
+    // ---------- 手机号登录（短信验证码）----------
+    let phoneVerifySession = null;
     function showPhoneModal() {
       document.getElementById('phoneModal').style.display = 'flex';
       document.getElementById('phoneNumber').value = '';
@@ -188,46 +193,73 @@
       document.getElementById('codeSection').style.display = 'none';
       document.getElementById('sendCodeBtn').style.display = 'block';
       document.getElementById('verifyCodeBtn').style.display = 'none';
-      if (recaptchaVerifier) recaptchaVerifier.clear();
-      recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible', callback: () => {} });
     }
-    async function sendVerificationCode() {
+    async function sendSmsCode() {
       let phone = document.getElementById('phoneNumber').value.trim();
-      if (!phone) { alert('请输入手机号'); return; }
+      if (!phone) {
+        alert('请输入手机号');
+        return;
+      }
+      // 自动添加 +86 前缀（中国大陆）
       if (!phone.startsWith('+')) phone = '+86' + phone;
-      if (!/^\+86\d{11}$/.test(phone)) { alert('请输入有效的中国大陆手机号（11位数字）'); return; }
+      if (!/^\+86\d{11}$/.test(phone)) {
+        alert('请输入有效的手机号（11位数字）');
+        return;
+      }
       try {
-        confirmationResult = await auth.signInWithPhoneNumber(phone, recaptchaVerifier);
-        alert('验证码已发送');
+        // 发送短信验证码（CloudBase 需要先创建手机号验证会话）
+        const verificationInfo = await auth.getVerification({
+          phone_number: phone
+        });
+        phoneVerifySession = verificationInfo.verification_session;
+        alert('验证码已发送，请查收短信');
         document.getElementById('codeSection').style.display = 'block';
         document.getElementById('sendCodeBtn').style.display = 'none';
         document.getElementById('verifyCodeBtn').style.display = 'block';
       } catch (error) {
-        alert('发送验证码失败：' + error.message);
-        recaptchaVerifier.render();
+        console.error(error);
+        alert('发送验证码失败：' + (error.message || '请稍后重试'));
       }
     }
-    async function verifyCodeAndLogin() {
+    async function verifyPhoneCode() {
       const code = document.getElementById('verificationCode').value.trim();
-      if (!code) { alert('请输入验证码'); return; }
+      if (!code) {
+        alert('请输入验证码');
+        return;
+      }
+      const phone = document.getElementById('phoneNumber').value.trim();
+      if (!phone) {
+        alert('请先输入手机号');
+        return;
+      }
+      const phoneWithPrefix = phone.startsWith('+') ? phone : '+86' + phone;
       try {
-        await confirmationResult.confirm(code);
+        // 使用验证码登录（CloudBase 会自动创建/绑定用户）
+        await auth.signInWithPhoneCode(phoneWithPrefix, code, phoneVerifySession);
         alert('登录成功');
         closeModal('phoneModal');
         goToProfile();
-      } catch (error) { alert('验证失败：' + error.message); }
+      } catch (error) {
+        console.error(error);
+        alert('登录失败：' + (error.message || '验证码错误'));
+      }
     }
 
-    // 匿名登录
+    // 匿名登录（可能仍受网络限制，但保留作为备选）
     async function guestLogin() {
       try {
         await auth.signInAnonymously();
         goToProfile();
-      } catch (error) { alert('登录失败，请检查网络后重试。建议使用邮箱或手机号登录。'); }
+      } catch (error) {
+        console.error(error);
+        alert('匿名登录失败，建议使用邮箱或手机号登录。');
+      }
     }
 
     window.onclick = function(event) {
-      if (event.target.classList.contains('modal')) event.target.style.display = 'none';
+      if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+      }
     };
   </script>
 </head>
@@ -245,15 +277,34 @@
       <h1>吃了么</h1>
       <p class="sub">规律饮食，健康生活。<br>与家人朋友一起，养成好好吃饭的习惯。</p>
     </div>
+
     <div>
-      <button class="btn" id="emailBtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>邮箱登录</button>
-      <button class="btn" id="phoneBtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><path d="M12 18h.01"/></svg>手机号登录</button>
-      <div class="divider"><span class="divider-line"></span><span>或</span><span class="divider-line"></span></div>
+      <button class="btn" id="emailBtn">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
+        邮箱登录
+      </button>
+      <button class="btn" id="phoneBtn">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+        手机号登录
+      </button>
+
+      <div class="divider">
+        <span class="divider-line"></span>
+        <span>或</span>
+        <span class="divider-line"></span>
+      </div>
+
       <button class="btn" id="guestBtn" style="background:transparent;">游客浏览</button>
-      <div class="info"><strong>首次登录？</strong><br>我们会引导您完成个人档案设置，为您提供个性化的饮食建议。</div>
+
+      <div class="info">
+        <strong>首次登录？</strong><br>
+        我们会引导您完成个人档案设置，为您提供个性化的饮食建议。
+      </div>
     </div>
   </div>
-  <footer>登录即表示您同意 <a href="#">用户协议</a> 和 <a href="#">隐私政策</a></footer>
+  <footer>
+    登录即表示您同意 <a href="#">用户协议</a> 和 <a href="#">隐私政策</a>
+  </footer>
 
   <!-- 邮箱登录模态框 -->
   <div id="emailModal" class="modal">
@@ -271,11 +322,10 @@
     <div class="modal-content">
       <h3>手机号登录</h3>
       <input type="tel" id="phoneNumber" placeholder="手机号 (例如 13812345678)">
-      <div id="recaptcha-container" class="recaptcha-container"></div>
-      <button id="sendCodeBtn" onclick="sendVerificationCode()">发送验证码</button>
+      <button id="sendCodeBtn" onclick="sendSmsCode()">发送验证码</button>
       <div id="codeSection" style="display:none;">
         <input type="text" id="verificationCode" placeholder="短信验证码">
-        <button id="verifyCodeBtn" onclick="verifyCodeAndLogin()">验证并登录</button>
+        <button id="verifyCodeBtn" onclick="verifyPhoneCode()">验证并登录</button>
       </div>
       <button class="secondary" onclick="closeModal('phoneModal')">取消</button>
     </div>
