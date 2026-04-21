@@ -128,139 +128,143 @@
       color: #5a3e2b;
     }
   </style>
-  <!-- 腾讯云开发 CloudBase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@cloudbase/js-sdk@1.7.2/dist/cloudbase.full.js"></script>
   <script>
-    // 初始化 CloudBase
-    const app = cloudbase.init({
-      env: 'beatrice-saturn-d7fu78ek2c55aa9b'  // 你的环境ID
-    });
-    const auth = app.auth();
+    (function() {
+      let auth = null;
+      let app = null;
 
-    // 跳转到采集页
-    function goToProfile() {
-      window.location.href = '基础信息采集页.html';
-    }
-
-    // ---------- 邮箱/密码登录 ----------
-    function showEmailModal() {
-      document.getElementById('emailModal').style.display = 'flex';
-      document.getElementById('emailInput').value = '';
-      document.getElementById('passwordInput').value = '';
-    }
-    function closeModal(id) {
-      document.getElementById(id).style.display = 'none';
-    }
-    async function emailLogin() {
-      const email = document.getElementById('emailInput').value.trim();
-      const password = document.getElementById('passwordInput').value;
-      if (!email || !password) {
-        alert('请输入邮箱和密码');
-        return;
-      }
-      try {
-        // 先尝试登录
-        await auth.signInWithEmailAndPassword(email, password);
-        alert('登录成功');
-        closeModal('emailModal');
-        goToProfile();
-      } catch (error) {
-        // 用户不存在，尝试注册
-        if (error.code === 'USER_NOT_FOUND' || error.message.includes('user not found')) {
-          const confirm = window.confirm('没有账号，是否立即注册？');
-          if (confirm) {
-            try {
-              await auth.signUpWithEmailAndPassword(email, password);
-              alert('注册成功，已自动登录');
-              closeModal('emailModal');
-              goToProfile();
-            } catch (regError) {
-              alert('注册失败：' + regError.message);
-            }
-          }
-        } else {
-          alert('登录失败：' + error.message);
+      // 初始化 CloudBase（同步执行）
+      function initCloudBase() {
+        try {
+          app = cloudbase.init({
+            env: 'beatrice-saturn-d7fu78ek2c55aa9b'
+          });
+          auth = app.auth();
+          console.log('CloudBase 初始化成功');
+        } catch (e) {
+          console.error('CloudBase 初始化失败:', e);
+          alert('初始化失败，请刷新页面重试');
         }
       }
-    }
 
-    // ---------- 手机号登录（短信验证码）----------
-    let phoneVerifySession = null;
-    function showPhoneModal() {
-      document.getElementById('phoneModal').style.display = 'flex';
-      document.getElementById('phoneNumber').value = '';
-      document.getElementById('verificationCode').value = '';
-      document.getElementById('codeSection').style.display = 'none';
-      document.getElementById('sendCodeBtn').style.display = 'block';
-      document.getElementById('verifyCodeBtn').style.display = 'none';
-    }
-    async function sendSmsCode() {
-      let phone = document.getElementById('phoneNumber').value.trim();
-      if (!phone) {
-        alert('请输入手机号');
-        return;
+      function goToProfile() {
+        window.location.href = '基础信息采集页.html';
       }
-      // 自动添加 +86 前缀（中国大陆）
-      if (!phone.startsWith('+')) phone = '+86' + phone;
-      if (!/^\+86\d{11}$/.test(phone)) {
-        alert('请输入有效的手机号（11位数字）');
-        return;
-      }
-      try {
-        // 发送短信验证码（CloudBase 需要先创建手机号验证会话）
-        const verificationInfo = await auth.getVerification({
-          phone_number: phone
-        });
-        phoneVerifySession = verificationInfo.verification_session;
-        alert('验证码已发送，请查收短信');
-        document.getElementById('codeSection').style.display = 'block';
-        document.getElementById('sendCodeBtn').style.display = 'none';
-        document.getElementById('verifyCodeBtn').style.display = 'block';
-      } catch (error) {
-        console.error(error);
-        alert('发送验证码失败：' + (error.message || '请稍后重试'));
-      }
-    }
-    async function verifyPhoneCode() {
-      const code = document.getElementById('verificationCode').value.trim();
-      if (!code) {
-        alert('请输入验证码');
-        return;
-      }
-      const phone = document.getElementById('phoneNumber').value.trim();
-      if (!phone) {
-        alert('请先输入手机号');
-        return;
-      }
-      const phoneWithPrefix = phone.startsWith('+') ? phone : '+86' + phone;
-      try {
-        // 使用验证码登录（CloudBase 会自动创建/绑定用户）
-        await auth.signInWithPhoneCode(phoneWithPrefix, code, phoneVerifySession);
-        alert('登录成功');
-        closeModal('phoneModal');
-        goToProfile();
-      } catch (error) {
-        console.error(error);
-        alert('登录失败：' + (error.message || '验证码错误'));
-      }
-    }
 
-    // 匿名登录（可能仍受网络限制，但保留作为备选）
-    async function guestLogin() {
-      try {
-        await auth.signInAnonymously();
-        goToProfile();
-      } catch (error) {
-        console.error(error);
-        alert('匿名登录失败，建议使用邮箱或手机号登录。');
+      // ---------- 匿名登录 ----------
+      async function guestLogin() {
+        if (!auth) { alert('系统尚未就绪'); return; }
+        try {
+          await auth.signInAnonymously();
+          goToProfile();
+        } catch (error) {
+          alert('匿名登录失败，请使用邮箱或手机号登录。');
+        }
       }
-    }
 
-    window.onclick = function(event) {
-      if (event.target.classList.contains('modal')) {
-        event.target.style.display = 'none';
+      // ---------- 邮箱验证码登录 ----------
+      let emailVerificationSession = null;
+      function showEmailCodeModal() {
+        if (!auth) { alert('系统尚未就绪'); return; }
+        document.getElementById('emailCodeModal').style.display = 'flex';
+        document.getElementById('emailCodeInput').value = '';
+        document.getElementById('verificationCodeEmail').value = '';
+        document.getElementById('emailCodeSection').style.display = 'none';
+        document.getElementById('sendEmailCodeBtn').style.display = 'block';
+        document.getElementById('verifyEmailCodeBtn').style.display = 'none';
       }
-    };
+      async function sendEmailCode() {
+        const email = document.getElementById('emailCodeInput').value.trim();
+        if (!email) { alert('请输入邮箱'); return; }
+        try {
+          const verificationInfo = await auth.getVerification({ email });
+          emailVerificationSession = verificationInfo.verification_session;
+          alert('验证码已发送至邮箱，请查收（垃圾箱可能也有）');
+          document.getElementById('emailCodeSection').style.display = 'block';
+          document.getElementById('sendEmailCodeBtn').style.display = 'none';
+          document.getElementById('verifyEmailCodeBtn').style.display = 'block';
+        } catch (error) {
+          alert('发送失败：' + (error.message || '请稍后重试'));
+        }
+      }
+      async function verifyEmailCode() {
+        const email = document.getElementById('emailCodeInput').value.trim();
+        const code = document.getElementById('verificationCodeEmail').value.trim();
+        if (!email || !code) { alert('请输入邮箱和验证码'); return; }
+        try {
+          await auth.signInWithEmailCode(email, code, emailVerificationSession);
+          alert('登录成功');
+          closeModal('emailCodeModal');
+          goToProfile();
+        } catch (error) {
+          alert('验证失败：' + (error.message || '验证码错误'));
+        }
+      }
+
+      // ---------- 手机号验证码登录 ----------
+      let phoneVerificationSession = null;
+      function showPhoneCodeModal() {
+        if (!auth) { alert('系统尚未就绪'); return; }
+        document.getElementById('phoneCodeModal').style.display = 'flex';
+        document.getElementById('phoneNumberInput').value = '';
+        document.getElementById('verificationCodePhone').value = '';
+        document.getElementById('phoneCodeSection').style.display = 'none';
+        document.getElementById('sendPhoneCodeBtn').style.display = 'block';
+        document.getElementById('verifyPhoneCodeBtn').style.display = 'none';
+      }
+      async function sendPhoneCode() {
+        let phone = document.getElementById('phoneNumberInput').value.trim();
+        if (!phone) { alert('请输入手机号'); return; }
+        if (!phone.startsWith('+')) phone = '+86' + phone;
+        if (!/^\+86\d{11}$/.test(phone)) { alert('请输入有效的手机号（11位数字）'); return; }
+        try {
+          const verificationInfo = await auth.getVerification({ phone_number: phone });
+          phoneVerificationSession = verificationInfo.verification_session;
+          alert('验证码已发送，请查收短信');
+          document.getElementById('phoneCodeSection').style.display = 'block';
+          document.getElementById('sendPhoneCodeBtn').style.display = 'none';
+          document.getElementById('verifyPhoneCodeBtn').style.display = 'block';
+        } catch (error) {
+          alert('发送失败：' + (error.message || '请稍后重试'));
+        }
+      }
+      async function verifyPhoneCode() {
+        let phone = document.getElementById('phoneNumberInput').value.trim();
+        if (!phone.startsWith('+')) phone = '+86' + phone;
+        const code = document.getElementById('verificationCodePhone').value.trim();
+        if (!code) { alert('请输入验证码'); return; }
+        try {
+          await auth.signInWithPhoneCode(phone, code, phoneVerificationSession);
+          alert('登录成功');
+          closeModal('phoneCodeModal');
+          goToProfile();
+        } catch (error) {
+          alert('验证失败：' + (error.message || '验证码错误'));
+        }
+      }
+
+      function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+      }
+
+      // 页面加载完成后初始化并绑定事件
+      window.addEventListener('DOMContentLoaded', () => {
+        initCloudBase();
+        document.getElementById('guestBtn').addEventListener('click', guestLogin);
+        document.getElementById('emailCodeBtn').addEventListener('click', showEmailCodeModal);
+        document.getElementById('sendEmailCodeBtn').addEventListener('click', sendEmailCode);
+        document.getElementById('verifyEmailCodeBtn').addEventListener('click', verifyEmailCode);
+        document.getElementById('phoneCodeBtn').addEventListener('click', showPhoneCodeModal);
+        document.getElementById('sendPhoneCodeBtn').addEventListener('click', sendPhoneCode);
+        document.getElementById('verifyPhoneCodeBtn').addEventListener('click', verifyPhoneCode);
+        window.onclick = function(event) {
+          if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+          }
+        };
+      });
+    })();
   </script>
 </head>
 <body>
@@ -279,13 +283,13 @@
     </div>
 
     <div>
-      <button class="btn" id="emailBtn">
+      <button class="btn" id="emailCodeBtn">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
-        邮箱登录
+        邮箱验证码登录
       </button>
-      <button class="btn" id="phoneBtn">
+      <button class="btn" id="phoneCodeBtn">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-        手机号登录
+        手机号验证码登录
       </button>
 
       <div class="divider">
@@ -306,36 +310,32 @@
     登录即表示您同意 <a href="#">用户协议</a> 和 <a href="#">隐私政策</a>
   </footer>
 
-  <!-- 邮箱登录模态框 -->
-  <div id="emailModal" class="modal">
+  <!-- 邮箱验证码登录模态框 -->
+  <div id="emailCodeModal" class="modal">
     <div class="modal-content">
-      <h3>邮箱登录</h3>
-      <input type="email" id="emailInput" placeholder="电子邮箱">
-      <input type="password" id="passwordInput" placeholder="密码">
-      <button id="confirmEmailBtn">登录 / 注册</button>
-      <button class="secondary" onclick="closeModal('emailModal')">取消</button>
-    </div>
-  </div>
-
-  <!-- 手机号登录模态框 -->
-  <div id="phoneModal" class="modal">
-    <div class="modal-content">
-      <h3>手机号登录</h3>
-      <input type="tel" id="phoneNumber" placeholder="手机号 (例如 13812345678)">
-      <button id="sendCodeBtn" onclick="sendSmsCode()">发送验证码</button>
-      <div id="codeSection" style="display:none;">
-        <input type="text" id="verificationCode" placeholder="短信验证码">
-        <button id="verifyCodeBtn" onclick="verifyPhoneCode()">验证并登录</button>
+      <h3>邮箱验证码登录</h3>
+      <input type="email" id="emailCodeInput" placeholder="电子邮箱">
+      <button id="sendEmailCodeBtn">发送验证码</button>
+      <div id="emailCodeSection" style="display:none;">
+        <input type="text" id="verificationCodeEmail" placeholder="验证码">
+        <button id="verifyEmailCodeBtn">验证并登录</button>
       </div>
-      <button class="secondary" onclick="closeModal('phoneModal')">取消</button>
+      <button class="secondary" onclick="closeModal('emailCodeModal')">取消</button>
     </div>
   </div>
 
-  <script>
-    document.getElementById('emailBtn').addEventListener('click', showEmailModal);
-    document.getElementById('confirmEmailBtn').addEventListener('click', emailLogin);
-    document.getElementById('phoneBtn').addEventListener('click', showPhoneModal);
-    document.getElementById('guestBtn').addEventListener('click', guestLogin);
-  </script>
+  <!-- 手机号验证码登录模态框 -->
+  <div id="phoneCodeModal" class="modal">
+    <div class="modal-content">
+      <h3>手机号验证码登录</h3>
+      <input type="tel" id="phoneNumberInput" placeholder="手机号 (例如 13812345678)">
+      <button id="sendPhoneCodeBtn">发送验证码</button>
+      <div id="phoneCodeSection" style="display:none;">
+        <input type="text" id="verificationCodePhone" placeholder="验证码">
+        <button id="verifyPhoneCodeBtn">验证并登录</button>
+      </div>
+      <button class="secondary" onclick="closeModal('phoneCodeModal')">取消</button>
+    </div>
+  </div>
 </body>
 </html>
