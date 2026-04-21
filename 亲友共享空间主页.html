@@ -57,6 +57,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 1rem;
       font-weight: bold;
       color: #e67e22;
     }
@@ -99,7 +100,11 @@
       border: 1px solid #e2d4c8;
       border-radius: 2rem;
     }
-    .empty-state { text-align: center; padding: 2rem; color: #c0a080; }
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #c0a080;
+    }
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -123,44 +128,41 @@
     .nav-item.active { color: #e67e22; }
     .nav-icon { width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2; }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCVdUzsAMepg1knrDg4ID7tM3xb_0ILyPM",
-      authDomain: "beatricesaturn-6ff7e.firebaseapp.com",
-      projectId: "beatricesaturn-6ff7e",
-      storageBucket: "beatricesaturn-6ff7e.firebasestorage.app",
-      messagingSenderId: "607338984635",
-      appId: "1:607338984635:web:a4b3668715462a4d0ca59e",
-      measurementId: "G-L2R10QZZL9"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    const app = cloudbase.init({ env: 'beatrice-saturn-d7fu78ek2c55aa9b' });
+    const auth = app.auth();
+    const db = app.database();
 
     let currentUser = null;
 
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        loadFriends();
-      } else {
+    // 监听登录状态
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
         window.location.href = 'index.html';
+        return;
       }
+      if (user.isAnonymous) {
+        alert('亲友功能需要登录账号，请使用邮箱登录。');
+        window.location.href = 'index.html';
+        return;
+      }
+      currentUser = user;
+      await loadFriends();
     });
 
     async function loadFriends() {
-      const friendships = await db.collection('friendships')
+      // 获取好友关系（双向存储，只查当前用户发起的即可）
+      const friendshipsSnap = await db.collection('friendships')
         .where('uid', '==', currentUser.uid)
         .where('status', '==', 'accepted')
         .get();
-      const friendIds = friendships.docs.map(doc => doc.data().friendId);
+      const friendIds = friendshipsSnap.docs.map(doc => doc.data().friendId);
       if (friendIds.length === 0) {
         document.getElementById('friendsList').innerHTML = '<div class="empty-state">暂无亲友，点击上方“添加亲友”添加～</div>';
         return;
       }
+      // 获取好友资料和今日打卡状态
       const friends = [];
       for (const fid of friendIds) {
         const profileDoc = await db.collection('profiles').doc(fid).get();
@@ -205,6 +207,7 @@
       `).join('');
       container.innerHTML = html;
 
+      // 聊天按钮
       document.querySelectorAll('[data-action="chat"]').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -212,6 +215,7 @@
           window.location.href = `关怀互动详情页.html?friendId=${friendId}`;
         });
       });
+      // 删除按钮
       document.querySelectorAll('[data-action="delete"]').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           e.stopPropagation();
@@ -256,25 +260,33 @@
         alert('已经是好友了');
         return;
       }
-      // 双向添加好友，包含 status 字段
+      // 双向添加好友
       await db.collection('friendships').add({
         uid: currentUser.uid,
         friendId: targetUid,
         status: 'accepted',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: new Date()
       });
       await db.collection('friendships').add({
         uid: targetUid,
         friendId: currentUser.uid,
         status: 'accepted',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: new Date()
       });
       alert('添加成功');
       document.getElementById('searchEmail').value = '';
       loadFriends();
     }
 
-    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
+    }
 
     let showAddPanel = false;
     document.getElementById('addFriendBtn').addEventListener('click', () => {
