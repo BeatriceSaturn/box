@@ -135,7 +135,6 @@
         env: 'beatrice-saturn-d7fu78ek2c55aa9b'
       });
       const auth = app.auth();
-      console.log('CloudBase 初始化成功');
 
       function goToProfile() {
         window.location.href = '基础信息采集页.html';
@@ -147,7 +146,6 @@
           await auth.signInAnonymously();
           goToProfile();
         } catch (error) {
-          console.error(error);
           alert('匿名登录失败，请使用邮箱或手机号登录。');
         }
       };
@@ -168,7 +166,7 @@
         try {
           const verificationInfo = await auth.getVerification({ email });
           emailVerificationSession = verificationInfo.verification_session;
-          alert('验证码已发送至邮箱');
+          alert('验证码已发送');
           document.getElementById('emailCodeSection').style.display = 'block';
           document.getElementById('sendEmailCodeBtn').style.display = 'none';
           document.getElementById('verifyEmailCodeBtn').style.display = 'block';
@@ -204,7 +202,7 @@
         let phone = document.getElementById('phoneNumberInput').value.trim();
         if (!phone) { alert('请输入手机号'); return; }
         if (!phone.startsWith('+')) phone = '+86' + phone;
-        if (!/^\+86\d{11}$/.test(phone)) { alert('请输入有效的手机号（11位数字）'); return; }
+        if (!/^\+86\d{11}$/.test(phone)) { alert('请输入有效的手机号'); return; }
         try {
           const verificationInfo = await auth.getVerification({ phone_number: phone });
           phoneVerificationSession = verificationInfo.verification_session;
@@ -281,7 +279,6 @@
     登录即表示您同意 <a href="#">用户协议</a> 和 <a href="#">隐私政策</a>
   </footer>
 
-  <!-- 邮箱验证码登录模态框 -->
   <div id="emailCodeModal" class="modal">
     <div class="modal-content">
       <h3>邮箱验证码登录</h3>
@@ -295,7 +292,6 @@
     </div>
   </div>
 
-  <!-- 手机号验证码登录模态框 -->
   <div id="phoneCodeModal" class="modal">
     <div class="modal-content">
       <h3>手机号验证码登录</h3>
