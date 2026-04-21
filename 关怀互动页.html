@@ -201,10 +201,212 @@
         .orderBy('timestamp', 'asc')
         .onSnapshot(() => {
           loadMessages();
+        });<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>关怀互动 - 吃了么</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #fef9e8;
+      font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      background: #fff9f0;
+      border-bottom: 1px solid #f0e4d4;
+    }
+    .back-btn {
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+    .back-btn:hover { background: #f0e4d4; }
+    .title { font-size: 1rem; font-weight: 600; color: #5a3e2b; flex: 1; text-align: center; }
+    .main { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .message {
+      max-width: 80%;
+      padding: 0.75rem;
+      border-radius: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .message-out { background: #e67e22; color: white; align-self: flex-end; border-bottom-right-radius: 0.25rem; }
+    .message-in { background: white; border: 1px solid #f0e4d4; align-self: flex-start; border-bottom-left-radius: 0.25rem; }
+    .message-text { font-size: 0.85rem; }
+    .message-time { font-size: 0.6rem; margin-top: 0.25rem; opacity: 0.7; text-align: right; }
+    .input-area {
+      background: white;
+      border-top: 1px solid #f0e4d4;
+      padding: 0.75rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .input-area input {
+      flex: 1;
+      padding: 0.7rem;
+      border: 1px solid #e2d4c8;
+      border-radius: 2rem;
+      font-size: 0.9rem;
+      background: #fffbf5;
+    }
+    .send-btn {
+      background: #e67e22;
+      border: none;
+      border-radius: 2rem;
+      padding: 0.7rem 1rem;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .quick-actions {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background: white;
+      border-bottom: 1px solid #f0e4d4;
+    }
+    .quick-btn {
+      flex: 1;
+      background: #fffbf5;
+      border: 1px solid #f0e4d4;
+      border-radius: 2rem;
+      padding: 0.5rem;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      cursor: pointer;
+    }
+    .quick-btn:active { background: #fff7f0; }
+  </style>
+  <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
+  <script>
+    const app = cloudbase.init({ env: 'beatrice-saturn-d7fu78ek2c55aa9b' });
+    const auth = app.auth();
+    const db = app.database();
+
+    let currentUser = null;
+    let friendId = null;
+    let friendName = '好友';
+
+    // 监听登录状态
+    auth.onAuthStateChanged(async (user) => {
+      if (!user || user.isAnonymous) {
+        alert('互动功能需要登录账号，请使用邮箱登录。');
+        window.location.href = 'index.html';
+        return;
+      }
+      currentUser = user;
+      const urlParams = new URLSearchParams(window.location.search);
+      friendId = urlParams.get('friendId');
+      if (!friendId) {
+        alert('参数错误');
+        window.location.href = '亲友共享空间主页.html';
+        return;
+      }
+      await loadFriendInfo();
+      await loadMessages();
+      setupRealtime();
+    });
+
+    async function loadFriendInfo() {
+      const doc = await db.collection('profiles').doc(friendId).get();
+      if (doc.exists) {
+        friendName = doc.data().nickname || friendId.slice(0,6);
+      }
+      document.getElementById('friendTitle').innerText = `与 ${friendName} 的互动`;
+    }
+
+    async function loadMessages() {
+      const snapshot = await db.collection('interactions')
+        .where('fromUid', 'in', [currentUser.uid, friendId])
+        .where('toUid', 'in', [currentUser.uid, friendId])
+        .orderBy('timestamp', 'asc')
+        .get();
+      const messages = snapshot.docs.map(doc => doc.data());
+      renderMessages(messages);
+    }
+
+    function renderMessages(messages) {
+      const container = document.getElementById('messagesContainer');
+      if (messages.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:2rem;">暂无互动记录，发送一条消息吧～</div>';
+        return;
+      }
+      const html = messages.map(msg => {
+        const isOut = msg.fromUid === currentUser.uid;
+        return `
+          <div class="message ${isOut ? 'message-out' : 'message-in'}">
+            <div class="message-text">${escapeHtml(msg.message)}</div>
+            <div class="message-time">${formatTime(msg.timestamp)}</div>
+          </div>
+        `;
+      }).join('');
+      container.innerHTML = html;
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function formatTime(timestamp) {
+      if (!timestamp) return '';
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      return `${date.getMonth()+1}/${date.getDate()} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+    }
+
+    async function sendMessage(message, type = 'text') {
+      if (!message.trim()) return;
+      await db.collection('interactions').add({
+        fromUid: currentUser.uid,
+        toUid: friendId,
+        message: message,
+        type: type,
+        timestamp: new Date()
+      });
+      document.getElementById('messageInput').value = '';
+      await loadMessages();
+    }
+
+    async function sendQuickAction(action) {
+      let msg = '';
+      let type = 'remind';
+      if (action === 'remind') { msg = '⏰ 提醒你该吃饭啦！记得按时吃饭哦～'; type = 'remind'; }
+      else if (action === 'flower') { msg = '🌸 送你一朵小花，愿你心情美丽！'; type = 'emotion'; }
+      else if (action === 'greet') { msg = '👋 打个招呼，今天也要好好吃饭！'; type = 'greet'; }
+      await sendMessage(msg, type);
+    }
+
+    function setupRealtime() {
+      db.collection('interactions')
+        .where('fromUid', 'in', [currentUser.uid, friendId])
+        .where('toUid', 'in', [currentUser.uid, friendId])
+        .orderBy('timestamp', 'asc')
+        .onSnapshot(() => {
+          loadMessages();
         });
     }
 
-    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
+    }
 
     document.getElementById('backBtn').addEventListener('click', () => {
       window.location.href = '亲友共享空间主页.html';
