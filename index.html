@@ -132,133 +132,98 @@
       color: #a07a5c;
       margin-top: 0.5rem;
     }
-    #init-status {
-      position: fixed;
-      bottom: 10px;
-      left: 10px;
-      background: rgba(0,0,0,0.6);
-      color: white;
-      padding: 4px 8px;
-      border-radius: 8px;
-      font-size: 12px;
-      z-index: 9999;
-    }
   </style>
   <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
   <script>
-    // 显示初始化状态
-    let initOk = false;
-    let authObj = null;
-    try {
+    (function() {
+      console.log('页面加载，开始初始化 CloudBase...');
       const app = cloudbase.init({
         env: 'beatrice-saturn-d7fu78ek2c55aa9b'
       });
-      authObj = app.auth();
-      initOk = true;
-      console.log('CloudBase 初始化成功');
-    } catch (e) {
-      console.error('CloudBase 初始化失败:', e);
-    }
-    window.addEventListener('DOMContentLoaded', () => {
-      const statusDiv = document.getElementById('init-status');
-      if (statusDiv) {
-        statusDiv.innerText = initOk ? '✅ 云服务已连接' : '❌ 云服务初始化失败，请刷新重试';
+      const auth = app.auth();
+      console.log('CloudBase 初始化完成');
+
+      function goToProfile() {
+        console.log('准备跳转到基础信息采集页');
+        window.location.href = '基础信息采集页.html';
       }
-    });
-  </script>
-  <script>
-    (function() {
-      // 等待 DOM 加载完成再绑定事件
-      window.addEventListener('DOMContentLoaded', function() {
-        const auth = authObj;
-        if (!auth) {
-          alert('CloudBase 初始化失败，请刷新页面重试');
+
+      // 匿名登录（备用）
+      window.guestLogin = async function() {
+        console.log('点击匿名登录');
+        try {
+          await auth.signInAnonymously();
+          console.log('匿名登录成功，用户:', auth.currentUser);
+          goToProfile();
+        } catch (error) {
+          console.error('匿名登录失败:', error);
+          alert('匿名登录失败，请使用邮箱登录。\n' + error.message);
+        }
+      };
+
+      // 显示邮箱登录模态框
+      window.showEmailModal = function() {
+        console.log('打开邮箱登录弹窗');
+        document.getElementById('emailModal').style.display = 'flex';
+        document.getElementById('emailInput').value = '';
+        document.getElementById('passwordInput').value = '';
+        const btn = document.getElementById('confirmEmailBtn');
+        btn.disabled = false;
+        btn.innerText = '登录 / 注册';
+      };
+
+      // 邮箱登录/注册
+      window.emailLogin = async function() {
+        const email = document.getElementById('emailInput').value.trim();
+        const password = document.getElementById('passwordInput').value;
+        if (!email || !password) {
+          alert('请输入邮箱和密码');
           return;
         }
-
-        function goToProfile() {
-          window.location.href = '基础信息采集页.html';
-        }
-
-        // 匿名登录
-        window.guestLogin = async function() {
-          try {
-            await auth.signInAnonymously();
-            goToProfile();
-          } catch (error) {
-            console.error(error);
-            alert('匿名登录失败：' + (error.message || '请使用邮箱登录'));
-          }
-        };
-
-        // 显示邮箱模态框
-        window.showEmailModal = function() {
-          document.getElementById('emailModal').style.display = 'flex';
-          document.getElementById('emailInput').value = '';
-          document.getElementById('passwordInput').value = '';
-          const btn = document.getElementById('confirmEmailBtn');
-          if (btn) {
-            btn.disabled = false;
-            btn.innerText = '登录 / 注册';
-          }
-        };
-
-        // 邮箱登录/注册
-        window.emailLogin = async function() {
-          const email = document.getElementById('emailInput').value.trim();
-          const password = document.getElementById('passwordInput').value;
-          if (!email || !password) {
-            alert('请输入邮箱和密码');
-            return;
-          }
-          const btn = document.getElementById('confirmEmailBtn');
-          btn.disabled = true;
-          btn.innerText = '处理中...';
-          try {
-            await auth.signInWithEmailAndPassword(email, password);
-            alert('登录成功');
-            closeModal('emailModal');
-            goToProfile();
-          } catch (error) {
-            if (error.code === 'USER_NOT_FOUND' || error.message.includes('user not found')) {
-              const confirm = window.confirm('没有账号，是否立即注册？');
-              if (confirm) {
-                try {
-                  await auth.signUpWithEmailAndPassword(email, password);
-                  alert('注册成功，已自动登录');
-                  closeModal('emailModal');
-                  goToProfile();
-                } catch (regError) {
-                  alert('注册失败：' + regError.message);
-                }
+        const btn = document.getElementById('confirmEmailBtn');
+        btn.disabled = true;
+        btn.innerText = '处理中...';
+        console.log(`尝试登录/注册: ${email}`);
+        try {
+          // 先尝试登录
+          await auth.signInWithEmailAndPassword(email, password);
+          console.log('登录成功，用户:', auth.currentUser);
+          alert('登录成功');
+          closeModal('emailModal');
+          goToProfile();
+        } catch (error) {
+          console.error('登录失败:', error);
+          if (error.code === 'USER_NOT_FOUND' || error.message.includes('user not found')) {
+            const confirm = window.confirm('没有账号，是否立即注册？');
+            if (confirm) {
+              try {
+                await auth.signUpWithEmailAndPassword(email, password);
+                console.log('注册成功，用户:', auth.currentUser);
+                alert('注册成功，已自动登录');
+                closeModal('emailModal');
+                goToProfile();
+              } catch (regError) {
+                console.error('注册失败:', regError);
+                alert('注册失败：' + regError.message);
               }
-            } else {
-              alert('登录失败：' + error.message);
             }
-          } finally {
-            btn.disabled = false;
-            btn.innerText = '登录 / 注册';
+          } else {
+            alert('登录失败：' + error.message);
           }
-        };
-
-        function closeModal(id) {
-          document.getElementById(id).style.display = 'none';
+        } finally {
+          btn.disabled = false;
+          btn.innerText = '登录 / 注册';
         }
-        window.closeModal = closeModal;
+      };
 
-        // 绑定按钮事件（确保元素存在）
-        const emailBtn = document.getElementById('emailBtn');
-        const guestBtn = document.getElementById('guestBtn');
-        const confirmEmailBtn = document.getElementById('confirmEmailBtn');
-        if (emailBtn) emailBtn.onclick = () => window.showEmailModal();
-        if (guestBtn) guestBtn.onclick = () => window.guestLogin();
-        if (confirmEmailBtn) confirmEmailBtn.onclick = () => window.emailLogin();
-      });
+      function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+      }
+      window.closeModal = closeModal;
     })();
   </script>
 </head>
 <body>
-  <div id="init-status">加载中...</div>
   <div class="container">
     <div class="logo">
       <div class="logo-icon">
@@ -274,7 +239,7 @@
     </div>
 
     <div>
-      <button class="btn" id="emailBtn">
+      <button class="btn" id="emailBtn" onclick="showEmailModal()">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
         邮箱登录
       </button>
@@ -285,7 +250,7 @@
         <span class="divider-line"></span>
       </div>
 
-      <button class="btn" id="guestBtn" style="background:transparent;">游客浏览</button>
+      <button class="btn" id="guestBtn" onclick="guestLogin()" style="background:transparent;">游客浏览</button>
 
       <div class="info">
         <strong>首次登录？</strong><br>
@@ -305,7 +270,7 @@
       <input type="email" id="emailInput" placeholder="电子邮箱">
       <input type="password" id="passwordInput" placeholder="密码">
       <div class="note">⚠️ 请设置一个你容易记住的密码（不是邮箱的密码），用于下次登录。</div>
-      <button id="confirmEmailBtn">登录 / 注册</button>
+      <button id="confirmEmailBtn" onclick="emailLogin()">登录 / 注册</button>
       <button class="secondary" onclick="closeModal('emailModal')">取消</button>
     </div>
   </div>
