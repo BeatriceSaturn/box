@@ -9,7 +9,7 @@
         body { font-family: system-ui; max-width: 400px; margin: 2rem auto; padding: 1rem; background: #fef9e8; }
         input, button { width: 100%; padding: 0.7rem; margin: 0.5rem 0; border-radius: 2rem; border: 1px solid #e2d4c8; font-size: 1rem; }
         button { background: #e67e22; color: white; font-weight: bold; cursor: pointer; }
-        .log { background: #f0e4d4; padding: 1rem; border-radius: 1rem; margin-top: 1rem; font-size: 0.8rem; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
+        .log { background: #f0e4d4; padding: 1rem; border-radius: 1rem; margin-top: 1rem; font-size: 0.8rem; white-space: pre-wrap; max-height: 200px; overflow-y: auto; display: none; } /* 隐藏日志区域，用户看不到 */
         h1 { color: #5a3e2b; text-align: center; }
         .subtitle { color: #a07a5c; font-size: 0.9rem; text-align: center; margin-top: -0.5rem; margin-bottom: 1.5rem; }
         .divider { text-align: center; margin: 1rem 0; color: #c0a080; }
@@ -38,6 +38,7 @@
         }
         .modal-content input { margin: 0.5rem 0; }
         .modal-content button { margin-top: 0.5rem; }
+        .modal-content button.secondary { background: #f0e4d4; color: #5a3e2b; }
     </style>
 </head>
 <body>
@@ -63,33 +64,23 @@
     </div>
 
     <script>
-        const logDiv = document.getElementById('log');
-        function log(msg, isError = false) {
-            const p = document.createElement('div');
-            p.textContent = msg;
-            if (isError) p.style.color = '#d9534f';
-            logDiv.appendChild(p);
-            console.log(msg);
-        }
+        // 隐藏日志区域（不让用户看到）
+        document.getElementById('log').style.display = 'none';
 
         const app = cloudbase.init({ env: 'beatrice-saturn-d7fu78ek2c55aa9b' });
         const auth = app.auth();
 
         function goToProfile() {
-            log('正在跳转到基础信息采集页...');
             window.location.href = '基础信息采集页.html';
         }
 
         // 匿名登录
         async function guestLogin() {
-            log('尝试匿名登录...');
             try {
                 await auth.signInAnonymously();
-                log('匿名登录成功');
                 goToProfile();
             } catch (e) {
-                log('匿名登录失败: ' + e.message, true);
-                alert('匿名登录失败: ' + e.message);
+                alert('匿名登录失败，请稍后重试');
             }
         }
 
@@ -105,32 +96,29 @@
                 alert('密码长度至少6位');
                 return;
             }
-            log(`尝试登录: ${email}`);
             const btn = document.getElementById('loginBtn');
             btn.disabled = true;
             btn.innerText = '处理中...';
             try {
                 await auth.signInWithEmailAndPassword(email, password);
-                log('登录成功');
                 alert('登录成功');
                 goToProfile();
             } catch (error) {
-                log(`登录失败: ${error.code || error.message}`, true);
+                // 用户不存在则注册
                 if (error.code === 'USER_NOT_FOUND' || (error.message && error.message.includes('user not found'))) {
                     const confirm = window.confirm('没有账号，是否立即注册？');
                     if (confirm) {
                         try {
                             await auth.signUpWithEmailAndPassword(email, password);
-                            log('注册成功');
                             alert('注册成功');
                             goToProfile();
                         } catch (regError) {
-                            log(`注册失败: ${regError.message}`, true);
-                            alert('注册失败: ' + regError.message);
+                            alert('注册失败，请稍后重试');
                         }
                     }
                 } else {
-                    alert('登录失败: ' + (error.message || error.code));
+                    // 统一显示友好的错误信息，不显示技术细节
+                    alert('账号或密码错误，请重试');
                 }
             } finally {
                 btn.disabled = false;
@@ -153,14 +141,13 @@
                 alert('重置密码邮件已发送，请查收邮箱（垃圾箱也可能有）');
                 closeModal('forgotModal');
             } catch (error) {
-                alert('发送失败: ' + (error.message || error.code));
+                alert('发送失败，请检查邮箱是否正确');
             } finally {
                 btn.disabled = false;
                 btn.innerText = '发送重置邮件';
             }
         }
 
-        // 模态框控制
         function showModal(id) {
             document.getElementById(id).style.display = 'flex';
         }
@@ -168,7 +155,6 @@
             document.getElementById(id).style.display = 'none';
         };
 
-        // 绑定事件
         document.getElementById('guestBtn').addEventListener('click', guestLogin);
         document.getElementById('loginBtn').addEventListener('click', emailLogin);
         document.getElementById('forgotPwdLink').addEventListener('click', () => showModal('forgotModal'));
