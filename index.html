@@ -85,6 +85,7 @@
         <h1>吃了么</h1>
         <div class="subtitle">唯有爱和美食不可辜负</div>
 
+        <!-- 游客登录 -->
         <button class="btn btn-secondary" id="guestBtn">🍚 游客浏览（无需注册）</button>
 
         <div class="divider">
@@ -93,6 +94,7 @@
             <div class="divider-line"></div>
         </div>
 
+        <!-- 登录表单 -->
         <div class="input-group">
             <input type="email" id="email" placeholder="电子邮箱" autocomplete="email">
         </div>
@@ -104,7 +106,7 @@
         <div id="loginMessage" class="message" style="background: transparent; padding: 0.5rem 0 0;"></div>
     </div>
 
-    <!-- 忘记密码模态框（仅收集邮箱，发送重置链接） -->
+    <!-- 忘记密码模态框 -->
     <div id="forgotModal" class="modal">
         <div class="modal-content">
             <h3 style="margin-bottom: 1rem;">找回密码</h3>
@@ -131,7 +133,7 @@
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function showModal(id) { document.getElementById(id).style.display = 'flex'; }
 
-        // 发送重置密码邮件（原生支持，用户会收到含链接的邮件）
+        // 发送重置密码邮件（原生支持）
         async function sendPasswordResetEmail() {
             const email = document.getElementById('resetEmail').value.trim();
             if (!email) { showMessage(resetMsgDiv, '请输入邮箱', true); return; }
@@ -141,18 +143,25 @@
             try {
                 await auth.sendPasswordResetEmail(email);
                 showMessage(resetMsgDiv, '重置邮件已发送，请查收邮箱（垃圾箱可能有）');
-                // 2秒后关闭模态框
                 setTimeout(() => closeModal('forgotModal'), 2000);
             } catch (err) {
                 console.error(err);
-                showMessage(resetMsgDiv, '发送失败，请稍后重试', true);
+                let userMsg = '发送失败，请稍后重试';
+                if (err.code === 'OPERATION_NOT_ALLOWED') {
+                    userMsg = '邮箱登录功能未开启，请联系管理员。';
+                } else if (err.code === 'EMAIL_NOT_FOUND') {
+                    userMsg = '该邮箱尚未注册，请先注册。';
+                } else if (err.message && err.message.includes('email service not configured')) {
+                    userMsg = '邮件服务未配置，请联系管理员在 CloudBase 控制台配置发件邮箱。';
+                }
+                showMessage(resetMsgDiv, userMsg, true);
             } finally {
                 btn.disabled = false;
                 btn.innerText = '发送重置邮件';
             }
         }
 
-        // 邮箱登录/注册（用户友好提示）
+        // 邮箱+密码登录/注册
         async function emailLogin() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
