@@ -7,9 +7,15 @@
     <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'PingFang SC', system-ui, -apple-system, sans-serif; background: #fef9e8; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
-
-        /* 登录卡片 */
+        body {
+            font-family: 'PingFang SC', system-ui, -apple-system, sans-serif;
+            background: #fef9e8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
         .card {
             max-width: 420px;
             width: 100%;
@@ -19,17 +25,10 @@
             box-shadow: 0 8px 28px rgba(0,0,0,0.05);
             border: 1px solid #f0e4d4;
         }
-
         h1 { font-size: 2rem; font-weight: 700; color: #5a3e2b; text-align: center; margin-bottom: 0.25rem; }
         .subtitle { color: #a07a5c; font-size: 0.85rem; text-align: center; margin-bottom: 2rem; }
-
-        a { text-decoration: none; cursor: pointer; }
-        a:hover { text-decoration: underline; }
-
         .divider { text-align: center; margin: 1rem 0; color: #c0a080; font-size: 0.8rem; position: relative; }
         .divider-line { width: 100%; height: 1px; background: #f0e4d4; margin: 0.5rem 0 0.75rem; }
-
-        /* 表单样式 */
         .input-group { margin-bottom: 1rem; }
         input {
             width: 100%;
@@ -41,7 +40,6 @@
             transition: all 0.2s;
         }
         input:focus { outline: none; border-color: #e67e22; box-shadow: 0 0 0 3px rgba(230,126,34,0.1); }
-
         .btn {
             width: 100%;
             padding: 0.8rem;
@@ -56,14 +54,9 @@
         .btn-primary:hover { background: #d4691a; transform: translateY(-1px); }
         .btn-secondary { background: transparent; border: 1px solid #e2d4c8; color: #a07a5c; margin-bottom: 0.5rem; }
         .btn-secondary:hover { background: #fff7f0; }
-
         .forgot-link { text-align: right; margin-top: -0.5rem; margin-bottom: 1rem; }
-        .forgot-link a { color: #e67e22; font-size: 0.8rem; }
-
-        /* 消息提示 */
+        .forgot-link a { color: #e67e22; font-size: 0.8rem; cursor: pointer; }
         .message { font-size: 0.85rem; text-align: center; margin-top: 1rem; padding: 0.5rem; border-radius: 24px; background: #fef5ea; color: #5a3e2b; }
-
-        /* 模态框 */
         .modal {
             display: none;
             position: fixed;
@@ -85,7 +78,6 @@
             text-align: center;
         }
         .modal-content input { margin-bottom: 1rem; }
-        .inline-btn { margin-top: 0.5rem; }
     </style>
 </head>
 <body>
@@ -93,7 +85,6 @@
         <h1>吃了么</h1>
         <div class="subtitle">唯有爱和美食不可辜负</div>
 
-        <!-- 游客登录 -->
         <button class="btn btn-secondary" id="guestBtn">🍚 游客浏览（无需注册）</button>
 
         <div class="divider">
@@ -102,7 +93,6 @@
             <div class="divider-line"></div>
         </div>
 
-        <!-- 登录表单 -->
         <div class="input-group">
             <input type="email" id="email" placeholder="电子邮箱" autocomplete="email">
         </div>
@@ -114,105 +104,70 @@
         <div id="loginMessage" class="message" style="background: transparent; padding: 0.5rem 0 0;"></div>
     </div>
 
-    <!-- 重置密码模态框 -->
-    <div id="resetModal" class="modal">
+    <!-- 忘记密码模态框（仅收集邮箱，发送重置链接） -->
+    <div id="forgotModal" class="modal">
         <div class="modal-content">
             <h3 style="margin-bottom: 1rem;">找回密码</h3>
             <input type="email" id="resetEmail" placeholder="注册邮箱" autocomplete="off">
-            <button class="btn btn-primary" id="sendResetCodeBtn" style="margin: 0 0 1rem;">发送验证码</button>
-            <input type="text" id="verificationCode" placeholder="6位验证码" maxlength="6">
-            <input type="password" id="newPassword" placeholder="新密码（至少6位）">
-            <button class="btn btn-primary" id="confirmResetBtn" style="margin-top: 1rem;">重置密码</button>
-            <button class="btn btn-secondary" style="margin-top: 0.5rem;" onclick="closeModal('resetModal')">取消</button>
+            <button class="btn btn-primary" id="sendResetLinkBtn">发送重置邮件</button>
+            <button class="btn btn-secondary" style="margin-top: 0.5rem;" onclick="closeModal('forgotModal')">取消</button>
             <div id="resetMessage" class="message" style="margin-top: 0.5rem;"></div>
         </div>
     </div>
 
     <script>
-        // --- CloudBase 初始化 ---
+        // CloudBase 初始化
         const app = cloudbase.init({ env: 'beatrice-saturn-d7fu78ek2c55aa9b' });
         const auth = app.auth();
 
-        // --- 页面元素 ---
         const loginMsgDiv = document.getElementById('loginMessage');
         const resetMsgDiv = document.getElementById('resetMessage');
-        let pendingVerificationId = null;
 
-        // 显示友好提示，隐藏技术错误
         function showMessage(div, text, isError = false) {
             div.innerHTML = text;
             div.style.color = isError ? '#d9534f' : '#5a3e2b';
-            setTimeout(() => { if (div.innerHTML === text) div.innerHTML = ''; }, 3000);
+            setTimeout(() => { if (div.innerHTML === text) div.innerHTML = ''; }, 4000);
         }
-
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function showModal(id) { document.getElementById(id).style.display = 'flex'; }
 
-        // 1. 发送重置验证码
-        async function sendResetCode() {
+        // 发送重置密码邮件（原生支持，用户会收到含链接的邮件）
+        async function sendPasswordResetEmail() {
             const email = document.getElementById('resetEmail').value.trim();
             if (!email) { showMessage(resetMsgDiv, '请输入邮箱', true); return; }
-            const btn = document.getElementById('sendResetCodeBtn');
+            const btn = document.getElementById('sendResetLinkBtn');
             btn.disabled = true;
             btn.innerText = '发送中...';
             try {
-                const res = await auth.getVerification({ email });
-                pendingVerificationId = res.verification_session;
-                showMessage(resetMsgDiv, '验证码已发送，请查收邮箱（垃圾箱可能也有）');
+                await auth.sendPasswordResetEmail(email);
+                showMessage(resetMsgDiv, '重置邮件已发送，请查收邮箱（垃圾箱可能有）');
+                // 2秒后关闭模态框
+                setTimeout(() => closeModal('forgotModal'), 2000);
             } catch (err) {
                 console.error(err);
                 showMessage(resetMsgDiv, '发送失败，请稍后重试', true);
-            } finally { btn.disabled = false; btn.innerText = '发送验证码'; }
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '发送重置邮件';
+            }
         }
 
-        // 2. 重置密码
-        async function resetPassword() {
-            const email = document.getElementById('resetEmail').value.trim();
-            const code = document.getElementById('verificationCode').value.trim();
-            const newPwd = document.getElementById('newPassword').value.trim();
-
-            if (!email || !code || !newPwd) { showMessage(resetMsgDiv, '请完整填写所有字段', true); return; }
-            if (newPwd.length < 6) { showMessage(resetMsgDiv, '密码至少需要6位', true); return; }
-
-            const btn = document.getElementById('confirmResetBtn');
-            btn.disabled = true;
-            btn.innerText = '处理中...';
-            try {
-                // 通过验证码和邮箱获取有效token
-                await auth.signInWithEmailCode(email, code, pendingVerificationId);
-                // 登录成功后，通过sudo token更新密码
-                const user = auth.currentUser;
-                if (user) {
-                    await user.updatePassword(newPwd);
-                    showMessage(resetMsgDiv, '密码已重置成功，请返回登录');
-                    setTimeout(() => {
-                        closeModal('resetModal');
-                        document.getElementById('resetEmail').value = '';
-                        document.getElementById('verificationCode').value = '';
-                        document.getElementById('newPassword').value = '';
-                        pendingVerificationId = null;
-                    }, 2000);
-                } else { throw new Error('验证失败'); }
-            } catch (err) {
-                console.error(err);
-                showMessage(resetMsgDiv, '重置失败，请检查验证码或稍后重试', true);
-            } finally { btn.disabled = false; btn.innerText = '重置密码'; }
-        }
-
-        // 3. 邮箱登录/注册 (不显示具体错误)
+        // 邮箱登录/注册（用户友好提示）
         async function emailLogin() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
-            if (!email || !password) { showMessage(loginMsgDiv, '信息不完整，请检查后再试', true); return; }
+            if (!email || !password) { showMessage(loginMsgDiv, '请输入邮箱和密码', true); return; }
+            if (password.length < 6) { showMessage(loginMsgDiv, '密码至少需要6位', true); return; }
 
             const btn = document.getElementById('loginBtn');
             btn.disabled = true;
-            btn.innerText = '请稍后...';
+            btn.innerText = '处理中...';
             try {
                 await auth.signInWithEmailAndPassword(email, password);
                 showMessage(loginMsgDiv, '登录成功，正在跳转...');
                 setTimeout(() => { window.location.href = '基础信息采集页.html'; }, 800);
             } catch (err) {
+                console.error(err);
                 if (err.code === 'USER_NOT_FOUND' || err.message?.includes('user not found')) {
                     if (confirm('该邮箱尚未注册，是否立即注册？')) {
                         try {
@@ -226,24 +181,27 @@
                 } else {
                     showMessage(loginMsgDiv, '邮箱或密码错误', true);
                 }
-            } finally { btn.disabled = false; btn.innerText = '登录/注册'; }
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '登录/注册';
+            }
         }
 
-        // 4. 游客登录
+        // 游客登录
         async function guestLogin() {
             try {
                 await auth.signInAnonymously();
                 showMessage(loginMsgDiv, '游客模式，正在进入...');
                 setTimeout(() => { window.location.href = '基础信息采集页.html'; }, 800);
-            } catch (err) { showMessage(loginMsgDiv, '游客模式不可用，请稍后重试', true); }
+            } catch (err) {
+                showMessage(loginMsgDiv, '游客模式不可用，请稍后重试', true);
+            }
         }
 
-        // --- 绑定事件 ---
         document.getElementById('guestBtn').addEventListener('click', guestLogin);
         document.getElementById('loginBtn').addEventListener('click', emailLogin);
-        document.getElementById('forgotPwdLink').addEventListener('click', () => showModal('resetModal'));
-        document.getElementById('sendResetCodeBtn').addEventListener('click', sendResetCode);
-        document.getElementById('confirmResetBtn').addEventListener('click', resetPassword);
+        document.getElementById('forgotPwdLink').addEventListener('click', () => showModal('forgotModal'));
+        document.getElementById('sendResetLinkBtn').addEventListener('click', sendPasswordResetEmail);
     </script>
 </body>
 </html>
