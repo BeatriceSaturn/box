@@ -11,19 +11,56 @@
         button { background: #e67e22; color: white; font-weight: bold; cursor: pointer; }
         .log { background: #f0e4d4; padding: 1rem; border-radius: 1rem; margin-top: 1rem; font-size: 0.8rem; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
         h1 { color: #5a3e2b; text-align: center; }
+        .subtitle { color: #a07a5c; font-size: 0.9rem; text-align: center; margin-top: -0.5rem; margin-bottom: 1.5rem; }
         .divider { text-align: center; margin: 1rem 0; color: #c0a080; }
         .note { font-size: 0.7rem; color: #a07a5c; margin-top: -0.3rem; margin-bottom: 0.5rem; }
+        .forgot-link { font-size: 0.8rem; text-align: right; margin-top: -0.5rem; margin-bottom: 0.5rem; }
+        .forgot-link a { color: #e67e22; cursor: pointer; text-decoration: none; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 2rem;
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+        }
+        .modal-content input { margin: 0.5rem 0; }
+        .modal-content button { margin-top: 0.5rem; }
     </style>
 </head>
 <body>
     <h1>吃了么</h1>
+    <div class="subtitle">唯有爱和美食不可辜负</div>
     <button id="guestBtn">🍚 游客浏览（无需注册）</button>
     <div class="divider">———— 使用邮箱登录 ————</div>
     <input type="email" id="email" placeholder="电子邮箱" autocomplete="email">
-    <input type="password" id="password" placeholder="密码（至少6位，自己记住）" autocomplete="new-password">
+    <input type="password" id="password" placeholder="密码（至少6位，自己记住）" autocomplete="current-password">
     <div class="note">⚠️ 这是你自己设置的密码，不是邮箱密码</div>
+    <div class="forgot-link"><a id="forgotPwdLink">忘记密码？</a></div>
     <button id="loginBtn">登录 / 注册</button>
     <div class="log" id="log"></div>
+
+    <!-- 忘记密码模态框 -->
+    <div id="forgotModal" class="modal">
+        <div class="modal-content">
+            <h3>重置密码</h3>
+            <input type="email" id="resetEmail" placeholder="请输入你的注册邮箱" autocomplete="email">
+            <button id="sendResetBtn">发送重置邮件</button>
+            <button class="secondary" onclick="closeModal('forgotModal')">取消</button>
+        </div>
+    </div>
 
     <script>
         const logDiv = document.getElementById('log');
@@ -73,14 +110,12 @@
             btn.disabled = true;
             btn.innerText = '处理中...';
             try {
-                // 先尝试登录
                 await auth.signInWithEmailAndPassword(email, password);
                 log('登录成功');
                 alert('登录成功');
                 goToProfile();
             } catch (error) {
                 log(`登录失败: ${error.code || error.message}`, true);
-                // 如果用户不存在，则注册
                 if (error.code === 'USER_NOT_FOUND' || (error.message && error.message.includes('user not found'))) {
                     const confirm = window.confirm('没有账号，是否立即注册？');
                     if (confirm) {
@@ -103,8 +138,41 @@
             }
         }
 
+        // 忘记密码：发送重置邮件
+        async function sendPasswordResetEmail() {
+            const email = document.getElementById('resetEmail').value.trim();
+            if (!email) {
+                alert('请输入邮箱');
+                return;
+            }
+            const btn = document.getElementById('sendResetBtn');
+            btn.disabled = true;
+            btn.innerText = '发送中...';
+            try {
+                await auth.sendPasswordResetEmail(email);
+                alert('重置密码邮件已发送，请查收邮箱（垃圾箱也可能有）');
+                closeModal('forgotModal');
+            } catch (error) {
+                alert('发送失败: ' + (error.message || error.code));
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '发送重置邮件';
+            }
+        }
+
+        // 模态框控制
+        function showModal(id) {
+            document.getElementById(id).style.display = 'flex';
+        }
+        window.closeModal = function(id) {
+            document.getElementById(id).style.display = 'none';
+        };
+
+        // 绑定事件
         document.getElementById('guestBtn').addEventListener('click', guestLogin);
         document.getElementById('loginBtn').addEventListener('click', emailLogin);
+        document.getElementById('forgotPwdLink').addEventListener('click', () => showModal('forgotModal'));
+        document.getElementById('sendResetBtn').addEventListener('click', sendPasswordResetEmail);
     </script>
 </body>
 </html>
