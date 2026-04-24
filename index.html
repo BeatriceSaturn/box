@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>吃了么 - 登录</title>
-    <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -85,32 +85,29 @@
         <h1>吃了么</h1>
         <div class="subtitle">唯有爱和美食不可辜负</div>
 
-        <!-- 游客登录 -->
         <button class="btn btn-secondary" id="guestBtn">🍚 游客浏览（无需注册）</button>
 
         <div class="divider">
             <div class="divider-line"></div>
-            <span>使用邮箱登录</span>
+            <span>使用手机号登录</span>
             <div class="divider-line"></div>
         </div>
 
-        <!-- 登录表单 -->
         <div class="input-group">
-            <input type="email" id="email" placeholder="电子邮箱" autocomplete="email">
+            <input type="tel" id="phone" placeholder="手机号（11位数字）" autocomplete="tel">
         </div>
         <div class="input-group">
-            <input type="password" id="password" placeholder="密码（至少6位）" autocomplete="current-password">
+            <input type="password" id="password" placeholder="密码（至少6位）" autocomplete="new-password">
         </div>
         <div class="forgot-link"><a id="forgotPwdLink">忘记密码？</a></div>
         <button class="btn btn-primary" id="loginBtn">登录/注册</button>
         <div id="loginMessage" class="message" style="background: transparent; padding: 0.5rem 0 0;"></div>
     </div>
 
-    <!-- 忘记密码模态框 -->
     <div id="forgotModal" class="modal">
         <div class="modal-content">
             <h3 style="margin-bottom: 1rem;">找回密码</h3>
-            <input type="email" id="resetEmail" placeholder="注册邮箱" autocomplete="off">
+            <input type="tel" id="resetPhone" placeholder="注册手机号">
             <button class="btn btn-primary" id="sendResetLinkBtn">发送重置邮件</button>
             <button class="btn btn-secondary" style="margin-top: 0.5rem;" onclick="closeModal('forgotModal')">取消</button>
             <div id="resetMessage" class="message" style="margin-top: 0.5rem;"></div>
@@ -118,10 +115,11 @@
     </div>
 
     <script>
-        // CloudBase 初始化
-        const app = cloudbase.init({ env: 'beatrice-saturn-d7fu78ek2c55aa9b' });
-        const auth = app.auth();
+        // Supabase 配置（请替换）
+        const SUPABASE_URL = 'https://your-project.supabase.co';
+        const SUPABASE_ANON_KEY = 'your-anon-key';
 
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const loginMsgDiv = document.getElementById('loginMessage');
         const resetMsgDiv = document.getElementById('resetMessage');
 
@@ -133,73 +131,90 @@
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function showModal(id) { document.getElementById(id).style.display = 'flex'; }
 
-        // 发送重置密码邮件（原生支持）
+        // 把手机号转换成唯一邮箱格式（用于 Supabase Auth 的 email 字段）
+        function phoneToEmail(phone) {
+            // 确保格式统一：+86 开头
+            let clean = phone.replace(/\s+/g, '');
+            if (!clean.startsWith('+86')) {
+                if (clean.startsWith('86')) clean = '+' + clean;
+                else clean = '+86' + clean;
+            }
+            // 转换为邮箱：+8613800138000@phone.local
+            return clean + '@phone.local';
+        }
+
+        // 发送重置密码邮件（通过手机号对应的邮箱）
         async function sendPasswordResetEmail() {
-            const email = document.getElementById('resetEmail').value.trim();
-            if (!email) { showMessage(resetMsgDiv, '请输入邮箱', true); return; }
+            const phone = document.getElementById('resetPhone').value.trim();
+            if (!phone) { showMessage(resetMsgDiv, '请输入手机号', true); return; }
+            const fakeEmail = phoneToEmail(phone);
             const btn = document.getElementById('sendResetLinkBtn');
             btn.disabled = true;
             btn.innerText = '发送中...';
             try {
-                await auth.sendPasswordResetEmail(email);
+                const { error } = await supabase.auth.resetPasswordForEmail(fakeEmail, {
+                    redirectTo: window.location.origin + '/reset-password.html'
+                });
+                if (error) throw error;
                 showMessage(resetMsgDiv, '重置邮件已发送，请查收邮箱（垃圾箱可能有）');
                 setTimeout(() => closeModal('forgotModal'), 2000);
             } catch (err) {
                 console.error(err);
                 let userMsg = '发送失败，请稍后重试';
-                if (err.code === 'OPERATION_NOT_ALLOWED') {
-                    userMsg = '邮箱登录功能未开启，请联系管理员。';
-                } else if (err.code === 'EMAIL_NOT_FOUND') {
-                    userMsg = '该邮箱尚未注册，请先注册。';
-                } else if (err.message && err.message.includes('email service not configured')) {
-                    userMsg = '邮件服务未配置，请联系管理员在 CloudBase 控制台配置发件邮箱。';
+                if (err.message.includes('User not found')) {
+                    userMsg = '该手机号尚未注册，请先注册。';
                 }
                 showMessage(resetMsgDiv, userMsg, true);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = '发送重置邮件';
-            }
+            } finally { btn.disabled = false; btn.innerText = '发送重置邮件'; }
         }
 
-        // 邮箱+密码登录/注册
+        // 手机号登录/注册
         async function emailLogin() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
-            if (!email || !password) { showMessage(loginMsgDiv, '请输入邮箱和密码', true); return; }
+            const phone = document.getElementById('phone').value.trim();
+            const password = document.getElementById('password').value;
+            if (!phone || !password) { showMessage(loginMsgDiv, '请输入手机号和密码', true); return; }
             if (password.length < 6) { showMessage(loginMsgDiv, '密码至少需要6位', true); return; }
 
+            const email = phoneToEmail(phone);
             const btn = document.getElementById('loginBtn');
             btn.disabled = true;
             btn.innerText = '处理中...';
+
             try {
-                await auth.signInWithEmailAndPassword(email, password);
+                // 尝试登录
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
                 showMessage(loginMsgDiv, '登录成功，正在跳转...');
                 setTimeout(() => { window.location.href = '基础信息采集页.html'; }, 800);
             } catch (err) {
                 console.error(err);
-                if (err.code === 'USER_NOT_FOUND' || err.message?.includes('user not found')) {
-                    if (confirm('该邮箱尚未注册，是否立即注册？')) {
+                if (err.message.includes('Invalid login credentials')) {
+                    const confirmReg = window.confirm('该手机号尚未注册，是否立即注册？');
+                    if (confirmReg) {
                         try {
-                            await auth.signUpWithEmailAndPassword(email, password);
+                            // 注册新用户
+                            const { error: signUpError } = await supabase.auth.signUp({ email, password });
+                            if (signUpError) throw signUpError;
+                            // 注册成功后自动创建 profiles 记录（后续页面会填充）
                             showMessage(loginMsgDiv, '注册成功，正在跳转...');
                             setTimeout(() => { window.location.href = '基础信息采集页.html'; }, 800);
                         } catch (regErr) {
-                            showMessage(loginMsgDiv, '注册失败，请稍后重试', true);
+                            showMessage(loginMsgDiv, '注册失败：' + regErr.message, true);
                         }
-                    } else { showMessage(loginMsgDiv, '请先注册账号', true); }
+                    } else {
+                        showMessage(loginMsgDiv, '请先注册账号', true);
+                    }
                 } else {
-                    showMessage(loginMsgDiv, '邮箱或密码错误', true);
+                    showMessage(loginMsgDiv, '手机号或密码错误', true);
                 }
-            } finally {
-                btn.disabled = false;
-                btn.innerText = '登录/注册';
-            }
+            } finally { btn.disabled = false; btn.innerText = '登录/注册'; }
         }
 
-        // 游客登录
+        // 游客登录（匿名）
         async function guestLogin() {
             try {
-                await auth.signInAnonymously();
+                const { error } = await supabase.auth.signInAnonymously();
+                if (error) throw error;
                 showMessage(loginMsgDiv, '游客模式，正在进入...');
                 setTimeout(() => { window.location.href = '基础信息采集页.html'; }, 800);
             } catch (err) {
