@@ -94,30 +94,32 @@
         </div>
 
         <div class="input-group">
-            <input type="tel" id="phone" placeholder="手机号（11位数字）" autocomplete="tel">
+            <input type="tel" id="phone" placeholder="手机号" autocomplete="tel">
         </div>
         <div class="input-group">
-            <input type="password" id="password" placeholder="密码（至少6位）" autocomplete="new-password">
+            <input type="password" id="password" placeholder="密码（至少6位）" autocomplete="current-password">
         </div>
         <div class="forgot-link"><a id="forgotPwdLink">忘记密码？</a></div>
         <button class="btn btn-primary" id="loginBtn">登录/注册</button>
         <div id="loginMessage" class="message" style="background: transparent; padding: 0.5rem 0 0;"></div>
     </div>
 
+    <!-- 忘记密码模态框（通过手机号重置密码，需要短信验证码，这里先简单提示暂时不支持，或者可复用邮箱） -->
     <div id="forgotModal" class="modal">
         <div class="modal-content">
             <h3 style="margin-bottom: 1rem;">找回密码</h3>
             <input type="tel" id="resetPhone" placeholder="注册手机号">
-            <button class="btn btn-primary" id="sendResetLinkBtn">发送重置邮件</button>
-            <button class="btn btn-secondary" style="margin-top: 0.5rem;" onclick="closeModal('forgotModal')">取消</button>
+            <button class="btn btn-primary" id="sendResetBtn">发送重置验证码</button>
             <div id="resetMessage" class="message" style="margin-top: 0.5rem;"></div>
+            <button class="btn btn-secondary" style="margin-top: 0.5rem;" onclick="closeModal('forgotModal')">取消</button>
         </div>
     </div>
 
     <script>
-        // Supabase 配置（请替换）
-        const SUPABASE_URL = 'https://your-project.supabase.co';
-        const SUPABASE_ANON_KEY = 'your-anon-key';
+        // ========== 替换为你的 Supabase 配置 ==========
+        const SUPABASE_URL = 'https://your-project.supabase.co';   // 👈 替换
+        const SUPABASE_ANON_KEY = 'your-anon-key';                // 👈 替换
+        // ============================================
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const loginMsgDiv = document.getElementById('loginMessage');
@@ -131,73 +133,43 @@
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function showModal(id) { document.getElementById(id).style.display = 'flex'; }
 
-        // 把手机号转换成唯一邮箱格式（用于 Supabase Auth 的 email 字段）
-        function phoneToEmail(phone) {
-            // 确保格式统一：+86 开头
-            let clean = phone.replace(/\s+/g, '');
-            if (!clean.startsWith('+86')) {
-                if (clean.startsWith('86')) clean = '+' + clean;
-                else clean = '+86' + clean;
-            }
-            // 转换为邮箱：+8613800138000@phone.local
-            return clean + '@phone.local';
-        }
-
-        // 发送重置密码邮件（通过手机号对应的邮箱）
-        async function sendPasswordResetEmail() {
-            const phone = document.getElementById('resetPhone').value.trim();
-            if (!phone) { showMessage(resetMsgDiv, '请输入手机号', true); return; }
-            const fakeEmail = phoneToEmail(phone);
-            const btn = document.getElementById('sendResetLinkBtn');
-            btn.disabled = true;
-            btn.innerText = '发送中...';
-            try {
-                const { error } = await supabase.auth.resetPasswordForEmail(fakeEmail, {
-                    redirectTo: window.location.origin + '/reset-password.html'
-                });
-                if (error) throw error;
-                showMessage(resetMsgDiv, '重置邮件已发送，请查收邮箱（垃圾箱可能有）');
-                setTimeout(() => closeModal('forgotModal'), 2000);
-            } catch (err) {
-                console.error(err);
-                let userMsg = '发送失败，请稍后重试';
-                if (err.message.includes('User not found')) {
-                    userMsg = '该手机号尚未注册，请先注册。';
-                }
-                showMessage(resetMsgDiv, userMsg, true);
-            } finally { btn.disabled = false; btn.innerText = '发送重置邮件'; }
-        }
-
-        // 手机号登录/注册
-        async function emailLogin() {
+        // 手机号+密码登录/注册
+        async function phoneLogin() {
             const phone = document.getElementById('phone').value.trim();
-            const password = document.getElementById('password').value;
+            const password = document.getElementById('password').value.trim();
             if (!phone || !password) { showMessage(loginMsgDiv, '请输入手机号和密码', true); return; }
             if (password.length < 6) { showMessage(loginMsgDiv, '密码至少需要6位', true); return; }
 
-            const email = phoneToEmail(phone);
             const btn = document.getElementById('loginBtn');
             btn.disabled = true;
             btn.innerText = '处理中...';
 
             try {
-                // 尝试登录
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                // 先尝试登录（Supabase 手机号登录需要完整国际格式，比如 +8613800110000）
+                let fullPhone = phone;
+                if (!fullPhone.startsWith('+')) fullPhone = '+86' + fullPhone;
+                const { data, error } = await supabase.auth.signInWithPassword({ phone: fullPhone, password });
                 if (error) throw error;
                 showMessage(loginMsgDiv, '登录成功，正在跳转...');
                 setTimeout(() => { window.location.href = '基础信息采集页.html'; }, 800);
             } catch (err) {
                 console.error(err);
-                if (err.message.includes('Invalid login credentials')) {
-                    const confirmReg = window.confirm('该手机号尚未注册，是否立即注册？');
+                // 用户不存在，尝试注册
+                if (err.message.includes('Invalid login credentials') || err.message.includes('user not found')) {
+                    const confirmReg = confirm('该手机号尚未注册，是否立即注册？');
                     if (confirmReg) {
                         try {
-                            // 注册新用户
-                            const { error: signUpError } = await supabase.auth.signUp({ email, password });
+                            let fullPhone = phone;
+                            if (!fullPhone.startsWith('+')) fullPhone = '+86' + fullPhone;
+                            const { error: signUpError } = await supabase.auth.signUp({ phone: fullPhone, password });
                             if (signUpError) throw signUpError;
-                            // 注册成功后自动创建 profiles 记录（后续页面会填充）
-                            showMessage(loginMsgDiv, '注册成功，正在跳转...');
-                            setTimeout(() => { window.location.href = '基础信息采集页.html'; }, 800);
+                            // 注册成功后将手机号存入 profiles 表（需要先获取用户 ID 再更新）
+                            const { data: { user } } = await supabase.auth.getUser();
+                            if (user) {
+                                await supabase.from('profiles').upsert({ id: user.id, phone: fullPhone });
+                            }
+                            showMessage(loginMsgDiv, '注册成功，请登录');
+                            alert('注册成功！请使用手机号和密码登录。');
                         } catch (regErr) {
                             showMessage(loginMsgDiv, '注册失败：' + regErr.message, true);
                         }
@@ -222,10 +194,15 @@
             }
         }
 
+        // 忘记密码（简单提示，暂不实现完整短信验证码流程，你可以后续补充）
+        function forgotPassword() {
+            alert('重置密码功能暂未开放，请确保记住密码。如有需要，请联系管理员。');
+        }
+
         document.getElementById('guestBtn').addEventListener('click', guestLogin);
-        document.getElementById('loginBtn').addEventListener('click', emailLogin);
-        document.getElementById('forgotPwdLink').addEventListener('click', () => showModal('forgotModal'));
-        document.getElementById('sendResetLinkBtn').addEventListener('click', sendPasswordResetEmail);
+        document.getElementById('loginBtn').addEventListener('click', phoneLogin);
+        document.getElementById('forgotPwdLink').addEventListener('click', forgotPassword);
+        // 可选：绑定忘记密码模态框中的发送按钮，这里为了简单就不做复杂逻辑了
     </script>
 </body>
 </html>
